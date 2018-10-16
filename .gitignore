@@ -19,3 +19,13 @@
 # IDE
 .idea/
 .vscode/
+
+# Frontend
+.sass-cache/
+.tmp/
+dist/
+tmp/
+bower_components/
+node_modules/
+npm-debug.log
+

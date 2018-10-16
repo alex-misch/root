@@ -1,0 +1,26 @@
+{
+  "name": "bmp-bundler",
+  "version": "0.0.1",
+  "description": "App bundler ",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@bitbucket.org/letsnetdevinternal/initial.git"
+  },
+  "keywords": [
+    "bmp",
+    "webapp",
+    "bundler"
+  ],
+  "author": "boomfunc",
+  "license": "ISC",
+  "homepage": "https://bitbucket.org/letsnetdevinternal/initial#readme",
+  "dependencies": {
+    "command-line-args": "^5.0.2",
+    "command-line-usage": "^5.0.5",
+    "fs-extra": "^7.0.0"
+  }
+}

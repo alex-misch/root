@@ -1,0 +1,14 @@
+{
+	"dist": "$root/dist",
+	"output": {
+		"es": {
+			"output": "$filename.js"
+		},
+		"amd": {
+			"output": "$filename.amd.js",
+			"browserlist": ["ie 11"],
+			"plugins": ["rollup"],
+			"minify": "production"
+		}
+	}
+}

@@ -1,0 +1,14 @@
+version: '3'
+services:
+    node:
+        image: node:10-alpine
+        container_name: node
+        environment:
+            - TCP_LISTEN_PORT=9375
+        ports:
+          - "9375:9375"
+        # command: node --experimental-modules ./index.mjs
+        command: tail -f /dev/null
+        working_dir: /src
+        volumes:
+          - ./:/src
