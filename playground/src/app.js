@@ -23,8 +23,6 @@ class App extends BmpLit {
 			<h1>Hello from app!</h1>
 		`
 	}
-
-
 }
 
 customElements.define('myapp', App)

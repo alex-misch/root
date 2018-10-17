@@ -1,0 +1,14 @@
+{
+	"source_folder": "src",
+	"dist": "dist",
+	"transform": {
+		"es": {
+			"filename": "$filename.js"
+		},
+		"amd": {
+			"filename": "$filename.amd.js",
+			"browserlist": ["ie 11"],
+			"modules": ["rollup"]
+		}
+	}
+}

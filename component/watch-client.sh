@@ -4,16 +4,21 @@
 HOST='playground.lo'
 PORT=9375
 
-PROJECT=$1
+FOLDER=$1
 
-output_format='{"path":"%p","driver":"filewatcher"}'
+output_format='{"path":"%p","event":"filechange"}'
 watch_ext='js'
 
 runWatcher()
 {
-	echo "{\"project_folder\":\"$PROJECT\"}"
-	fswatch --latency=0.1 -r --format=$output_format -i "\\.$watch_ext$" $PROJECT
+	echo "{\"event\":\"initialize\",\"project_folder\":\"$FOLDER\",\"rel\":\"$PWD\"}"
+
+	fswatch -0 --latency=0.1 --format=$output_format -r -e ".*" -i "\\.$watch_ext$" $FOLDER |
+		while read -d "" path ;
+			do
+			echo $path;
+		done;
 }
 
-echo "Run connection to ${PORT}:${HOST}."
 runWatcher | nc $HOST $PORT
+

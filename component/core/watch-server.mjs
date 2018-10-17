@@ -12,10 +12,8 @@ class WatchServer extends EventEmitter {
 
 	create() {
 		this.listener = createServer( client => {
-			client.id = this.clients.length
-			this.clients.push( client )
-
-			// wait for client specify his folder
+			// handle client send data
+			this.emit('connect')
 			client.on('data', buffer => {
 				const data = buffer.toString('utf-8')
 				try {
@@ -24,8 +22,8 @@ class WatchServer extends EventEmitter {
 					this.emit('data', client, data) //send string
 				}
 			})
+			// handle error
 			client.on('end', event => {
-				this.clients.splice(client.id, 1)
 				this.emit('disconnect', client)
 			})
 		})
@@ -38,8 +36,10 @@ class WatchServer extends EventEmitter {
 
 		watchServer.create()
 		watchServer.listener.on('error', (err) => {
+			watchServer.emit('error', err)
 			throw err;
 		})
+
 		watchServer.listener.listen(port, () => {
 			watchServer.emit('start', { port })
 		})

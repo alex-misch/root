@@ -2,7 +2,7 @@
   "name": "bmp-bundler",
   "version": "0.0.1",
   "description": "App bundler ",
-  "main": "index.js",
+  "main": "index.mjs",
   "scripts": {
     "test": "jest"
   },

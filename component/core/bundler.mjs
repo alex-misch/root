@@ -1,67 +1,83 @@
 
 import path from 'path'
 import fs from 'fs-extra'
-import { FindFiles } from '../utils/find-files'
+import { searchFiles, emptyFolder, createSymlink } from '../utils/fs'
 
 class Bundler {
 
-	constructor(folder) {
+	constructor(config, logger) {
+		console.log( `Initalized project "${config.rel}/${config.project_folder}"` )
 		this.config = {
-			folder: path.resolve( folder )
+			folder: path.resolve( config.project_folder )
 		}
+		this.log = logger
+
 		try {
 			this.init()
 		} catch (e) {
-			console.log( 'Fail to initialize bundler', e )
+			this.log( 'Fail to initialize bundler', e )
+		}
+	}
+
+	async runTransformers(modules, filepath) {
+		if ( modules && modules.lenth ) {
+			return await Promise.all(
+				modules.map( async mod => {
+					let driver = null
+					let options = {}
+					if ( typeof mod == 'object' ) {
+						[ driver, options ] = mod
+					} else {
+						driver = mod
+					}
+					console.log( `Load driver ${driver}` )
+					const { transform } = import( `../drivers/${ driver }` )
+					await transform(filepath, options)
+				})
+			)
+		} else {
+			return fs.readFileSync(filepath)
 		}
 	}
 
 
 	init() {
-		const src = this.config.folder
-		console.log( `Initializing bundler (source "${src}")` )
-		const fileList = FindFiles({
+		const projectFolder = this.config.folder
+
+		const fileList = searchFiles({
 			regex: /(bmp.conf.json|.js)$/,
-			dir: src
+			dir: projectFolder
 		})
-		const rootConf = path.join(src, 'bmp.conf.json')
-		if ( !fs.existsSync(rootConf) )
-			throw new Error(`Fail to load bundler: ${rootConf} not found`)
-		console.log( 'Found files', fileList )
+		const rootConfPath = path.join(projectFolder, 'bmp.conf.json')
+		let rootConf = null
+		try {
+			rootConf = JSON.parse( fs.readFileSync( rootConfPath ) )
+		} catch(e) {
+			throw new Error(`Can't parse ${rootConfPath}`)
+		}
 
-		// if ( fs.existsSync(distDir) ) fs.removeSync( distDir )
-		// fs.mkdirSync( distDir )
+		const { dist, source_folder: src, transform } = rootConf
+		this.config.transform = rootConf.transform
+		this.sourceDir = path.join(projectFolder, src)
+		this.distDir = path.join(projectFolder, dist)
 
-		// console.log( `Created ${distDir}...` )
+		emptyFolder( this.distDir )
+		createSymlink( `${this.distDir}/assets`, `${this.sourceDir}/assets` )
 
-		// if ( fs.existsSync( `${sourceDir}/assets` ) ) {
-		// 	fs.linkSync( `${sourceDir}/assets`, `${distDir}/assets` )
-		// 	console.log( `Created ${distDir}...` )
-		// }
-		console.log( 'Wait for changes...' )
+		this.log( 'Wait for changes...' )
 	}
 
-	transform(filepath) {
-		if ( this.config.babel && this.config.rollup )
-			return this.rollup(filepath)
-		if ( this.config.rollup )
-			return this.rollup(filepath)
-		if ( this.config.babel )
-			return this.babel(filepath)
+	async fileChanged(event) {
+		console.log( `Building: ${ event.relative_path }...` )
+		console.log( this.config.transform )
+		const transformers = Object.keys( this.config.transform ).map( async format => {
+			const options = this.config.transform[format]
+			return await this.runTransformers( options.modules, event.relative_path )
+		})
+		await Promise.all( transformers )
+		console.log( `Success: ${ event.relative_path }` )
 	}
 
-	fileChanged(filePath) {
-
-	}
-
-	babel() {
-
-	}
-
-
-	rollup() {
-
-	}
 }
 
 export { Bundler }
