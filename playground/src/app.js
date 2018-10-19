@@ -1,6 +1,7 @@
 
 import { BmpLit } from "bmp-core"
 import { BmpRouter } from "bmp-router"
+import { util } from './utils/utils.js'
 
 class App extends BmpLit {
 
@@ -19,9 +20,8 @@ class App extends BmpLit {
 	}
 
 	render() {
-		return this.html`
-			<h1>Hello from app!</h1>
-		`
+		util(123)
+		return this.html`<h1>Hello from app!</h1>`
 	}
 }
 

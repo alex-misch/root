@@ -1,14 +1,22 @@
 {
 	"source_folder": "src",
-	"dist": "dist",
+	"destination_folder": "dist",
 	"transform": {
-		"es": {
-			"filename": "$filename.js"
-		},
 		"amd": {
 			"filename": "$filename.amd.js",
-			"browserlist": ["ie 11"],
-			"modules": ["rollup"]
+			"modules": [
+				["rollup", {
+					"plugins": [
+						["babel", {
+							"presets": [
+								["env", { "targets": {"ie": 11} }]
+							],
+							"plugins": []
+						}],
+						"commonjs"
+					]
+				}]
+			]
 		}
 	}
 }
