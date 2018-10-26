@@ -33,12 +33,7 @@
   },
 
   "devDependencies": {
-    "babel": "^6.23.0",
-    "babel-core": "^6.26.3",
-    "babel-jest": "^23.4.2",
     "jest": "^23.5.0",
-    "jsdoc": "^3.5.5",
-    "babel-preset-env": "^1.7.0",
-    "regenerator-runtime": "^0.12.1"
+    "jsdoc": "^3.5.5"
   }
 }
