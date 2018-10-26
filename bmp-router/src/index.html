@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+  <base href="/bmp-router/dist/" />
+  <link href="/bmp-router/dist/styles/styles.css" rel="stylesheet" />
+
+  <title>Document</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.5/require.min.js"></script>
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><bmp-anchor><a href="/">/</a></bmp-anchor></li>
+      <li><bmp-anchor><a href="/benefits/">/benefits/</a></bmp-anchor></li>
+      <li><bmp-anchor><a href="/benefits/lotte-plaza/">/benefits/lotte-plaza/</a></bmp-anchor></li>
+      <li><bmp-anchor><a href="/benefits/luxury-car/">/benefits/luxury-car/</a></bmp-anchor></li>
+      <li><bmp-anchor><a href="/benefits/carhopper/share/">/benefits/carhopper/share/</a></bmp-anchor></li>
+      <li><bmp-anchor><a href="/not-found/">/not-found/</a></bmp-anchor></li>
+    </ul>
+  </nav>
+  <bmp-router data-config="/bmp-router/dist/config.js"></bmp-router>
+
+  <script>
+    requirejs([ '/bmp-router/dist/index.es6.js' ])
+
+  </script>
+</body>
+</html>

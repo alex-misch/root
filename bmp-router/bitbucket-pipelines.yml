@@ -1,0 +1,19 @@
+pipelines:
+  branches:
+    master:
+      - step:
+          name: Build and test
+          image: boomfunc/node:beta
+          caches:
+            - node
+          script:
+            - npm --version
+            - node --version
+            - npm install
+            - npm test
+            - bmp-component --build --babel --env=production
+            - bmp-component --minify
+            - aws s3 sync ./dist s3://io-boomfunc-bmp$(npm run path --silent) --acl private --delete --cache-control 'public, max-age=0, s-maxage=31536000, must-revalidate'
+            - aws cloudfront create-invalidation --distribution-id E1KOCOOKTGQKO2 --paths "$(npm run path --silent)/*"
+          artifacts:
+            - dist/**

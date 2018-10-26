@@ -1,0 +1,26 @@
+version: "3.4"
+
+x-defaults:
+  &logging
+  options:
+    max-size: "1m"
+
+services:
+  bmp-router:
+    image: boomfunc/node:beta
+    restart: always
+    volumes:
+      - src-vol:/bmp-router
+    ports:
+      - "9200:5800"
+      - "9201:5801"
+    working_dir: /bmp-router
+    entrypoint: sh /srv/serve.sh
+    logging: *logging
+
+volumes:
+  src-vol:
+    driver_opts:
+      type: none
+      device: ${PWD}
+      o: bind
