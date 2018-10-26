@@ -1,0 +1,14 @@
+{
+  "name": "ssr-bmpjs",
+  "version": "0.0.1",
+  "description": "run ECMA SCRIPT Modules on server",
+  "main": "index.mjs",
+  "scripts": {
+    "test": "test"
+  },
+  "author": "boomfunc",
+  "license": "ISC",
+  "dependencies": {
+    "request": "^2.88.0"
+  }
+}
