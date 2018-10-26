@@ -1,0 +1,17 @@
+# Frontend
+.sass-cache/
+.tmp/
+dist/
+tmp/
+bower_components/
+node_modules/
+npm-debug.log
+
+# OS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+.editorconfig
+.flowconfig

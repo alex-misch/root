@@ -1,0 +1,44 @@
+{
+  "name": "bmp-router",
+  "version": "0.0.15",
+  "description": "App build to use with bmp-core modules",
+  "scripts": {
+    "test": "jest --coverage",
+    "path": "echo /$npm_package_name/$npm_package_version",
+    "start": "docker-compose exec bmp-router sh -c 'bmp-component -w --babel --env=production'",
+    "docs": "jsdoc ./src/* --destination ./docs/ --private --readme ./README.md"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@bitbucket.org/letsnetdevinternal/bmp-router.git"
+  },
+  "keywords": [
+    "jetsm",
+    "webapp",
+    "bmp"
+  ],
+  "author": "boomfunc",
+  "license": "ISC",
+  "homepage": "https://bitbucket.org/letsnetdevinternal/bmp-router#readme",
+  "jest": {
+    "verbose": true,
+    "bail": false,
+    "collectCoverage": false,
+    "modulePathIgnorePatterns": [
+      "node_modules"
+    ],
+    "transform": {
+      "^.+\\.jsx?$": "babel-jest"
+    }
+  },
+
+  "devDependencies": {
+    "babel": "^6.23.0",
+    "babel-core": "^6.26.3",
+    "babel-jest": "^23.4.2",
+    "jest": "^23.5.0",
+    "jsdoc": "^3.5.5",
+    "babel-preset-env": "^1.7.0",
+    "regenerator-runtime": "^0.12.1"
+  }
+}

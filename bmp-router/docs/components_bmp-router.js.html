@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/bmp-router.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/bmp-router.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { isPatternMatchUrl, extractValues } from '../utils/path-parser.js'
+import { unifyPathname } from '../utils/path-unifier.js'
+ 
+
+/** 
+ * Router web-component class. &lt;br/>
+ * Creates 'bmp-view' elements based on location pathname and base html-tag &lt;br/>
+ * Work on bmp-based config file that will be required relative to web path &lt;br/>
+ * Bmp-based config supports url pattern syntax with expected/unexpected parameters: &lt;br/>
+ * /benefit/:slug/ &lt;br/>
+ * /benefit/:slug{lotte-plaza|carhopper}/ &lt;br/>
+ * @class
+ * @example
+ * ... config.js:
+ *  routes: [
+ *    { url: '/benefit/', template: 'Benefit list' },
+ *    { url: '/benefit/:slug/', template: 'Benefit detail' }
+ *    { url: '/benefit/:slug{carhopper}/', template: 'Benefit carhopper detail' }
+ *  ]
+ * ...
+ * &lt;bmp-router data-config="./config.js">&lt;/bmp-router>
+ */
+class BmpRouter extends HTMLElement {
+
+  static get is() { return 'bmp-router' }
+  /**
+   * Getter, returns base path from "base" tag without url origin
+   * @example
+   * &lt;base href="http://localhost/foo/bar/" />
+   * ...
+   * &lt;script>console.log( RouterInstance.basepath )&lt;/script> // -> /foo/bar/
+   */
+  get basepath() {
+    return document.querySelector( 'base' ).href.replace( location.origin, '' ) // get base pathname
+  }
+ 
+  /** @constructor */
+  constructor () {
+    super()
+  }
+
+  async connectedCallback () {
+    
+    this.config = await this.requireConfig()
+    this._refreshViews()
+
+    this.refPopstate = ev => {
+      ev.preventDefault()
+      this._refreshViews()
+    }
+    window.addEventListener( 'popstate', this.refPopstate, false )
+  }
+
+  disconnectedCallback() {
+    window.removeEventListener( 'popstate', this.refPopstate, false )
+  }
+
+  /**
+   * Returns config file exports that was declarated in "data-config" attribute
+   * @returns {Promise}  
+   */
+  requireConfig() {
+
+    const confFilePath = this.getAttribute( 'data-config' )
+    if ( !confFilePath ) 
+      throw new Error( "Configuration file not found" )
+
+    return new Promise( resolve => {
+      require( [confFilePath], resolve )
+    })
+
+  }
+
+  /**
+   * Removes basepath from location.pathname and return unify pathname
+   * @return {string} pathname of current state
+   */
+  getCurrentPathname() {
+    let pathname = location.pathname
+    if ( this.basepath ) { // remove basepath from pathname
+      pathname = pathname.replace( new RegExp( `^${this.basepath}(.*)$`), '$1' )
+    }
+    return unifyPathname( pathname ) // remove all double slashas and add first slash/end slash
+  }
+
+  /**
+   * Getter
+   * @return {Array} current views list in router
+   */
+  get views() {
+    return [...this.children].filter( node => node.tagName != this.config.viewTag )
+  }
+
+  getViewConf( pathname ) {
+    return this.config.routes.find( route => {
+      return isPatternMatchUrl( route.url, pathname )
+    })
+  }
+
+  /**
+   * Load view template from config then create view and insert it to dom
+   * Trying to get dynamic params from location, add id to view's attributes 
+   * @param {string} pathname pathname of view that need to be created
+   * @private
+   * @example
+   * &lt;script>RouterInstance._createView( '/benefits/lotte-plaza/' )&lt;/script>
+   * ...
+   *  &lt;bmp-router>
+   *    &lt;bmp-view params='{"slug":"lotte-plaza"}'>Lotte plaza&lt;/bmp-view>
+   *  &lt;/bmp-router>
+   * ...
+   */
+  _createView( pathname ) {
+    const view = document.createElement( this.config.viewTag )
+    view.setAttribute( 'pathname', pathname )
+    const viewConf = this.getViewConf( pathname )
+
+    if ( viewConf ) {
+      const params = extractValues( viewConf.url, this.getCurrentPathname() )
+      if ( params ) view.setAttribute( 'params', JSON.stringify(params) )
+      view.innerHTML = viewConf.template
+    } else {
+      view.innerHTML = this.config.not_found_template
+    }
+
+    this.appendChild( view )
+  }
+
+  /**
+   * Refreshing view elements in DOM. Delete all "old" views and create view by current pathname
+   * @private
+   */
+  _refreshViews() {
+    let pathname = this.getCurrentPathname()
+    if ( pathname != this.currentRoute ) { // fired only for changed path
+      this.currentRoute = pathname
+
+      if ( this.views.length ) {
+        // destroy old view(s)
+        this.views.forEach( view => view.setAttribute( 'state', 'anim-out' ) )
+      }
+      // create new view with current pathname
+      this._createView( pathname )
+      
+    }
+
+  }
+
+  /**
+   * Creates new popstate event for window history with passed pathname
+   * @param {string} pathname pathname that 
+   * @param {string} title Title of page 
+   * @example
+   * &lt;script> RouterInstance.go( '/benefits/lotte-plaza/' ) &lt;/script>
+   */
+  go( pathname, title = null ) {
+
+    const _pathname = unifyPathname( `${this.basepath}/${pathname}` )
+    // send url to state params, so we can detect what state is  
+    window.history.pushState( { 'url': _pathname }, title, _pathname ) 
+    window.dispatchEvent( new Event('popstate') )
+  }
+
+  /**
+   * Returns back by history browser
+   * @example 
+   * &lt;script> RouterInstance.back() &lt;/script>
+   */
+  back() {
+    window.history.back()
+  }
+}
+
+/** TODO: defferent method for web-component polyffil v0 */
+customElements.define(BmpRouter.is, BmpRouter)
+export { BmpRouter }
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BmpAnchor.html">BmpAnchor</a></li><li><a href="BmpRouter.html">BmpRouter</a></li><li><a href="BmpView.html">BmpView</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_convertToRegExp">_convertToRegExp</a></li><li><a href="global.html#_parseExpectedVals">_parseExpectedVals</a></li><li><a href="global.html#extractValues">extractValues</a></li><li><a href="global.html#isPatternMatchUrl">isPatternMatchUrl</a></li><li><a href="global.html#unifyPathname">unifyPathname</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu May 17 2018 11:20:02 GMT+0000 (UTC)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
