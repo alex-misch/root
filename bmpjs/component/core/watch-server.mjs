@@ -15,11 +15,11 @@ class WatchServer extends EventEmitter {
 			// handle client send data
 			this.emit('connect')
 			client.on('data', buffer => {
-				const data = buffer.toString('utf-8')
+				const data = buffer.toString('utf-8').replace( /\0/g, '' )
 				try {
-					this.emit('data', client, JSON.parse(data) ) //send object if json
+					this.emit('data', client, JSON.parse(data) ) // send object if json
 				} catch(e) {
-					this.emit('data', client, data) //send string
+					this.emit('data', client, data ) // send object if json
 				}
 			})
 			// handle error
