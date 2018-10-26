@@ -10,7 +10,7 @@ const parsePluginConfig = async (name, config, pathPrefix = '') => {
 			let presets = []
 			if ( Array.isArray(config.presets) )
 				presets = config.presets.map( preset => [
-					path.join( pathPrefix, 'node_modules', `@babel/preset-${ preset[0] }`),
+					path.join( pathPrefix, 'node_modules', preset[0] ),
 					preset[1]
 				])
 

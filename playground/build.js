@@ -1,7 +1,8 @@
 
 import { Bundler } from "../bmpjs/component/core/bundler"
 
-const builder = new Bundler({
+const builder = new Bundler()
+builder.init({
 	source_folder: "src",
 	destination_folder: "dist",
 	dependencies: {
@@ -10,6 +11,9 @@ const builder = new Bundler({
 	},
 	minify: true,
 	transform: {
+		commonjs: {
+			filename: '$filename.ks'
+		}
 		amd: {
 			filename: "$filename.amd.js",
 			jobs: [
@@ -17,7 +21,7 @@ const builder = new Bundler({
 					plugins: [
 						["babel", {
 							presets: [
-								[ "env",  { targets: { ie: 11 } } ]
+								[ "@babel/preset-env",  { targets: { ie: 11 } } ]
 							],
 							plugins: [
 								'syntax-object-rest-spread',
