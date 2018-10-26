@@ -4,6 +4,7 @@ import path from 'path'
 const createSymlink = (from, to) => {
 	if ( fs.existsSync( from ) ) {
 		fs.linkSync( from, to )
+		console.log( `- COMPLETE: Symlink ${from} --> ${to}` )
 	}
 }
 
@@ -12,6 +13,7 @@ const emptyFolder = folder => {
 		fs.removeSync( folder )
 
 	fs.mkdirSync( folder )
+	console.log( `- COMPLETE: Empty folder ${folder}` )
 }
 
 

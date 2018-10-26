@@ -3,17 +3,12 @@
   "version": "1.0.0",
   "description": "nope",
   "main": "app.js",
-  "dependencies": {
-    "@babel/core": "^7.1.2",
-    "@babel/preset-env": "^7.1.0",
-    "babel-plugin-syntax-object-rest-spread": "^6.13.0",
-    "rollup-plugin-babel": "^4.0.3",
-    "rollup-plugin-commonjs": "^9.2.0",
-    "rollup-plugin-virtual": "^1.0.1"
-  },
   "scripts": {
     "test": "jest"
   },
   "author": "",
-  "license": "ISC"
+	"license": "ISC",
+	"dependencies": {
+
+	}
 }
