@@ -11,3 +11,10 @@ jobs:
           command: |
             tar -zcv . | aws s3 cp - "s3://io-boomfunc-root/bmpjs/bundler.tar.gz" --acl private --cache-control 'public, max-age=0, s-maxage=31536000, must-revalidate'
             aws cloudfront create-invalidation --distribution-id E39RHHF1ID06TC --paths "/*"
+
+workflows:
+  version: 2
+
+  deploy-bundler:
+    jobs:
+      - deploy
