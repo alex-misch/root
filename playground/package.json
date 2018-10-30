@@ -4,11 +4,16 @@
   "description": "nope",
   "main": "app.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "docker run -it --rm -v $(pwd):/src -w /src node:10-alpine node --loader ./bmpresolver.mjs --experimental-modules ./build.mjs"
   },
   "author": "",
 	"license": "ISC",
-	"dependencies": {
-
+	"bmp": {
+		"dependencies": {
+			"bundler": "https://cdn.boomfunc.io/bmpjs/bundler/0.0.1",
+			"bmp-core": "https://cdn.boomfunc.io/bmp-core/0.0.14",
+			"bmp-router": "https://cdn.boomfunc.io/bmp-router/0.0.15"
+		}
 	}
 }
