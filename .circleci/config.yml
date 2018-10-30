@@ -1,0 +1,13 @@
+version: 2
+jobs:
+
+  deploy:
+    docker:
+      - image: atlassian/pipelines-awscli
+    steps:
+      - run:
+          name: Deploy
+          working_directory: ./bmpjs/bundler
+          command: |
+            tar -zcv . | aws s3 cp - "s3://io-boomfunc-root/bmpjs/bundler.tar.gz" --acl private --cache-control 'public, max-age=0, s-maxage=31536000, must-revalidate'
+            aws cloudfront create-invalidation --distribution-id E39RHHF1ID06TC --paths "/*"
