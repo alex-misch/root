@@ -1,19 +1,27 @@
 {
-  "name": "playground",
-  "version": "1.0.0",
-  "description": "nope",
-  "main": "app.js",
-  "scripts": {
-    "test": "jest",
-    "build": "docker run -it --rm -v $(pwd):/src -w /src node:10-alpine node --loader ./bmpresolver.mjs --experimental-modules ./build.mjs"
-  },
-  "author": "",
+	"name": "playground",
+	"version": "1.0.0",
+	"description": "nope",
+	"main": "app.js",
+	"scripts": {
+		"test": "jest",
+		"dockerbuild": "docker run -it --rm -v $(pwd):/src -w /src node:10-alpine node --experimental-modules ./build.mjs",
+		"bmpinstall": "node --experimental-modules ./install.mjs",
+		"build": "node --experimental-modules ./build.mjs"
+	},
+	"author": "",
 	"license": "ISC",
 	"bmp": {
 		"dependencies": {
-			"bundler": "https://cdn.boomfunc.io/bmpjs/bundler/0.0.1",
-			"bmp-core": "https://cdn.boomfunc.io/bmp-core/0.0.14",
-			"bmp-router": "https://cdn.boomfunc.io/bmp-router/0.0.15"
+			"bmpjs/bundler": "latest"
 		}
+	},
+	"dependencies": {
+		"@babel/core": "^7.1.2",
+		"@babel/plugin-transform-modules-amd": "^7.1.0",
+		"@babel/preset-env": "^7.1.0",
+		"babel-plugin-syntax-object-rest-spread": "^6.13.0",
+		"rollup": "^0.66.6",
+		"rollup-plugin-babel": "^4.0.3"
 	}
 }

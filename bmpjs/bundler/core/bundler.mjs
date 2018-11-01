@@ -6,25 +6,15 @@ import { searchFiles } from '../utils/fs'
 
 class Bundler {
 
-	getProjectConfig(folder) {
-		const rootConfPath = path.join(folder, 'bmp.conf.json')
-		try {
-			return JSON.parse( fs.readFileSync( rootConfPath ) )
-		} catch(e) {
-			throw new Error(`Can't parse ${rootConfPath}`)
-		}
+	constructor( projectConfig ) {
+		this.project = projectConfig
+		this.jobs = []
 	}
 
 
-	init({ folder, assetsAction, minify }) {
+	run() {
 
-		this.project = {
-			folder: folder,
-			minify: Boolean(minify),
-			config: this.getProjectConfig(folder)
-		}
-
-		const { destination_folder: dest, source_folder: src, transform } = this.project.config
+		const { destination_folder: dest, source_folder: src } = this.project.config
 		this.sourceDir = path.join(folder, src)
 		this.destDir = path.join(folder, dest)
 
@@ -38,7 +28,7 @@ class Bundler {
 		if ( fs.existsSync(`${this.sourceDir}/index.html`) )
 			fs.copySync(`${this.sourceDir}/index.html`, `${this.destDir}/index.html`)
 
-		return this.buildAll()
+		return this.runJobs()
 	}
 
 	async runTransformer(filepath, module) {
@@ -82,7 +72,7 @@ class Bundler {
 		}
 	}
 
-	async buildAll() {
+	async prebuild() {
 		const fileList = searchFiles({
 			regex: /.(js|html)$/,
 			dir: this.sourceDir
@@ -93,6 +83,14 @@ class Bundler {
 		return Promise.all(bundlers)
 	}
 
+	async runJobs() {
+		await this.prebuild()
+	}
+
+
+	addJob(job, config) {
+		this.jobs.push( import( job.name ), config )
+	}
 
 }
 
