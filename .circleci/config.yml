@@ -5,6 +5,7 @@ jobs:
     docker:
       - image: atlassian/pipelines-awscli
     steps:
+      - checkout
       - run:
           name: Deploy
           working_directory: ./bmpjs/bundler
