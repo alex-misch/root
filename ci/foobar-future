@@ -1,0 +1,38 @@
+job "test" {
+	docker = docker://golang:alpine
+	entrypoint = ls -lah
+	context = ./ci
+}
+
+job "build" {
+	docker = docker://golang:alpine
+	entrypoint = pwd
+	context = ./ci
+}
+
+job "build" {
+	docker = ./sborshik/Dockerfile-beta
+	entrypoint = npm build --opt
+}
+
+job "deploy" {
+	docker = docker://golang:alpine
+	entrypoint = go version
+	context = ./ci
+}
+
+group "common" {
+	steps = ["test", "build", "deploy"]
+}
+
+parallel "common2" {
+	steps = ["test", "build", "deploy"]
+}
+
+flow "direct" {
+	steps = ["common"]
+}
+
+flow "indirect" {
+	steps = ["test"]
+}

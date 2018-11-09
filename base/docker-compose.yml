@@ -2,6 +2,9 @@ version: "3.4"
 
 x-defaults:
 
+  working_dir: &working_dir
+    /go/src/github.com/boomfunc/base
+
   volumes: &volumes
     - src-vol:/go/src/github.com/boomfunc/base
     - bin-vol:/go/bin
@@ -9,9 +12,6 @@ x-defaults:
   logging: &logging
     options:
       max-size: 200k
-
-  working_dir: &working_dir
-    /go/src/github.com/boomfunc/base
 
 services:
 

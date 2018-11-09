@@ -1,0 +1,17 @@
+jobs:
+
+  test:
+    entrypoint: 'TEST `base`'
+    docker: docker://alpine
+
+  build:
+    entrypoint: 'BUILD `base`'
+    docker: docker://alpine
+
+  deploy:
+    entrypoint: 'DEPLOY `base`'
+    docker: docker://alpine
+
+
+direct: [test, build, deploy]
+indirect: [test]

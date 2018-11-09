@@ -1,0 +1,56 @@
+version: "3.4"
+
+x-defaults:
+
+  working_dir: &working_dir
+    /go/src/github.com/boomfunc/root/ci
+
+  volumes: &volumes
+    - src-vol:/go/src/github.com/boomfunc/root/ci
+    - bin-vol:/go/bin
+    - /var/run/docker.sock:/var/run/docker.sock
+
+  logging: &logging
+    options:
+      max-size: 200k
+
+  service: &service
+    image: golang
+    volumes: *volumes
+    working_dir: *working_dir
+    logging: *logging
+
+services:
+
+  build:
+    << : *service
+    command: .scripts/build.sh
+
+  run:
+    << : *service
+    command: .scripts/run.sh
+
+  test:
+    << : *service
+    command: .scripts/test.sh
+
+  bench:
+    << : *service
+    command: .scripts/bench.sh
+
+  fmt:
+    << : *service
+    command: .scripts/fmt.sh
+
+volumes:
+  src-vol:
+    driver_opts:
+      type: none
+      device: ${PWD}
+      o: bind
+
+  bin-vol:
+    driver_opts:
+      type: none
+      device: ${PWD}
+      o: bind

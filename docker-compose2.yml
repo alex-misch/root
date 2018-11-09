@@ -1,0 +1,20 @@
+version: '3'
+services:
+  component:
+    image: node:10-alpine
+    environment:
+        - TCP_LISTEN_PORT=9375
+    ports:
+      - "9375:9375"
+    # command: node --experimental-modules ./component/index.mjs
+    command: tail -f /dev/null
+    working_dir: /bmp
+    volumes:
+      - ./:/bmp
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "3000:80"
+    volumes:
+      - ./:/usr/share/nginx/html
+

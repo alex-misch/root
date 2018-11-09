@@ -1,0 +1,19 @@
+jobs:
+
+  test:
+    docker: docker://golang:alpine
+    entrypoint: ls -lah
+
+  build:
+    docker: docker://golang:alpine
+    entrypoint: pwd
+
+  deploy:
+    docker: docker://golang:alpine
+    entrypoint: go version
+
+deps:
+  - base
+
+direct: [test, build, deploy]
+indirect: [test]

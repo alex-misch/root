@@ -1,0 +1,13 @@
+jobs:
+  test:
+    entrypoint: 'TEST `bmp-router`'
+  build:
+    entrypoint: 'BUILD `bmp-router`'
+  deploy:
+    entrypoint: 'DEPLOY `bmp-router`'
+
+deps:
+  - bmpjs/bmp-core
+
+direct: [test, build, deploy]
+indirect: [test]

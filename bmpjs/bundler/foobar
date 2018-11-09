@@ -1,0 +1,13 @@
+jobs:
+  test:
+    entrypoint: 'TEST `bundler`'
+  build:
+    entrypoint: 'BUILD `bundler`'
+  deploy:
+    entrypoint: 'DEPLOY `bundler`'
+
+deps:
+  - bmpjs/bmp-core
+
+direct: [test, build, deploy]
+indirect: [test]
