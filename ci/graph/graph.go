@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/boomfunc/root/ci/types"
+	"github.com/boomfunc/root/ci/step"
 )
 
 var (
@@ -135,14 +135,14 @@ func (graph *Graph) changedNodes(roots []string) (direct []*Node, indirect []*No
 	return
 }
 
-func (graph *Graph) jobs(direct []*Node, indirect []*Node) types.Step {
+func (graph *Graph) jobs(direct []*Node, indirect []*Node) step.Interface {
 	// total steps for resolving all tree's flow
-	total := make([]types.Step, 0)
+	total := make([]step.Interface, 0)
 
 	// TODO DRY code? No, have not heard
 	// Phase 1. Indirect jobs. Check referencing dependencies works
 	// iterate each node and collect steps
-	indirects := make([]types.Step, 0)
+	indirects := make([]step.Interface, 0)
 	for _, node := range indirect {
 		// check steps exists
 		// may return nil, job or another step (for example group or parallel)
@@ -150,13 +150,13 @@ func (graph *Graph) jobs(direct []*Node, indirect []*Node) types.Step {
 			indirects = append(indirects, step)
 		}
 	}
-	if step := types.NewParallel(indirects...); step != nil {
+	if step := step.NewParallel(indirects...); step != nil {
 		total = append(total, step)
 	}
 
 	// Phase 2. Direct jobs. Nodes that was changed directly
 	// iterate each node and collect steps
-	directs := make([]types.Step, 0)
+	directs := make([]step.Interface, 0)
 	for _, node := range direct {
 		// check steps exists
 		// may return nil, job or another step (for example group or parallel)
@@ -164,16 +164,16 @@ func (graph *Graph) jobs(direct []*Node, indirect []*Node) types.Step {
 			directs = append(directs, step)
 		}
 	}
-	if step := types.NewParallel(directs...); step != nil {
+	if step := step.NewParallel(directs...); step != nil {
 		total = append(total, step)
 	}
 	// TODO end of DRY code
 
 	// return total flow
-	return types.NewGroup(total...)
+	return step.NewGroup(total...)
 }
 
-func (graph *Graph) Steps(paths ...string) types.Step {
+func (graph *Graph) Steps(paths ...string) step.Interface {
 	// Phase 1. get all graph node roots
 	all := make([]string, len(graph.nodes))
 	i := 0

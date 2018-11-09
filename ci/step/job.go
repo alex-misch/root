@@ -1,4 +1,4 @@
-package types
+package step
 
 import (
 	"context"
@@ -54,7 +54,7 @@ type Job struct {
 }
 
 // NewJob returns single step for docker running
-func NewJob(workdir, docker, entrypoint string) Step {
+func NewJob(workdir, docker, entrypoint string) Interface {
 	return &Job{
 		Workdir:    workdir,
 		Docker:     docker,

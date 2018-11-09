@@ -1,4 +1,4 @@
-package types
+package step
 
 import (
 	"context"
@@ -9,11 +9,11 @@ import (
 )
 
 // Parallel is group of container running in parallel (asynchronous)
-type Parallel []Step
+type Parallel []Interface
 
 // NewParallel creates group of steps, running in parallel
 // (just utility function)
-func NewParallel(steps ...Step) Step {
+func NewParallel(steps ...Interface) Interface {
 	switch len(steps) {
 	// TODO: what? what empty response?
 	case 0:

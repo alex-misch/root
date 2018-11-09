@@ -4,7 +4,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/boomfunc/root/ci/types"
+	"github.com/boomfunc/root/ci/step"
 	"gopkg.in/yaml.v2"
 )
 
@@ -13,10 +13,10 @@ const (
 )
 
 type Node struct {
-	Jobs     map[string]*types.Job `yaml:"jobs,omitempty"`
-	Deps     []string              `yaml:"deps,omitempty"`
-	Indirect []string              `yaml:"indirect,omitempty"`
-	Direct   []string              `yaml:"direct,omitempty"`
+	Jobs     map[string]*step.Job `yaml:"jobs,omitempty"`
+	Deps     []string             `yaml:"deps,omitempty"`
+	Indirect []string             `yaml:"indirect,omitempty"`
+	Direct   []string             `yaml:"direct,omitempty"`
 }
 
 func loadYAML(r io.Reader) (*Node, error) {
@@ -46,8 +46,8 @@ func NodeFromLocalFile(name string) (*Node, error) {
 
 // steps returns Step slice by their names from collection
 // in `names` order
-func (node *Node) steps(names []string) types.Step {
-	steps := make([]types.Step, 0)
+func (node *Node) steps(names []string) step.Interface {
+	steps := make([]step.Interface, 0)
 
 	for _, name := range names {
 		// try to get job from collections
@@ -57,5 +57,5 @@ func (node *Node) steps(names []string) types.Step {
 		}
 	}
 
-	return types.NewGroup(steps...)
+	return step.NewGroup(steps...)
 }

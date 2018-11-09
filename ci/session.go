@@ -6,14 +6,13 @@ import (
 
 	"github.com/boomfunc/root/ci/git"
 	"github.com/boomfunc/root/ci/graph"
-	"github.com/boomfunc/root/ci/types"
 	"github.com/google/uuid"
 )
 
 type Session struct {
 	uuid uuid.UUID
 	repo *git.Repository
-	flow types.Flow // layer from which we get steps to perform
+	flow Flow // layer from which we get steps to perform
 }
 
 // repo: github.com/boomfunc/root - what we clonning what is

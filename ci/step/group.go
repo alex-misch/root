@@ -1,4 +1,4 @@
-package types
+package step
 
 import (
 	"context"
@@ -7,11 +7,11 @@ import (
 )
 
 // group is a group of steps running synchronous
-type Group []Step
+type Group []Interface
 
 // NewGroup creates group of steps
 // (just utility function)
-func NewGroup(steps ...Step) Step {
+func NewGroup(steps ...Interface) Interface {
 	// if multiple jobs - group them
 	switch len(steps) {
 	// TODO: what? what empty response?
