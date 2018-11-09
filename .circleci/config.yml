@@ -16,6 +16,7 @@ jobs:
             aws cloudfront create-invalidation --distribution-id E39RHHF1ID06TC --paths "/*"
 
 workflows:
+
   version: 2
 
   deploy-bundler:
