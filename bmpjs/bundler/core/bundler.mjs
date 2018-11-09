@@ -7,89 +7,83 @@ import { searchFiles } from '../utils/fs'
 class Bundler {
 
 	constructor( projectConfig ) {
-		this.project = projectConfig
-		this.jobs = []
+		this.performers = {}
+
+		const { destination_folder: dest, source_folder: src } = projectConfig
+		const folder = '.'
+		this.sourceDir = path.join(folder, src)
+		this.destDir = path.join(folder, dest)
 	}
 
 
-	run() {
+	execute() {
+		this.synctree()
 
-		const { destination_folder: dest, source_folder: src } = this.project.config
-		this.sourceDir = path.join(folder, src)
-		this.destDir = path.join(folder, dest)
+		const fileList = searchFiles({
+			regex: /build\.json$/,
+			dir: this.sourceDir
+		})
+		const bundlers = fileList.map( async confpath => {
+			const fullConfpath = path.resolve(confpath)
+			const { default: conf } = await import( fullConfpath )
+			let fileBundlers = []
+			if ( Array.isArray(conf) ) {
+				fileBundlers = conf.map( async ({ entrypoint }) => {
+					const srcFile = `${ path.dirname(fullConfpath) }/${ entrypoint }`
+					const { code } = await this.transform( srcFile )
+					await fs.outputFile( srcFile.replace(this.sourceDir, this.destDir), code )
+				})
+				await Promise.all( fileBundlers )
+			}
+		})
+
+		return Promise.all(bundlers)
+	}
+
+
+	synctree() {
 
 		emptyFolder( this.destDir )
 		if ( fs.existsSync( `${this.sourceDir}/assets` ) ) {
-			if ( assetsAction == 'symlink' )
-				createSymlink( `${this.destDir}/assets`, `${this.sourceDir}/assets` )
-			else if ( assetsAction == 'copy' )
+			// if ( assetsAction == 'symlink' )
+			// 	createSymlink( `${this.destDir}/assets`, `${this.sourceDir}/assets` )
+			// else if ( assetsAction == 'copy' )
 				fs.copySync( `${this.sourceDir}/assets`, `${this.destDir}/assets` )
 		}
 		if ( fs.existsSync(`${this.sourceDir}/index.html`) )
 			fs.copySync(`${this.sourceDir}/index.html`, `${this.destDir}/index.html`)
 
-		return this.runJobs()
 	}
 
-	async runTransformer(filepath, module) {
-		return new Promise( resolve => {
+	async bundleFile(filepath, config) {
+		let { driver } = config
 
-		})
-	}
-
-	async runTransformers(filepath, modules, format) {
-		if ( modules && modules.length ) {
-			for (const moduleConf of modules) {
-				let driver = null
-				let options = {}
-				if ( Array.isArray(moduleConf) ) {
-					[driver, options] = moduleConf
-				} else {
-					driver = moduleConf
-				}
-				options.format = format
-				console.log( `${this.project.folder}: "${driver}" ${filepath}... ` )
-				const { transform } = await import( `../driver/${ driver }` )
-				const bundle = await transform(filepath, options, `/bmp/${this.project.folder}`)
-				await fs.outputFile( filepath , bundle ? bundle.code : '' )
-			}
-		} else {
-			return fs.readFileSync(filepath)
-		}
+		console.log( `"${driver}" ${filepath}... ` )
+		const { transform } = await import( `../driver/${ driver }` )
+		return await transform(filepath, config )
 	}
 
 	transform(filepath) {
 		const ext = path.extname(filepath)
-		switch (ext) {
-			case ".js":
-				return this.bundleFile(filepath)
-			case ".html":
-				const copyPath = filepath.replace(this.sourceDir, this.destDir)
-				console.log( `COPIED: ${ filepath } --> ${ copyPath }` )
-				return fs.copy( filepath, copyPath )
+		switch ( typeof this.performers[ext].perform ) {
+			case "function":
+				return this.performers[ext].perform( filepath )
+			case "object":
+				return this.bundleFile(filepath, this.performers[ext])
 			default:
-				console.log( `WARNING: No extension transformer specified ${filepath} (${ext})` )
+				console.log( `WARNING: Not specified ${filepath} (${ext}).` )
+				return { code: fs.readFileSync(filepath) }
 		}
 	}
 
-	async prebuild() {
-		const fileList = searchFiles({
-			regex: /.(js|html)$/,
-			dir: this.sourceDir
+	describe(conf) {
+		['extension', 'perform'].forEach( option => {
+			if ( !conf[option] )
+				throw new Error(`"${options}" is required parameter in Bundler.describe`)
 		})
-		const bundlers = fileList.map( async filepath => {
-			return await this.transform( filepath )
-		})
-		return Promise.all(bundlers)
-	}
 
-	async runJobs() {
-		await this.prebuild()
-	}
-
-
-	addJob(job, config) {
-		this.jobs.push( import( job.name ), config )
+		const { extension } = conf
+		this.performers[extension] = conf
 	}
 
 }

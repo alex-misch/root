@@ -5,54 +5,71 @@ import { spawn } from 'child_process'
 
 console.log( "Installing dependencies..." )
 
-const curdir = path.resolve('.')
+const mkdirRecursive = newdir => {
+	newdir.split( '/' ).reduce( (path, dir) => {
+		if ( !fs.existsSync(path) )
+			fs.mkdirSync(path)
+		return `${path}/${dir}`
+	}, '/')
+}
 
 class PackageManager {
 
 	constructor({ assets, host }) {
 		if ( !fs.existsSync(assets) ) {
 			// recursive make directory
-			assets.split( '/' ).reduce( (path, dir) => {
-				if ( !fs.existsSync(path) )
-					fs.mkdirSync(path)
-				return `${path}/${dir}`
-			}, '/')
+			mkdirRecursive( assets )
 		}
 		this.assetsDir = assets
 		this.host = host
+		this.registry = []
 	}
 
-	ungzip(buffer, to) {
+
+	ungzip(buffer, destDir) {
 		return new Promise( (resolve, reject) => {
-			const untar = spawn( 'tar', ['-xvf', '-', '-C', to])
-			untar.on('error', err => reject(err) )
+			const cmds = ['-xvzf', '-', '-C', destDir]
+			const opts = { stdio: ['pipe', 'pipe', process.stderr] }
+			const untar = spawn( 'tar', cmds, opts)
 			untar.on('exit', code => code === 0 ? resolve() : reject() )
 			untar.stdin.write( buffer )
 			untar.stdin.end()
 		})
 	}
 
-	async load(names) {
-		const loaders = names.map( name => {
-			return new Promise( async (resolve, reject) => {
-				const data = []
-				const request = await import( /^https/.test(this.host) ? 'https' : 'http' )
-				request.get( `${ this.host }/${ name }.tar.gz`, resp => {
+	async download(filepath) {
+		const data = []
+		const request = await import( /^https/.test(this.host) ? 'https' : 'http' )
 
-					resp.on( "error", err => reject(err) )
-					resp.on( "data", chunk => {
-						data.push(chunk)
-					})
-					resp.on( "end", () => {
-						const dir = `${ this.assetsDir }/${ name }`
-						if ( !fs.existsSync(dir) ) mkdirRecursive(dir)
-						this.ungzip( Buffer.concat(data), dir ).then( () => {
-							console.log( '- Success installed', name )
-							resolve(name)
-						}).catch( reject )
-					})
+		return new Promise( (resolve, reject) => {
+			request.get( `${ this.host }/${ filepath }`, resp => {
+
+				resp.on( "error", err => reject(err) )
+				resp.on( "data", chunk => data.push(chunk) )
+				resp.on( "end", () => {
+					resolve( Buffer.concat(data) )
 				})
 			})
+		})
+	}
+
+	async load(names) {
+		this.registry.push(...names)
+		const loaders = names.map( async name => {
+			const dir = `${ this.assetsDir }/${ name }/`
+			if ( fs.existsSync( dir ) ) {
+				console.log( '- Already installed', name )
+				return { name, status: 'cache' }
+			} else {
+				const buffer = await this.download( `${ name }.tar.gz` )
+				if ( !fs.existsSync(dir) )
+				mkdirRecursive(dir)
+
+				await this.ungzip( buffer, dir )
+				console.log( '- Success installed', name )
+				return { name, status: 'download' }
+			}
+
 		})
 		return Promise.all(loaders)
 	}
@@ -60,17 +77,20 @@ class PackageManager {
 }
 
 if ( project.bmp && project.bmp.dependencies ) {
-	const packages = new PackageManager({
-		assets: `${ curdir }/bmp_modules`,
+	const bmpack = new PackageManager({
+		assets: `${ path.resolve('.') }/bmp_modules`,
 		host: "https://d1evwmcww02bep.cloudfront.net"
 	})
 
-	packages.load( Object.keys(project.bmp.dependencies) )
+	bmpack
+		.load( Object.keys(project.bmp.dependencies) )
 		.then( dependenceList => {
-			console.log( `${dependenceList.length} dependency successfully installed` )
+
+			console.log( `${dependenceList.filter( dep => dep.status == 'download' ).length } dependency successfully installed` )
+			console.log( `${dependenceList.filter( dep => dep.status == 'cache' ).length } dependency found in modules folder` )
 		})
 		.catch( err => {
-			console.error( 'Fail install dependency', err )
+			console.error( 'Fail install dependencies', err )
 			process.exit(1)
 		})
 }

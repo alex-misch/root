@@ -1,1 +1,4 @@
-{ "entrypoint": "app.js" }
+[
+	{ "entrypoint": "index.html" },
+	{ "entrypoint": "app.js" }
+]
