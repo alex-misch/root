@@ -2,7 +2,7 @@ package ci
 
 import (
 	"context"
-	"fmt"
+	// "fmt"
 
 	"github.com/boomfunc/root/ci/git"
 	"github.com/boomfunc/root/ci/graph"
@@ -10,7 +10,7 @@ import (
 )
 
 type Session struct {
-	uuid uuid.UUID
+	Uuid uuid.UUID
 	repo *git.Repository
 	flow Flow // layer from which we get steps to perform
 }
@@ -37,13 +37,18 @@ func NewSession(origin string) (*Session, error) {
 	// }
 
 	session := &Session{
-		uuid: uuid.New(),
+		Uuid: uuid.New(),
 		repo: repo,
 		flow: graph,
 	}
 
 	return session, nil
 }
+
+// Root returns path where repo root based (or graph root)
+// func (session *Session) Root() string {
+// 	return session.
+// }
 
 // Run is main entrypoint. Runs all steps with the same context
 // here context creates and cancels if something wrong
@@ -63,7 +68,7 @@ func (session *Session) Run() error {
 
 	// run the flow
 	flow := session.flow.Steps(paths...)
-	fmt.Printf("FLOW TO PERFORM:\n%s\n", flow)
+	// fmt.Printf("FLOW TO PERFORM:\n%s\n", flow)
 
 	return flow.Run(ctx)
 }

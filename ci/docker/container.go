@@ -6,11 +6,12 @@ import (
 	// "fmt"
 	"io"
 	"os"
-	"strings"
+	// "strings"
+	"path/filepath"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
-	// "github.com/docker/docker/api/types/mount"
+	"github.com/docker/docker/api/types/mount"
 )
 
 // RemoveContainer removes container from host docker
@@ -21,49 +22,64 @@ func RemoveContainer(id string) error {
 	})
 }
 
+// LogContainer saves container logs to anything
+func LogContainer(id string, w io.Writer) error {
+	// get logs (success case)
+	r, err := Client.ContainerLogs(context.Background(), id, types.ContainerLogsOptions{ShowStdout: true})
+	if err != nil {
+		return err
+	}
+
+	// save
+	io.Copy(w, r)
+
+	return nil
+}
+
 func RunContainer(image, entrypoint, workdir string) error {
 	ctx := context.Background()
-
-	// create volumes
-	// srcVolume, err := SrcVolume()
-	// if err != nil {
-	// 	return err
-	// }
-	// fmt.Println("FFFF:", srcVolume.Mountpoint)
 
 	// create container with dynamic options
 	resp, err := Client.ContainerCreate(
 		ctx,
 		&container.Config{
-			WorkingDir:      "/bmpci/src",
-			Image:           image,
-			Entrypoint:      strings.Split(entrypoint, " "),
-			NetworkDisabled: true,
-			Volumes: map[string]struct{}{
-				"src": struct{}{},
+			// WorkingDir:      "/bmpci/src",
+			WorkingDir: "/go/src/github.com/boomfunc/root/ci",
+			Image:      image,
+			Entrypoint: []string{"sh", "-c"},
+			Cmd:        []string{entrypoint},
+			// NetworkDisabled: true,
+			// Volumes: map[string]struct{}{
+			// 	// "/bmpci/src":      struct{}{},
+			// 	// "/bmpci/cache":    struct{}{},
+			// 	// "/bmpci/artifact": struct{}{},
+			// 	"/go/src/github.com/boomfunc/root/ci": struct{}{},
+			// 	"/bmpci/cache": struct{}{},
+			// 	"/go/bin": struct{}{},
+			// },
+		},
+		&container.HostConfig{
+			Mounts: []mount.Mount{
+				mount.Mount{
+					Type:   mount.TypeBind,
+					Source: filepath.Join("/bmpci/repos/e443156edcb4f6431d71fc14c586dabe47bb858a19b2b31a598eeadbef8cf45f", workdir),
+					// Target: "/bmpci/src",
+					Target: "/go/src/github.com/boomfunc/root/ci",
+				},
+				mount.Mount{
+					Type:   mount.TypeBind,
+					Source: "/bmpci/cache/e443156edcb4f6431d71fc14c586dabe47bb858a19b2b31a598eeadbef8cf45f",
+					Target: "/bmpci/cache",
+					// Target: "/go/src/github.com/boomfunc/root/ci",
+				},
+				mount.Mount{
+					Type:   mount.TypeBind,
+					Source: "/bmpci/artifact/e443156edcb4f6431d71fc14c586dabe47bb858a19b2b31a598eeadbef8cf45f",
+					// Target: "/bmpci/artifact",
+					Target: "/go/bin",
+				},
 			},
 		},
-		// &container.HostConfig{
-		// 	Mounts: []mount.Mount{
-		// 		mount.Mount{
-		// 			Type:   mount.TypeVolume,
-		// 			Source: srcVolume.Name,
-		// 			// Source: "/bmpci/repos/e443156edcb4f6431d71fc14c586dabe47bb858a19b2b31a598eeadbef8cf45f",
-		// 			Target: "/bmpci/src",
-		// 		},
-		// 		// mount.Mount{
-		// 		// 	Type:   mount.TypeBind,
-		// 		// 	Source: "cache",
-		// 		// 	Target: "/bmpci/cache",
-		// 		// },
-		// 		// mount.Mount{
-		// 		// 	Type:   mount.TypeBind,
-		// 		// 	Source: "artifact",
-		// 		// 	Target: "/bmpci/artifact",
-		// 		// },
-		// 	},
-		// },
-		nil,
 		nil,
 		"",
 	)
@@ -73,6 +89,9 @@ func RunContainer(image, entrypoint, workdir string) error {
 
 	// clear docker host anyway
 	defer RemoveContainer(resp.ID)
+
+	// save container logs in any way
+	defer LogContainer(resp.ID, os.Stdout)
 
 	// Create and start container
 	if err := Client.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
@@ -90,15 +109,6 @@ func RunContainer(image, entrypoint, workdir string) error {
 			return errors.New(resp.Error.Message)
 		}
 	}
-
-	// TODO: save logs to file
-	// get logs (success case)
-	out, err := Client.ContainerLogs(ctx, resp.ID, types.ContainerLogsOptions{ShowStdout: true})
-	if err != nil {
-		return err
-	}
-
-	io.Copy(os.Stdout, out)
 
 	return nil
 }

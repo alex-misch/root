@@ -2,11 +2,12 @@ jobs:
 
   test:
     docker: docker://golang:alpine
-    entrypoint: ls -lah
+    entrypoint: ls -lah /bmpci
 
   build:
-    docker: docker://golang:alpine
-    entrypoint: pwd
+    docker: docker://golang
+    entrypoint: go get -v -d ./...; go build -v -o /go/bin/cibin
+    workdir: ./ci
 
   deploy:
     docker: docker://golang:alpine
@@ -15,5 +16,5 @@ jobs:
 deps:
   - base
 
-direct: [test, build, deploy]
+direct: [build]
 indirect: [test]

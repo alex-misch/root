@@ -69,13 +69,13 @@ func (job *Job) run() {
 	// src is mounted
 	// cache is mounted
 	// artifact is mounted, but empty dir
-	fmt.Printf("job.RUN(): DOCKER CONTAINER: %s\n", job.String())
+	// fmt.Printf("job.RUN(): DOCKER CONTAINER: %s\n", job.String())
 	image, err := docker.GetImage(job.Docker)
 	if err != nil {
 		fmt.Println("IMAGE ERROR:", err)
 	}
 
-	// fmt.Printf("job.RUN(): Image: %s\n", image)
+	// TODO: workdir relative to graph root (session root or repo root) -> from env
 	err = docker.RunContainer(image, job.Entrypoint, job.Workdir)
 	if err != nil {
 		fmt.Println("CONTAINER RUN ERROR:", err)

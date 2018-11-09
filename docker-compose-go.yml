@@ -3,12 +3,13 @@ version: "3.4"
 x-defaults:
 
   working_dir: &working_dir
-    /go/src/github.com/boomfunc/root/ci
+    /go/src/github.com/boomfunc/root
 
   volumes: &volumes
-    - src-vol:/go/src/github.com/boomfunc/root/ci
+    - src-vol:/go/src/github.com/boomfunc/root
     - bin-vol:/go/bin
     - /var/run/docker.sock:/var/run/docker.sock
+    - /bmpci:/bmpci
 
   logging: &logging
     options:
