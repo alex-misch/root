@@ -15,13 +15,19 @@ type Session struct {
 }
 
 // repo: github.com/boomfunc/root - what we clonning what is
-// TODO: undo functions (repo delete) if some errors
 func NewSession(origin string) (*Session, error) {
 	// clone repository to `path`
 	repo, err := git.GetRepo(origin)
 	if err != nil {
 		return nil, err
 	}
+
+	// garbage if repo exists
+	defer func() {
+		if err != nil {
+			repo.Destroy()
+		}
+	}()
 
 	// create flow graph
 	graph, err := graph.New(repo.Path)
@@ -41,6 +47,7 @@ func NewSession(origin string) (*Session, error) {
 // Run is main entrypoint. Runs all steps with the same context
 // here context creates and cancels if something wrong
 func (session *Session) Run() error {
+	// garbage anyway
 	defer func() {
 		session.repo.Destroy()
 	}()
