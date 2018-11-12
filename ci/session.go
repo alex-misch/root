@@ -2,7 +2,6 @@ package ci
 
 import (
 	"context"
-	// "fmt"
 
 	"github.com/boomfunc/root/ci/git"
 	"github.com/boomfunc/root/ci/graph"
@@ -30,12 +29,6 @@ func NewSession(origin string) (*Session, error) {
 		return nil, err
 	}
 
-	// // create docker client to host
-	// client, err := docker.NewClientWithOpts(docker.WithVersion("1.38"))
-	// if err != nil {
-	// 	return nil, err
-	// }
-
 	session := &Session{
 		Uuid: uuid.New(),
 		repo: repo,
@@ -45,16 +38,15 @@ func NewSession(origin string) (*Session, error) {
 	return session, nil
 }
 
-// Root returns path where repo root based (or graph root)
-// func (session *Session) Root() string {
-// 	return session.
-// }
-
 // Run is main entrypoint. Runs all steps with the same context
 // here context creates and cancels if something wrong
 func (session *Session) Run() error {
+	defer func() {
+		session.repo.Destroy()
+	}()
+
 	// get diff of last repo commit
-	paths, err := git.RepoDiff(session.repo)
+	paths, err := session.repo.Diff()
 	if err != nil {
 		return err
 	}

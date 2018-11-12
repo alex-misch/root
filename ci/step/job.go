@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"path/filepath"
 	"reflect"
 	"sync"
 
@@ -11,46 +12,93 @@ import (
 )
 
 var (
-	ErrNoEnv = errors.New("Environment not provided in context")
+	ErrJobOrphan = errors.New("Job does not have an environment property during run")
 )
-
-// JobOptions describes what docker environment job must be performed in.
-// type JobOptions struct {
-// 	Context    string // path to directory to mount as `src`
-// 	Docker     string // docker image to use
-// 	Entrypoint string // command to run (overrides docker ENTRYPOINT)
-// }
 
 // JobEnvironment describes the environment in which the job is running
 // used for generating unique name for container and for store keys
 type JobEnvironment struct {
-	Repo string
-	Pack string
-	Name string
-	// NOTE: idea of keys:
-	// github.com/boomfunc/root:ci/some/package:job1
-
-	// github.com/boomfunc/root - session init, graph root
-	// ci/some/package - graph node root, relative to session root
-	// job1 - job name in flow
+	session string // unique session uuid
+	repo    string // repository origin `github.com/boomfunc/root`
+	pack    string // package name relative to session root `base/tools`
+	name    string // job name (`test`, `build`, `deploy`)
 }
 
-// ID returns unique scope identifier
-func (env *JobEnvironment) ID() string {
-	return fmt.Sprintf("%s-%s-%s", env.Repo, env.Pack, env.Name)
+func (env *JobEnvironment) SrcPath() string {
+	return filepath.Join(
+		"/bmpci",
+		"src",
+		Sum(env.repo),
+		// TODO: workdir subdir
+	)
+}
+
+// deps: session(repo), package, job
+// /bmpci/artifact/$sha(repo + package)/$job
+func (env *JobEnvironment) ArtifactPath() string {
+	return filepath.Join(
+		"/bmpci",
+		"artifact",
+		env.session,
+		Sum(env.repo, env.pack),
+		env.name,
+	)
+}
+
+// deps: repo, package, job
+// /bmpci/cache/$sha(repo + package)/$job
+func (env *JobEnvironment) CachePath() string {
+	return filepath.Join(
+		"/bmpci",
+		"cache",
+		Sum(env.repo, env.pack),
+		env.name,
+	)
+}
+
+// JobMount is special struct describes which dirs we will mount to docker image
+// if value empty - omit mounting
+type JobMount struct {
+	SrcPath      string `yaml:"src,omitempty"`
+	ArtifactPath string `yaml:"artifact,omitempty"`
+	CachePath    string `yaml:"cache,omitempty"`
+}
+
+// Entries returns array of (from, to) strings for each mount part
+func (m JobMount) Entries(env *JobEnvironment) [][]string {
+	// TODO: move to struct. Now: slices in format []string{hostPath, containerPath}
+	entries := make([][]string, 0)
+
+	// does we need to mount source code?
+	if m.SrcPath != "" {
+		entries = append(entries, []string{env.SrcPath(), m.SrcPath})
+	}
+
+	// does we need to mount artifacts?
+	if m.ArtifactPath != "" {
+		entries = append(entries, []string{env.ArtifactPath(), m.ArtifactPath})
+	}
+
+	// does we need to mount caches?
+	if m.CachePath != "" {
+		entries = append(entries, []string{env.CachePath(), m.CachePath})
+	}
+
+	return entries
 }
 
 // Job is basic Step type
 // docker container which receive their workdir as `src` and generate (or not) artifacts
-// TODO: must be thread safety, because some separate Jobs should be able to refer same another Job (duplicat case)
+// .Run() is thread safety, because some separate Jobs should be able to refer same another Job (duplicat case)
 type Job struct {
-	env *JobEnvironment
+	Mount JobMount `yaml:"mount,omitempty,flow"`
 
-	Workdir    string         `yaml:"workdir,omitempty"`    // path to directory to mount as `src`
-	Docker     string         `yaml:"docker,omitempty"`     // docker image to use
-	Entrypoint string         `yaml:"entrypoint,omitempty"` // command to run (overrides docker ENTRYPOINT)
-	once       sync.Once      // used for running only one instance of docker container of similar jobs per all flow
-	wg         sync.WaitGroup // used for waiting another similar jobs completion of the original job (first runned)
+	Workdir    string `yaml:"workdir,omitempty"`    // path to directory to mount as `src`
+	Docker     string `yaml:"docker,omitempty"`     // docker image to use
+	Entrypoint string `yaml:"entrypoint,omitempty"` // command to run (overrides docker ENTRYPOINT)
+
+	once sync.Once      // used for running only one instance of docker container of similar jobs per all flow
+	wg   sync.WaitGroup // used for waiting another similar jobs completion of the original job (first runned)
 }
 
 // NewJob returns single step for docker running
@@ -64,65 +112,56 @@ func NewJob(workdir, docker, entrypoint string) Interface {
 
 // run runs single docker container
 // with provided src and destination dirs as volumes
-func (job *Job) run() {
+func (job *Job) run(ctx context.Context) error {
+	// take the environment in which the job starts
+	// context must contains project and repo for generating key
+	// use this key for docker container name, getting cache and artifacts from store
+	// TODO
+	env := &JobEnvironment{
+		session: "51eee42f-6c60-4470-89c9-9879276bcb8e",
+		repo:    "https://github.com/agurinov/root",
+		pack:    "ci",
+		name:    "build",
+	}
+	// env, ok := ctx.Value("environment").(*JobEnvironment)
+	// if !ok {
+	// 	return ErrJobOrphan
+	// }
+
+	// TODO: meybe check env? somethink like .validate()
+
 	// prepare all docker volumes (src, artifact, cache)
-	// src is mounted
-	// cache is mounted
-	// artifact is mounted, but empty dir
-	// fmt.Printf("job.RUN(): DOCKER CONTAINER: %s\n", job.String())
+	mounts := job.Mount.Entries(env)
+	fmt.Println("MOUNTS:", mounts)
+
+	if true {
+		return errors.New("INTERMEDIATE")
+	}
+
 	image, err := docker.GetImage(job.Docker)
 	if err != nil {
-		fmt.Println("IMAGE ERROR:", err)
+		return err
 	}
 
 	// TODO: workdir relative to graph root (session root or repo root) -> from env
-	err = docker.RunContainer(image, job.Entrypoint, job.Workdir)
-	if err != nil {
-		fmt.Println("CONTAINER RUN ERROR:", err)
-	}
+	return docker.RunContainer(image, job.Entrypoint, job.Workdir)
 }
 
 // Run implements Step interface
 // run docker container with provided options
 func (job *Job) Run(ctx context.Context) error {
-	// take the environment in which the job starts
-	// context must contains project and repo for generating key
-	// use this key for docker container name, getting cache and artifacts from store
-	// if job.env == nil {
-	// 	return ErrNoEnv
-	// }
-	// environment, ok := ctx.Value("environment").(*JobEnvironment)
-	// if !ok {
-	// 	return ErrNoEnv
-	// }
-
-	// generate unique key
-	// id := job.env.ID()
-	// fmt.Printf("job.ID: %s\n", id)
-
-	// get artifact and cache paths by `id` for docker volume
-	// TODO
-
 	// run only one instance of similar jobs per all session
 	// with eaiting of similar jobs
-	// TODO errors will not visible -> flow does not stop
+	var err error
+
 	job.once.Do(func() {
 		job.wg.Add(1)
-		job.run()
+		err = job.run(ctx)
 		job.wg.Done()
 	})
 	job.wg.Wait()
 
-	return nil
-}
-
-// SetEnvironment set environment (repo, project, node) in which context job will run
-func (job *Job) SetEnvironment(repo, pack, name string) {
-	job.env = &JobEnvironment{
-		Repo: repo,
-		Pack: pack,
-		Name: name,
-	}
+	return err
 }
 
 // String implements fmt.Stringer interface

@@ -2,6 +2,12 @@ job "test" {
 	docker = docker://golang:alpine
 	entrypoint = ls -lah
 	context = ./ci
+
+	mount {
+		artifact = "/go/bin"
+		caсhe = "/go/src"
+		src = "/go/src"
+	}
 }
 
 job "build" {

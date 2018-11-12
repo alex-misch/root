@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 
+	"github.com/boomfunc/root/ci/step"
 	gogit "gopkg.in/src-d/go-git.v4"
 )
 
@@ -20,7 +21,7 @@ func GetRepo(origin string) (*Repository, error) {
 		Depth:         2, // TODO dynamic
 	}
 
-	path := ClonePath(origin)
+	path := step.Sum(origin)
 	if path == "" {
 		return nil, errors.New("Wrong cloning path")
 	}
@@ -45,7 +46,11 @@ func GetRepo(origin string) (*Repository, error) {
 	return &Repository{path, *repo}, nil
 }
 
-func RepoDiff(repo *Repository) ([]string, error) {
+func (repo *Repository) Destroy() error {
+	return os.RemoveAll(repo.Path)
+}
+
+func (repo *Repository) Diff() ([]string, error) {
 	// get current commit
 	ref, err := repo.Head()
 	if err != nil {

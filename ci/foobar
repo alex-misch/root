@@ -8,6 +8,9 @@ jobs:
     docker: docker://golang
     entrypoint: go get -v -d ./...; go build -v -o /go/bin/cibin
     workdir: ./ci
+    mount:
+      artifact: /go/bin
+      src: /go/src/github.com/boomfunc/root/ci
 
   deploy:
     docker: docker://golang:alpine
