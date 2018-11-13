@@ -37,7 +37,9 @@ class Bundler {
 			}
 		})
 
-		return Promise.all(bundlers)
+		await Promise.all(bundlers)
+		if ( typeof this.afterBuild == 'function' )
+			await this.afterBuild()
 	}
 
 
@@ -55,35 +57,27 @@ class Bundler {
 
 	}
 
-	async bundleFile(filepath, config) {
-		let { driver } = config
-
-		console.log( `"${driver}" ${filepath}... ` )
-		const { transform } = await import( `../driver/${ driver }` )
-		return await transform(filepath, config )
-	}
-
 	transform(filepath) {
 		const ext = path.extname(filepath)
 		switch ( typeof this.performers[ext].perform ) {
 			case "function":
 				return this.performers[ext].perform( filepath )
-			case "object":
-				return this.bundleFile(filepath, this.performers[ext])
+			// TODO: case other performers
 			default:
-				console.log( `WARNING: Not specified ${filepath} (${ext}).` )
+				console.log( `- WARNING: Not specified of ${filepath} (${ext}). Source copied to destination.` )
 				return { code: fs.readFileSync(filepath) }
 		}
 	}
 
-	describe(conf) {
-		['extension', 'perform'].forEach( option => {
-			if ( !conf[option] )
-				throw new Error(`"${options}" is required parameter in Bundler.describe`)
-		})
+	describe(job) {
+		console.log( Object.keys(job.if) )
+		if ( !job.perform )
+			throw new Error(`"perform" is required parameter in Bundler.describe`)
 
-		const { extension } = conf
-		this.performers[extension] = conf
+		if ( job.if && Object.keys(job.if).length ) {
+			const { extension } = job.if
+			this.performers[extension] = job
+		}
 	}
 
 }

@@ -1,9 +1,9 @@
 
-import { BmpLit } from "bmpjs/bmp-core"
+import { BMPLit } from "bmpjs/bmp-core"
 import { BmpRouter } from "bmpjs/bmp-router"
 import { util } from './utils/utils.js'
 
-class App extends BmpLit {
+class App extends BMPLit {
 
 	constructor() {
 		super()

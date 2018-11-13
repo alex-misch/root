@@ -54,6 +54,17 @@ class PackageManager {
 		})
 	}
 
+	npminstall(dir) {
+		return new Promise( resolve => {
+			const opts = {
+				stdio: ['pipe', 'pipe', process.stderr],
+				cwd: dir
+			}
+			const installer = spawn( 'npm', ['install', '--production'], opts)
+			installer.on('exit', code => code === 0 ? resolve() : reject() )
+		})
+	}
+
 	async load( dependencies ) {
 
 		// this.registry.push(...dependencies)
@@ -68,6 +79,7 @@ class PackageManager {
 					mkdirRecursive(dir)
 
 				await this.ungzip( buffer, dir )
+				await this.npminstall( dir )
 				console.log( '- Success installed', name )
 				return { name, status: 'download' }
 			}
