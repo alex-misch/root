@@ -8,9 +8,9 @@ services:
       - "9375:9375"
     # command: node --experimental-modules ./component/index.mjs
     command: tail -f /dev/null
-    working_dir: /bmp
+    working_dir: /bmpjs
     volumes:
-      - ./:/bmp
+      - ./bmpjs:/bmpjs
   nginx:
     image: nginx:alpine
     ports:

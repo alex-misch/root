@@ -10,9 +10,15 @@ jobs:
           name: Deploy
           working_directory: ./bmpjs
           command: |
+<<<<<<< HEAD
             tar -zcv -C bundler . | aws s3 cp - "s3://io-boomfunc-root/bmpjs/bundler.tar.gz" --acl private --cache-control 'public, max-age=0, s-maxage=31536000, must-revalidate'
             tar -zcv -C bmp-router . | aws s3 cp - "s3://io-boomfunc-root/bmpjs/bmp-router.tar.gz" --acl private --cache-control 'public, max-age=0, s-maxage=31536000, must-revalidate'
             tar -zcv -C bmp-core . | aws s3 cp - "s3://io-boomfunc-root/bmpjs/bmp-core.tar.gz" --acl private --cache-control 'public, max-age=0, s-maxage=31536000, must-revalidate'
+=======
+            tar -zcv . -C bundler | aws s3 cp - "s3://io-boomfunc-root/bmpjs/bundler.tar.gz" --acl private --cache-control 'public, max-age=0, s-maxage=31536000, must-revalidate'
+            tar -zcv . -C bmp-router | aws s3 cp - "s3://io-boomfunc-root/bmpjs/bmp-router.tar.gz" --acl private --cache-control 'public, max-age=0, s-maxage=31536000, must-revalidate'
+            tar -zcv . -C bmp-core | aws s3 cp - "s3://io-boomfunc-root/bmpjs/bmp-core.tar.gz" --acl private --cache-control 'public, max-age=0, s-maxage=31536000, must-revalidate'
+>>>>>>> feat(bundler) release build task
             aws cloudfront create-invalidation --distribution-id E39RHHF1ID06TC --paths "/*"
 
 workflows:

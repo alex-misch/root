@@ -4,6 +4,7 @@ import fs from 'fs'
 import { spawn } from 'child_process'
 
 console.log( "Installing dependencies..." )
+const useCache = !process.argv.includes('--no-cache')
 
 const mkdirRecursive = newdir => {
 	newdir.split( '/' ).reduce( (path, dir) => {
@@ -53,17 +54,18 @@ class PackageManager {
 		})
 	}
 
-	async load(names) {
-		this.registry.push(...names)
-		const loaders = names.map( async name => {
+	async load( dependencies ) {
+
+		// this.registry.push(...dependencies)
+		const loaders = Object.keys(dependencies).map( async name => {
 			const dir = `${ this.assetsDir }/${ name }/`
-			if ( fs.existsSync( dir ) ) {
+			if ( useCache && fs.existsSync( dir ) ) {
 				console.log( '- Already installed', name )
 				return { name, status: 'cache' }
 			} else {
 				const buffer = await this.download( `${ name }.tar.gz` )
 				if ( !fs.existsSync(dir) )
-				mkdirRecursive(dir)
+					mkdirRecursive(dir)
 
 				await this.ungzip( buffer, dir )
 				console.log( '- Success installed', name )
@@ -83,14 +85,17 @@ if ( project.bmp && project.bmp.dependencies ) {
 	})
 
 	bmpack
-		.load( Object.keys(project.bmp.dependencies) )
+		.load( project.bmp.dependencies )
 		.then( dependenceList => {
 
 			console.log( `${dependenceList.filter( dep => dep.status == 'download' ).length } dependency successfully installed` )
-			console.log( `${dependenceList.filter( dep => dep.status == 'cache' ).length } dependency found in modules folder` )
+			if ( useCache )
+				console.log( `${dependenceList.filter( dep => dep.status == 'cache' ).length } dependency found in modules folder` )
 		})
 		.catch( err => {
 			console.error( 'Fail install dependencies', err )
 			process.exit(1)
 		})
 }
+
+export default PackageManager

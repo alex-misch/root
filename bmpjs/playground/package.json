@@ -13,7 +13,9 @@
 	"license": "ISC",
 	"bmp": {
 		"dependencies": {
-			"bmpjs/bundler": "latest"
+			"bmpjs/bundler": "latest",
+			"bmpjs/bmp-core": "latest",
+			"bmpjs/bmp-router": "latest"
 		}
 	},
 	"dependencies": {
@@ -23,6 +25,7 @@
 		"babel-plugin-syntax-object-rest-spread": "^6.13.0",
 		"fs-extra": "^7.0.1",
 		"rollup": "^0.66.6",
-		"rollup-plugin-babel": "^4.0.3"
+		"rollup-plugin-babel": "^4.0.3",
+		"rollup-plugin-commonjs": "^9.2.0"
 	}
 }
