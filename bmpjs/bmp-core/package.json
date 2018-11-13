@@ -4,7 +4,7 @@
   "description": "the hart (https://translate.google.ru/#en/ru/hart) and soul of the bmpjs",
   "main": "utility/watch.js",
   "scripts": {
-	"path": "echo /$npm_package_name/$npm_package_version",
+    "path": "echo /$npm_package_name/$npm_package_version",
     "test": "test",
     "build": "node bundler/build",
     "start": "docker-compose exec bmp-core sh -c 'bmp-component --watch --env=production --babel'"
@@ -14,10 +14,12 @@
     "url": "git+ssh://git@bitbucket.org/letsnetdevinternal/bmp-core.git"
   },
   "keywords": [
-	"bmpjs","jsx","and","staff","like","that"
+    "bmpjs"
   ],
-
   "author": "boomfunc",
   "license": "ISC",
-  "homepage": "https://bitbucket.org/letsnetdevinternal/bmp-core#readme"
+  "homepage": "https://bitbucket.org/letsnetdevinternal/bmp-core#readme",
+  "dependencies": {
+    "lit-html": "^0.12.0"
+  }
 }

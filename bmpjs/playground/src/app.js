@@ -1,5 +1,5 @@
 
-import { BmpLit } from "../bmp_modules/bmpjs/bmp-core/src/index.js"
+import { BmpLit } from "bmpjs/bmp-core"
 import { BmpRouter } from "bmpjs/bmp-router"
 import { util } from './utils/utils.js'
 

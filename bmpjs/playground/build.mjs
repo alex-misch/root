@@ -1,6 +1,7 @@
 
 import { Bundler } from './bmp_modules/bmpjs/bundler/core/bundler'
 import fs from 'fs'
+import path from 'path'
 import rollup from "rollup"
 import babelPlugin from "rollup-plugin-babel"
 import project from "./package.json"
@@ -10,22 +11,33 @@ const builder = new Bundler({
 	destination_folder: "dist"
 })
 
-const dependencies = project.bmp ? project.bmp.dependencies : null
-if ( dependencies ) {
+const dependencies = project.bmp ? project.bmp.dependencies : {}
+if ( Object.keys(dependencies).length ) {
 	Object.keys(dependencies).forEach( key => {
 		dependencies[key] = `./bmp_modules/${ key }/src/index.js`
 	})
 }
 
 const jsplugins = [
+	{
+		resolveId(specifier, importer) {
+			if ( dependencies[specifier] ) {
+				return dependencies[specifier]
+			} else if ( importer ) {
+				const filepath = `${path.dirname(importer)}/${ /\.[a-z]+$/.test(specifier) ? specifier : `${specifier}.js`  }`
+				return fs.existsSync(filepath) ? filepath : specifier
+			} else {
+				return specifier
+			}
+		},
+	},
 	babelPlugin({
 		presets: [ ["@babel/preset-env",  {
 			modules: false,
 			targets: { ie: 11 }
 		}] ],
 		plugins: ['syntax-object-rest-spread']
-	}),
-	// commonjsPlugin()
+	})
 ]
 
 console.log( dependencies )
@@ -34,10 +46,6 @@ builder.describe({
 	perform: async filepath => {
 		console.log( 'Perform', filepath )
 		const bundle = await rollup.rollup({
-			external: Object.keys( dependencies ),
-			output: {
-				paths: dependencies,
-			},
 			input: filepath,
 			plugins: jsplugins
 		})
@@ -45,9 +53,9 @@ builder.describe({
 			format: "amd"
 		})
 	},
-	output: {
-		file: "$filename.amd.js",
-	},
+	// output: {
+	// 	file: "$filename.amd.js",
+	// },
 })
 
 builder.describe({
