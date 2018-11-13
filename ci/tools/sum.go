@@ -1,19 +1,10 @@
-package step
+package tools
 
 import (
 	"crypto/sha256"
 	"fmt"
-	"path/filepath"
 	"strings"
 )
-
-func SrcPath(origin string) string {
-	return filepath.Join(
-		"/bmpci",
-		"src",
-		Sum(origin),
-	)
-}
 
 // Sum returns sha256 sum of provided parts joined by `-` (some kind of slug)
 func Sum(parts ...string) string {

@@ -9,10 +9,11 @@ import (
 	"sync"
 
 	"github.com/boomfunc/root/ci/docker"
+	"github.com/boomfunc/root/ci/tools"
 )
 
 var (
-	ErrJobOrphan = errors.New("Job does not have an environment property during run")
+	ErrStepOrphan = errors.New("step: Job does not have an environment property during run")
 )
 
 // JobEnvironment describes the environment in which the job is running
@@ -26,7 +27,7 @@ type JobEnvironment struct {
 
 func (env *JobEnvironment) SrcPath(workdir string) string {
 	return filepath.Join(
-		SrcPath(env.origin),
+		tools.SrcPath(env.origin),
 		workdir,
 	)
 }
@@ -38,7 +39,7 @@ func (env *JobEnvironment) ArtifactPath() string {
 		"/bmpci",
 		"artifact",
 		env.session,
-		Sum(env.origin, env.pack),
+		tools.Sum(env.origin, env.pack),
 		env.name,
 	)
 }
@@ -49,7 +50,7 @@ func (env *JobEnvironment) CachePath() string {
 	return filepath.Join(
 		"/bmpci",
 		"cache",
-		Sum(env.origin, env.pack),
+		tools.Sum(env.origin, env.pack),
 		env.name,
 	)
 }
@@ -118,8 +119,15 @@ func (job *Job) run(ctx context.Context) error {
 	// take the environment in which the job starts
 	// context must contains project and repo for generating key
 	// use this key for docker container name, getting cache and artifacts from store
+	env, ok := ctx.Value("env").(map[string]interface{})
+	if !ok {
+		return ErrStepOrphan
+	}
+
+	fmt.Println("JOB CTX:", env)
+
 	if job.env == nil {
-		return ErrJobOrphan
+		return ErrStepOrphan
 	}
 
 	// get mount paths

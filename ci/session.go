@@ -6,19 +6,20 @@ import (
 	"github.com/boomfunc/root/ci/git"
 	"github.com/boomfunc/root/ci/graph"
 	"github.com/boomfunc/root/ci/step"
+	"github.com/boomfunc/root/ci/tools"
 	"github.com/google/uuid"
 )
 
 type Session struct {
 	UUID uuid.UUID
 	repo *git.Repository
-	flow *graph.Graph // layer from which we get steps to perform
+	step step.Interface
 }
 
 // repo: github.com/boomfunc/root - what we clonning what is
 func NewSession(origin string) (*Session, error) {
 	// clone repository to `path`
-	repo, err := git.GetRepo(origin, step.SrcPath(origin))
+	repo, err := git.GetRepo(origin, tools.SrcPath(origin))
 	if err != nil {
 		return nil, err
 	}
@@ -39,14 +40,10 @@ func NewSession(origin string) (*Session, error) {
 	session := &Session{
 		UUID: uuid.New(),
 		repo: repo,
-		flow: graph,
+		step: graph,
 	}
 
 	return session, nil
-}
-
-func (session *Session) Origin() string {
-	return session.repo.Origin
 }
 
 // Run is main entrypoint. Runs all steps with the same context
@@ -57,22 +54,29 @@ func (session *Session) Run() error {
 		session.repo.Destroy()
 	}()
 
+	// create global environment object
+	env := make(map[string]interface{})
+	// fill from current level
+	env["session"] = session.UUID.String()
+	env["repo"] = tools.Sum(session.repo.Origin)
+
+	// Phase 1. Create context with cancel functionality
+	// and proxy information about high level modules to low level
+	// integration purpose
+	// because each level does not know the context in which it is running
+	ctx, cancel := context.WithCancel(context.Background())
+	ctx = context.WithValue(ctx, "env", env)
+	// always cancel the context on return (in error case they will cancel any job)
+	defer cancel()
+
 	// get diff of last repo commit
 	paths, err := session.repo.Diff()
 	if err != nil {
 		return err
 	}
+	// also provide diff to graph
+	env["diff"] = paths
 
-	// create context with cancel functionality
-	ctx, cancel := context.WithCancel(context.Background())
-	// TODO
-	// ctx = context.WithValue(ctx, "environment", environment)
-	// always cancel the context on return (in error case they will cancel any job)
-	defer cancel()
-
-	// run the flow
-	flow := session.flow.Steps(paths...)
-	// fmt.Printf("FLOW TO PERFORM:\n%s\n", flow)
-
-	return flow.Run(ctx)
+	// run the whole flow
+	return session.step.Run(ctx)
 }

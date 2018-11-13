@@ -1,6 +1,7 @@
 package graph
 
 import (
+	"context"
 	"errors"
 	"os"
 	"path/filepath"
@@ -9,7 +10,8 @@ import (
 )
 
 var (
-	ErrNotDir = errors.New("Provided `root` is not directory")
+	ErrWrongDiff = errors.New("graph: Provided `diff` is invalid")
+	ErrNotDir    = errors.New("graph: Provided `root` is not directory")
 )
 
 type Graph struct {
@@ -173,7 +175,27 @@ func (graph *Graph) jobs(direct []*Node, indirect []*Node) step.Interface {
 	return step.NewGroup(total...)
 }
 
-func (graph *Graph) Steps(paths ...string) step.Interface {
+func (graph *Graph) Run(ctx context.Context) error {
+	// get global env
+	env, ok := ctx.Value("env").(map[string]interface{})
+	if !ok {
+		return step.ErrStepOrphan
+	}
+
+	// get diff
+	diff, ok := env["diff"].([]string)
+	if !ok {
+		return ErrWrongDiff
+	}
+
+	// fill the context by current possibilities
+	// TODO: what?
+
+	// go deeper into running
+	return graph.step(diff...).Run(ctx)
+}
+
+func (graph *Graph) step(paths ...string) step.Interface {
 	// Phase 1. get all graph node roots
 	all := make([]string, len(graph.nodes))
 	i := 0
