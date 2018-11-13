@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	ErrStepOrphan = errors.New("step: Job does not have an environment property during run")
+	ErrStepOrphan = errors.New("step: Step run without context")
 )
 
 // JobEnvironment describes the environment in which the job is running

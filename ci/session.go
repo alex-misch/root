@@ -54,18 +54,14 @@ func (session *Session) Run() error {
 		session.repo.Destroy()
 	}()
 
-	// create global environment object
-	env := make(map[string]interface{})
-	// fill from current level
-	env["session"] = session.UUID.String()
-	env["repo"] = tools.Sum(session.repo.Origin)
-
 	// Phase 1. Create context with cancel functionality
 	// and proxy information about high level modules to low level
 	// integration purpose
 	// because each level does not know the context in which it is running
 	ctx, cancel := context.WithCancel(context.Background())
-	ctx = context.WithValue(ctx, "env", env)
+	// fill from current level
+	ctx = context.WithValue(ctx, "session", session.UUID.String())
+	ctx = context.WithValue(ctx, "repo", tools.Sum(session.repo.Origin))
 	// always cancel the context on return (in error case they will cancel any job)
 	defer cancel()
 
@@ -75,7 +71,7 @@ func (session *Session) Run() error {
 		return err
 	}
 	// also provide diff to graph
-	env["diff"] = paths
+	ctx = context.WithValue(ctx, "diff", paths)
 
 	// run the whole flow
 	return session.step.Run(ctx)

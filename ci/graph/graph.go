@@ -56,6 +56,19 @@ func New(root string) (*Graph, error) {
 	return graph, nil
 }
 
+// roots returns all packages in fsgraph (relative to root)
+func (graph *Graph) roots() []string {
+	all := make([]string, len(graph.nodes))
+
+	i := 0
+	for k := range graph.nodes {
+		all[i] = k
+		i++
+	}
+
+	return all
+}
+
 func (graph *Graph) walk(path string, info os.FileInfo, err error) error {
 	// proxy parent error
 	if err != nil {
@@ -127,6 +140,7 @@ func (graph *Graph) changedNodes(roots []string) (direct []*Node, indirect []*No
 	for _, root := range roots {
 		if node, ok := graph.nodes[root]; ok {
 			direct = append(direct, node)
+			// calculate nodes, depends on drect changed (indirect)
 			// add deps to indirect
 			for _, inode := range graph.edges[root] {
 				indirect = append(indirect, inode)
@@ -175,46 +189,31 @@ func (graph *Graph) jobs(direct []*Node, indirect []*Node) step.Interface {
 	return step.NewGroup(total...)
 }
 
-func (graph *Graph) Run(ctx context.Context) error {
-	// get global env
-	env, ok := ctx.Value("env").(map[string]interface{})
-	if !ok {
-		return step.ErrStepOrphan
-	}
+// step return total tree (mixed) of step.Interface
+// built by analyzing changed paths and their belonging to the nodes
+func (graph *Graph) step(paths ...string) step.Interface {
+	// Get all graph node roots
+	// Get direct changed node's root by provided path
+	// Get direct and indirect nodes changed by changed paths
+	direct, indirect := graph.changedNodes(
+		roots(paths, graph.roots()),
+	)
 
+	// get final tree
+	return graph.jobs(direct, indirect)
+}
+
+// Run implements Step interface
+// run mixed nested step.Interface
+func (graph *Graph) Run(ctx context.Context) error {
 	// get diff
-	diff, ok := env["diff"].([]string)
+	diff, ok := ctx.Value("diff").([]string)
 	if !ok {
 		return ErrWrongDiff
 	}
 
-	// fill the context by current possibilities
-	// TODO: what?
-
 	// go deeper into running
-	return graph.step(diff...).Run(ctx)
-}
+	tree := graph.step(diff...)
 
-func (graph *Graph) step(paths ...string) step.Interface {
-	// Phase 1. get all graph node roots
-	all := make([]string, len(graph.nodes))
-	i := 0
-	for k := range graph.nodes {
-		all[i] = k
-		i++
-	}
-
-	// Phase 2. convert incoming path to be relative in graph root
-	// for i, path := range paths {
-	// 	paths[i] = toRelPath(graph.root, path)
-	// }
-
-	// Phase 3. Get direct changed node's root by provided path
-	roots := roots(paths, all)
-
-	// get direct and indirect nodes
-	direct, indirect := graph.changedNodes(roots)
-
-	// get jobs
-	return graph.jobs(direct, indirect)
+	return tree.Run(ctx)
 }
