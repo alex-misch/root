@@ -3,15 +3,11 @@ package docker
 import (
 	"context"
 	"errors"
-	// "fmt"
 	"io"
 	"os"
-	// "strings"
-	"path/filepath"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/mount"
 )
 
 // RemoveContainer removes container from host docker
@@ -39,46 +35,17 @@ func LogContainer(id string, w io.Writer) error {
 func RunContainer(image, entrypoint, workdir string) error {
 	ctx := context.Background()
 
-	// create container with dynamic options
+	// Create container with dynamic options
 	resp, err := Client.ContainerCreate(
 		ctx,
 		&container.Config{
-			// WorkingDir:      "/bmpci/src",
-			WorkingDir: "/go/src/github.com/boomfunc/root/ci",
+			WorkingDir: "/go/src/github.com/boomfunc/root/ci", // NOTE: working directory always same as `source mount` or default by image
 			Image:      image,
 			Entrypoint: []string{"sh", "-c"},
 			Cmd:        []string{entrypoint},
-			// NetworkDisabled: true,
-			// Volumes: map[string]struct{}{
-			// 	// "/bmpci/src":      struct{}{},
-			// 	// "/bmpci/cache":    struct{}{},
-			// 	// "/bmpci/artifact": struct{}{},
-			// 	"/go/src/github.com/boomfunc/root/ci": struct{}{},
-			// 	"/bmpci/cache": struct{}{},
-			// 	"/go/bin": struct{}{},
-			// },
 		},
 		&container.HostConfig{
-			Mounts: []mount.Mount{
-				mount.Mount{
-					Type:   mount.TypeBind,
-					Source: filepath.Join("/bmpci/repos/e443156edcb4f6431d71fc14c586dabe47bb858a19b2b31a598eeadbef8cf45f", workdir),
-					// Target: "/bmpci/src",
-					Target: "/go/src/github.com/boomfunc/root/ci",
-				},
-				mount.Mount{
-					Type:   mount.TypeBind,
-					Source: "/bmpci/cache/e443156edcb4f6431d71fc14c586dabe47bb858a19b2b31a598eeadbef8cf45f",
-					Target: "/bmpci/cache",
-					// Target: "/go/src/github.com/boomfunc/root/ci",
-				},
-				mount.Mount{
-					Type:   mount.TypeBind,
-					Source: "/bmpci/artifact/e443156edcb4f6431d71fc14c586dabe47bb858a19b2b31a598eeadbef8cf45f",
-					// Target: "/bmpci/artifact",
-					Target: "/go/bin",
-				},
-			},
+			Mounts: Mounts(),
 		},
 		nil,
 		"",
@@ -93,11 +60,12 @@ func RunContainer(image, entrypoint, workdir string) error {
 	// save container logs in any way
 	defer LogContainer(resp.ID, os.Stdout)
 
-	// Create and start container
+	// Start container
 	if err := Client.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
 		return err
 	}
 
+	// Wait for container finish
 	statusCh, errCh := Client.ContainerWait(ctx, resp.ID, container.WaitConditionNotRunning)
 	select {
 	case err := <-errCh:
