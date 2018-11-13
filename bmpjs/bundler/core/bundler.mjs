@@ -16,7 +16,7 @@ class Bundler {
 	}
 
 
-	execute() {
+	async execute() {
 		this.synctree()
 
 		const fileList = searchFiles({
