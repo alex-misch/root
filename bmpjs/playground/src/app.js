@@ -1,6 +1,6 @@
 
-import { BmpLit } from "bmp-core"
-import { BmpRouter } from "bmp-router"
+import { BmpLit } from "../bmp_modules/bmpjs/bmp-core/src/index.js"
+import { BmpRouter } from "bmpjs/bmp-router"
 import { util } from './utils/utils.js'
 
 class App extends BmpLit {
