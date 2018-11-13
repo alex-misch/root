@@ -20,5 +20,10 @@ func Mounts(paths ...[]string) []mount.Mount {
 		}
 	}
 
-	return mounts
+	switch len(mounts) {
+	case 0:
+		return nil
+	default:
+		return mounts
+	}
 }

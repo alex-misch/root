@@ -11,17 +11,18 @@ import (
 )
 
 // RemoveContainer removes container from host docker
-func RemoveContainer(id string) error {
-	return Client.ContainerRemove(context.Background(), id, types.ContainerRemoveOptions{
+// with all garbage as volume and etc
+func RemoveContainer(ctx context.Context, id string) error {
+	return Client.ContainerRemove(ctx, id, types.ContainerRemoveOptions{
 		RemoveVolumes: true,
 		Force:         true,
 	})
 }
 
 // LogContainer saves container logs to anything
-func LogContainer(id string, w io.Writer) error {
+func LogContainer(ctx context.Context, id string, w io.Writer) error {
 	// get logs (success case)
-	r, err := Client.ContainerLogs(context.Background(), id, types.ContainerLogsOptions{ShowStdout: true})
+	r, err := Client.ContainerLogs(ctx, id, types.ContainerLogsOptions{ShowStdout: true})
 	if err != nil {
 		return err
 	}
@@ -32,21 +33,16 @@ func LogContainer(id string, w io.Writer) error {
 	return nil
 }
 
-func RunContainer(image, entrypoint, workdir string) error {
-	ctx := context.Background()
-
+func RunContainer(ctx context.Context, image, entrypoint, workdir string) error {
 	// Create container with dynamic options
 	resp, err := Client.ContainerCreate(
-		ctx,
-		&container.Config{
+		ctx, &container.Config{
 			WorkingDir: "/go/src/github.com/boomfunc/root/ci", // NOTE: working directory always same as `source mount` or default by image
 			Image:      image,
 			Entrypoint: []string{"sh", "-c"},
 			Cmd:        []string{entrypoint},
 		},
-		&container.HostConfig{
-			Mounts: Mounts(),
-		},
+		&container.HostConfig{Mounts: Mounts()},
 		nil,
 		"",
 	)
@@ -55,10 +51,10 @@ func RunContainer(image, entrypoint, workdir string) error {
 	}
 
 	// clear docker host anyway
-	defer RemoveContainer(resp.ID)
+	defer RemoveContainer(ctx, resp.ID)
 
 	// save container logs in any way
-	defer LogContainer(resp.ID, os.Stdout)
+	defer LogContainer(ctx, resp.ID, os.Stdout)
 
 	// Start container
 	if err := Client.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {

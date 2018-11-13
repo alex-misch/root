@@ -4,16 +4,16 @@ import (
 	"errors"
 	"os"
 
-	"github.com/boomfunc/root/ci/step"
 	gogit "gopkg.in/src-d/go-git.v4"
 )
 
 type Repository struct {
-	Path string
+	Path   string
+	Origin string
 	gogit.Repository
 }
 
-func GetRepo(origin string) (*Repository, error) {
+func GetRepo(origin, path string) (*Repository, error) {
 	cloneOpts := &gogit.CloneOptions{
 		URL:           origin,
 		ReferenceName: "refs/heads/master",
@@ -21,7 +21,6 @@ func GetRepo(origin string) (*Repository, error) {
 		Depth:         2, // TODO dynamic
 	}
 
-	path := step.Sum(origin)
 	if path == "" {
 		return nil, errors.New("Wrong cloning path")
 	}
@@ -43,7 +42,7 @@ func GetRepo(origin string) (*Repository, error) {
 		return nil, err
 	}
 
-	return &Repository{path, *repo}, nil
+	return &Repository{path, origin, *repo}, nil
 }
 
 func (repo *Repository) Destroy() error {

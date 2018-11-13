@@ -1,3 +1,0 @@
-package ci
-
-// var store =

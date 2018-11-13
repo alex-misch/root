@@ -19,17 +19,15 @@ var (
 // used for generating unique name for container and for store keys
 type JobEnvironment struct {
 	session string // unique session uuid
-	repo    string // repository origin `github.com/boomfunc/root`
+	origin  string // repository origin `github.com/boomfunc/root`
 	pack    string // package name relative to session root `base/tools`
 	name    string // job name (`test`, `build`, `deploy`)
 }
 
-func (env *JobEnvironment) SrcPath() string {
+func (env *JobEnvironment) SrcPath(workdir string) string {
 	return filepath.Join(
-		"/bmpci",
-		"src",
-		Sum(env.repo),
-		// TODO: workdir subdir
+		SrcPath(env.origin),
+		workdir,
 	)
 }
 
@@ -40,7 +38,7 @@ func (env *JobEnvironment) ArtifactPath() string {
 		"/bmpci",
 		"artifact",
 		env.session,
-		Sum(env.repo, env.pack),
+		Sum(env.origin, env.pack),
 		env.name,
 	)
 }
@@ -51,7 +49,7 @@ func (env *JobEnvironment) CachePath() string {
 	return filepath.Join(
 		"/bmpci",
 		"cache",
-		Sum(env.repo, env.pack),
+		Sum(env.origin, env.pack),
 		env.name,
 	)
 }
@@ -65,13 +63,13 @@ type JobMount struct {
 }
 
 // Entries returns array of (from, to) strings for each mount part
-func (m JobMount) Entries(env *JobEnvironment) [][]string {
+func (m JobMount) Entries(workdir string, env *JobEnvironment) [][]string {
 	// TODO: move to struct. Now: slices in format []string{hostPath, containerPath}
 	entries := make([][]string, 0)
 
 	// does we need to mount source code?
 	if m.SrcPath != "" {
-		entries = append(entries, []string{env.SrcPath(), m.SrcPath})
+		entries = append(entries, []string{env.SrcPath(workdir), m.SrcPath})
 	}
 
 	// does we need to mount artifacts?
@@ -91,6 +89,10 @@ func (m JobMount) Entries(env *JobEnvironment) [][]string {
 // docker container which receive their workdir as `src` and generate (or not) artifacts
 // .Run() is thread safety, because some separate Jobs should be able to refer same another Job (duplicat case)
 type Job struct {
+	// NOTE: Some tmp kinf of environment
+	env *JobEnvironment
+	// NOTE: TMP
+
 	Mount JobMount `yaml:"mount,omitempty,flow"`
 
 	Workdir    string `yaml:"workdir,omitempty"`    // path to directory to mount as `src`
@@ -116,35 +118,27 @@ func (job *Job) run(ctx context.Context) error {
 	// take the environment in which the job starts
 	// context must contains project and repo for generating key
 	// use this key for docker container name, getting cache and artifacts from store
-	// TODO
-	env := &JobEnvironment{
-		session: "51eee42f-6c60-4470-89c9-9879276bcb8e",
-		repo:    "https://github.com/agurinov/root",
-		pack:    "ci",
-		name:    "build",
+	if job.env == nil {
+		return ErrJobOrphan
 	}
-	// env, ok := ctx.Value("environment").(*JobEnvironment)
-	// if !ok {
-	// 	return ErrJobOrphan
-	// }
 
-	// TODO: meybe check env? somethink like .validate()
+	// get mount paths
+	paths := job.Mount.Entries(job.Workdir, job.env)
+	fmt.Println("MOUNTS:", paths)
+	fmt.Println("SRC:", job.Mount.SrcPath)
 
-	// prepare all docker volumes (src, artifact, cache)
-	mounts := job.Mount.Entries(env)
-	fmt.Println("MOUNTS:", mounts)
-
+	// TODO: TMP
 	if true {
 		return errors.New("INTERMEDIATE")
 	}
 
-	image, err := docker.GetImage(job.Docker)
+	image, err := docker.GetImage(ctx, job.Docker)
 	if err != nil {
 		return err
 	}
 
 	// TODO: workdir relative to graph root (session root or repo root) -> from env
-	return docker.RunContainer(image, job.Entrypoint, job.Workdir)
+	return docker.RunContainer(ctx, image, job.Entrypoint, job.Workdir)
 }
 
 // Run implements Step interface

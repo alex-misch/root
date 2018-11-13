@@ -5,19 +5,20 @@ import (
 
 	"github.com/boomfunc/root/ci/git"
 	"github.com/boomfunc/root/ci/graph"
+	"github.com/boomfunc/root/ci/step"
 	"github.com/google/uuid"
 )
 
 type Session struct {
-	Uuid uuid.UUID
+	UUID uuid.UUID
 	repo *git.Repository
-	flow Flow // layer from which we get steps to perform
+	flow *graph.Graph // layer from which we get steps to perform
 }
 
 // repo: github.com/boomfunc/root - what we clonning what is
 func NewSession(origin string) (*Session, error) {
 	// clone repository to `path`
-	repo, err := git.GetRepo(origin)
+	repo, err := git.GetRepo(origin, step.SrcPath(origin))
 	if err != nil {
 		return nil, err
 	}
@@ -36,12 +37,16 @@ func NewSession(origin string) (*Session, error) {
 	}
 
 	session := &Session{
-		Uuid: uuid.New(),
+		UUID: uuid.New(),
 		repo: repo,
 		flow: graph,
 	}
 
 	return session, nil
+}
+
+func (session *Session) Origin() string {
+	return session.repo.Origin
 }
 
 // Run is main entrypoint. Runs all steps with the same context

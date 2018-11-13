@@ -2,7 +2,6 @@ package docker
 
 import (
 	"context"
-	// "os"
 	"errors"
 	"strings"
 
@@ -16,7 +15,7 @@ var (
 // TODO: context separate - not good
 // getImage pulls or builds image and return resulting id
 // `docker` is path to Dockerfile or path to hub -> build or pull operaiton will be performed
-func GetImage(docker string) (string, error) {
+func GetImage(ctx context.Context, docker string) (string, error) {
 	var name string
 	// detect what kind of fetch we need (pull or build)
 	// TODO from pattql create virtual url-view struct
@@ -24,7 +23,7 @@ func GetImage(docker string) (string, error) {
 		// pull case
 		name = strings.TrimPrefix(docker, "docker://")
 		// TODO: check returned io.ReadCloser is closed if `_`
-		if _, err := Client.ImagePull(context.Background(), name, types.ImagePullOptions{}); err != nil {
+		if _, err := Client.ImagePull(ctx, name, types.ImagePullOptions{}); err != nil {
 			return "", err
 		}
 	} else {
@@ -46,7 +45,7 @@ func GetImage(docker string) (string, error) {
 
 	// TODO fill options to name that used below to get id
 	// get id from pulled/builded image
-	info, _, err := Client.ImageInspectWithRaw(context.Background(), name)
+	info, _, err := Client.ImageInspectWithRaw(ctx, name)
 	if err != nil {
 		return "", err
 	}
