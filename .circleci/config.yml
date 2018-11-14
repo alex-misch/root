@@ -3,7 +3,7 @@ jobs:
 
   build-core:
     docker:
-      -image: node:10-alpine
+      - image: node:10-alpine
     parallelism: 2
     steps:
       - checkout
@@ -16,7 +16,7 @@ jobs:
 
   build-router:
     docker:
-      -image: node:10-alpine
+      - image: node:10-alpine
     parallelism: 2
     steps:
       - checkout
@@ -47,4 +47,8 @@ workflows:
     jobs:
       - build-core
       - build-router
-      - deploy
+      - deploy:
+        requires:
+          - build-core
+          - build-router
+
