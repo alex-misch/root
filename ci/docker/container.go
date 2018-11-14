@@ -34,6 +34,14 @@ func LogContainer(ctx context.Context, id string, w io.Writer) error {
 }
 
 func RunContainer(ctx context.Context, image, entrypoint, workdir string, paths [][]string) error {
+	// calculate mounts for containers
+	mounts := Mounts(paths...)
+	// create dirs for mounting
+	if err := CreateMountDirs(mounts); err != nil {
+		return err
+	}
+
+	// now we can start container
 	// Create container with dynamic options
 	resp, err := Client.ContainerCreate(
 		ctx,
@@ -44,7 +52,7 @@ func RunContainer(ctx context.Context, image, entrypoint, workdir string, paths 
 			Cmd:        []string{entrypoint},
 		},
 		&container.HostConfig{
-			Mounts: Mounts(paths...),
+			Mounts: mounts,
 		},
 		nil,
 		"",
