@@ -47,8 +47,5 @@ workflows:
     jobs:
       - build-core
       - build-router
-      - deploy:
-        requires:
-          - build-core
-          - build-router
+      # - deploy
 
