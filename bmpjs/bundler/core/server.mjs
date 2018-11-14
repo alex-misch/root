@@ -1,11 +1,10 @@
 import { createServer } from 'net'
 import { EventEmitter } from 'events';
 
-class WatchServer extends EventEmitter {
+class Server extends EventEmitter {
 
 	constructor() {
 		super()
-		this.clients = []
 		this.listener = null
 	}
 
@@ -32,7 +31,7 @@ class WatchServer extends EventEmitter {
 
 
 	static listen({ port }) {
-		const watchServer = new WatchServer()
+		const watchServer = new Server()
 
 		watchServer.create()
 		watchServer.listener.on('error', (err) => {
@@ -49,4 +48,4 @@ class WatchServer extends EventEmitter {
 }
 
 
-export default WatchServer
+export default Server

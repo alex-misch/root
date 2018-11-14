@@ -1,6 +1,32 @@
 version: 2
 jobs:
 
+  build-core:
+    docker:
+      -image: node:10-alpine
+    parallelism: 2
+    steps:
+      - checkout
+      - run:
+          name: Build core
+          working_directory: ./bmpjs/bmp-core
+          command: |
+            node --experimental-modules ./install.mjs
+            node --experimental-modules ./build.mjs
+
+  build-router:
+    docker:
+      -image: node:10-alpine
+    parallelism: 2
+    steps:
+      - checkout
+      - run:
+          name: Build router
+          working_directory: ./bmpjs/bmp-router
+          command: |
+            node --experimental-modules ./install.mjs
+            node --experimental-modules ./build.mjs
+
   deploy:
     docker:
       - image: atlassian/pipelines-awscli
@@ -10,13 +36,15 @@ jobs:
           name: Deploy
           working_directory: ./bmpjs
           command: |
-            tar -zcv -C bundler . | aws s3 cp - "s3://io-boomfunc-root/bmpjs/bundler.tar.gz" --acl private --cache-control 'public, max-age=0, s-maxage=31536000, must-revalidate'
-            tar -zcv -C bmp-router . | aws s3 cp - "s3://io-boomfunc-root/bmpjs/bmp-router.tar.gz" --acl private --cache-control 'public, max-age=0, s-maxage=31536000, must-revalidate'
-            tar -zcv -C bmp-core . | aws s3 cp - "s3://io-boomfunc-root/bmpjs/bmp-core.tar.gz" --acl private --cache-control 'public, max-age=0, s-maxage=31536000, must-revalidate'
+            tar -zcv -C bundler ./dist/* | aws s3 cp - "s3://io-boomfunc-root/bmpjs/bundler.tar.gz" --acl private --cache-control 'public, max-age=0, s-maxage=31536000, must-revalidate'
+            tar -zcv -C bmp-router ./dist/* | aws s3 cp - "s3://io-boomfunc-root/bmpjs/bmp-router.tar.gz" --acl private --cache-control 'public, max-age=0, s-maxage=31536000, must-revalidate'
+            tar -zcv -C bmp-core ./dist/* | aws s3 cp - "s3://io-boomfunc-root/bmpjs/bmp-core.tar.gz" --acl private --cache-control 'public, max-age=0, s-maxage=31536000, must-revalidate'
             aws cloudfront create-invalidation --distribution-id E39RHHF1ID06TC --paths "/*"
 
 workflows:
   version: 2
   deploy-bundler:
     jobs:
+      - build-core
+      - build-router
       - deploy

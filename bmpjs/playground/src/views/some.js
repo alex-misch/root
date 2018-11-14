@@ -1,2 +1,6 @@
 const f = '';
-class S {}
+class S {
+	constructor() {
+		this.test = 'test'
+	}
+}

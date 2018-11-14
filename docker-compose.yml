@@ -6,15 +6,18 @@ services:
         - TCP_LISTEN_PORT=9375
     ports:
       - "9375:9375"
-    # command: node --experimental-modules ./component/index.mjs
-    command: tail -f /dev/null
+    command: node --experimental-modules /bundler/serve.mjs
     working_dir: /bmpjs
     volumes:
-      - ./bmpjs:/bmpjs
+      # PLAYGROUND
+      - ./bmpjs/playground:/bmpjs/playground
+      - ./bmpjs/bundler:/bundler:ro
   nginx:
     image: nginx:alpine
     ports:
       - "3000:80"
     volumes:
-      - ./:/usr/share/nginx/html
+      # PLAYGROUND
+      - ./bmpjs/playground/.tmp:/usr/share/nginx/html/playground
+      - ./bmpjs/playground/bmp_modules:/usr/share/nginx/html/playground/bmp_modules
 

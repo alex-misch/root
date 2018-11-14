@@ -7,15 +7,8 @@
 	<title>JetSmarter</title>
 	<link href="//fonts.googleapis.com/css?family=Roboto+Condensed:300,400,700|Roboto:300,400,500,700&amp;subset=cyrillic" rel="stylesheet">
 	<style type="text/css">body{background-color: #fff}.hide-application jetsmarter-app{opacity: 0; height: 100vh;overflow: hidden;width: 100%;}html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{word-break:break-word;margin:0;padding:0;border:0;font-size:100%;font:inherit;vertical-align:baseline}html{-webkit-text-size-adjust:100%}body *{-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box}sup{vertical-align:super;font-size:0.5em}article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section{display:block}body{-webkit-font-smoothing:antialiased;line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}table{border-collapse:collapse;border-spacing:0}button,canvas{outline:none}html,body{min-height:100%;height:100%}body{position:relative}.overflow-hidden{overflow: hidden;}</style>
-	<base href="/playground/dist/" />
-	<!-- <link href="./assets/styles/grid-flex.css" rel="stylesheet"/> -->
-	<link href="./assets/styles/grid.css" rel="stylesheet"/>
-	<!-- <script src="//unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script> -->
+	<base href="/playground/" />
 	<script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.3.5/require.min.js"></script>
-
-	<script crossorigin="anonymous" src="https://d3gdgyg1nkhm08.cloudfront.net/assets/lwibs/polyfills/webcomponents-loader.js"></script>
-	<script crossorigin="anonymous" src="https://d3gdgyg1nkhm08.cloudfront.net/assets/lwibs/polyfills/babel-polyfill.min.js"></script>
-	<script crossorigin="anonymous" src="https://d3gdgyg1nkhm08.cloudfront.net/assets/lwibs/polyfills/custom-element-es5-adapter.js"></script>
 
 	<script async defer="defer" onload="window.ReactAppLoaded && window.ReactAppLoaded()" src="//d1mu2q3qvfaem6.cloudfront.net/integratedApp.js?v=0.0.3"></script>
 </head>
@@ -29,15 +22,13 @@
 		window.apiGateway = 'http://jetsm.com:3011'
 
 		window.facbookPixelID = '209432422790198'
-		// window.hidenav = true
-
-		// var socket = new WebSocket( `ws://${ window.SERVER_NAME.replace( /https?:\/\/(.*)(?:\:|$)/, '$1' ) }:9001` );
-		// socket.onmessage = function(event) {
-		//   if (event.data === 'reload') {
-		//     window.location.reload()
-		//   }
-		// };
-		requirejs([ './index.js' ])
+		requirejs.config({
+			paths: {
+				"bmpjs/bmp-router": "bmp_modules/bmpjs/bmp-router/src/index",
+				"bmpjs/bmp-core": "bmp_modules/bmpjs/bmp-core/src/index"
+			}
+		})
+		requirejs([ './app.js' ])
 	</script>
 </body>
 </html>

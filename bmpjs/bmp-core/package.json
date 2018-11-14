@@ -16,11 +16,16 @@
   "keywords": [
     "bmpjs"
   ],
+  "bmp": {
+    "dependencies": {
+      "bmpjs/bundler": "latest"
+    }
+  },
   "author": "boomfunc",
   "license": "ISC",
   "homepage": "https://bitbucket.org/letsnetdevinternal/bmp-core#readme",
   "dependencies": {
-    "lit-html": "^0.12.0"
+    "lit-html": "^0.12.0",
+    "rollup": "^0.67.1"
   }
 }
-

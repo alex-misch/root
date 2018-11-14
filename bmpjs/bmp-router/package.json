@@ -31,9 +31,16 @@
       "^.+\\.jsx?$": "babel-jest"
     }
   },
-
+  "bmp": {
+    "dependencies": {
+      "bmpjs/bundler": "latest"
+    }
+  },
   "devDependencies": {
     "jest": "^23.5.0",
     "jsdoc": "^3.5.5"
+  },
+  "dependencies": {
+    "rollup": "^0.67.1"
   }
 }

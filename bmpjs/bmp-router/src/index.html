@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-  <base href="/bmp-router/dist/" />
-  <link href="/bmp-router/dist/styles/styles.css" rel="stylesheet" />
+  <base href="/bmp-router/" />
+  <link href="/bmp-router/styles/styles.css" rel="stylesheet" />
 
-  <title>Document</title>
+  <title>BMP Router</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.5/require.min.js"></script>
 </head>
 <body>
@@ -22,11 +22,10 @@
       <li><bmp-anchor><a href="/not-found/">/not-found/</a></bmp-anchor></li>
     </ul>
   </nav>
-  <bmp-router data-config="/bmp-router/dist/config.js"></bmp-router>
+  <bmp-router data-config="/bmp-router/config.js"></bmp-router>
 
   <script>
-    requirejs([ '/bmp-router/dist/index.es6.js' ])
-
+    requirejs([ 'index.es6.js' ])
   </script>
 </body>
 </html>

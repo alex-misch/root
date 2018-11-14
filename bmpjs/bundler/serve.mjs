@@ -1,22 +1,18 @@
-import WatchServer from './core/watch-server'
-import util from 'util'
+import Server from './core/server'
+import { Bundler } from './core/bundler.mjs';
+import { transformBabel } from './task/babel.mjs';
+import { searchFiles } from './utils/fs.mjs';
+import { logger } from './utils/logger.mjs'
 
 const { TCP_LISTEN_PORT: port } = process.env
 
-function logger() {
-	console.log( 'Send to client | ', ...arguments )
-	this.write( `SERVER | ${ util.format.apply(this, arguments) }\t\n` )
-	this.pipe(this)
-}
-
-const Main = {
-	tasksAllowed: ['build', 'watch'],
+const Serve = {
 	filesToBundle: new Set(),
 	waiter: null,
 	run() {
-		WatchServer.listen({ port })
+		Server.listen({ port })
 			.on( 'start', this.onstart )
-			.on( 'data', this.ondata )
+			.on( 'data', this.ondata.bind(Serve) )
 			// .on( 'connect', this.onconnect )
 			.on( 'disconnect', this.ondisconnect )
 			.on( 'error', this.onerror )
@@ -25,77 +21,64 @@ const Main = {
 	onconnect: client => console.log( 'New launcher connected' ),
 	ondisconnect: client => console.log( `Launcher "${client.project_folder}" disconnected.\t\n` ),
 	onerror: err => console.log( 'Fail', err ),
-	ondata: async (client, data) => {
+	async ondata(client, data) {
 		try {
-			if ( typeof data == 'object' && data.task ) {
-				if ( !data.task || !Main.tasksAllowed.includes(data.task) )
-					throw new Error(`Launcher task not specified: "${data.event}"`)
-				if (!data.working_directory)
-					throw new Error( `Fail to initialize ${data.task}. "working_directory" is not specified in your task` )
-
-				console.log( `Prepare to initialize "${data.task}" task...` )
-				client.working_directory = data.working_directory
-				client.project_folder = data.project_folder
-				client.bundler = await Main.initBundler( data )
-				console.log( `"${data.task}" task was successfully initialized` )
-
+			if ( typeof data == 'object' ) {
+				logger.call( client, `Prepare to initialize "${data.project_folder}" project...` )
+				await this.initBundler( client, data )
+				logger.call( client, `Wait for changes...` )
 			} else {
 				// filechange
 				if ( client.bundler ) {
-					data.split( `${client.working_directory}/`).forEach(
-						filepath => Main.filesToBundle.add( filepath )
-					)
-
-					clearTimeout( Main.waiter ) // throttled
-					Main.waiter = setTimeout( () => {
-						Main.waiter = null
-						Main.runBundler(client)
+					data
+						.split( `${client.working_directory}/`)
+						.filter( pathname => pathname.includes(client.bundler.sourceDir) )
+						.forEach( filepath => this.filesToBundle.add( filepath ) )
+					clearTimeout( this.waiter ) // throttled
+					this.waiter = setTimeout( async () => {
+						this.waiter = null
+						await client.bundler.compile([ ...this.filesToBundle ])
+						this.filesToBundle.clear()
+						logger.call(client,  "Wait for changes..." )
 					}, 200 )
 				}
 			}
 
 		} catch (e) {
-			console.log('Error', e)
+			logger.call(client, 'Error', e)
 		}
 	},
-	initBundler: async ({ task, project_folder }) => {
+	async initBundler(client, {working_directory, project_folder}) {
+		if ( !working_directory )
+			throw new Error( `Fail to initialize project. "working_directory" is not specified in your task` )
+		if ( !project_folder )
+			throw new Error( `Fail to initialize project. "project_folder" is not specified in your task` )
 
-		let bundler = null
-		switch (task) {
-			case "build":
-				const { Build } = await import( './task/build' )
-				bundler = new Build()
-				await bundler.init({
-					folder: project_folder,
-					assetsAction: 'copy',
-					minify: true
-				})
-				break;
-			case "watch":
-				const { Watch } = await import( './task/watch' )
-				bundler = new Watch()
-				await bundler.init({
-					folder: project_folder,
-					assetsAction: 'symlink'
-				})
-				break;
-		}
-
-		return bundler
-	},
-	runBundler: async client => {
-		const { working_directory, project_folder, bundler } = client
-		const projectSrcDir = `${ project_folder }/src`
-		const bundlePromise = [...Main.filesToBundle ].map( filepath => {
-			if (filepath && filepath.includes(projectSrcDir) ) {
-				return bundler.transform( filepath )
-			}
-			return Promise.resolve()
+		client.working_directory = working_directory
+		client.project_folder = project_folder
+		client.bundler = new Bundler({
+			destination_folder: `${project_folder}/.tmp/`,
+			source_folder: `${project_folder}/src/`,
+			symlinkAssets: true,
+			afterBuild: () => logger.call( client, `Wait for changes...` )
 		})
-		Main.filesToBundle.clear()
-		await Promise.all(projectSrcDir)
-		// console.log( 'Wait for changes...' )
-	},
+		// Describe js transpiler
+		client.bundler.describe({
+			if: { extension: '.js' },
+			perform: async filepath => {
+				const bundle = await transformBabel(filepath)
+				logger.call( client, `- Completed "babel" ${filepath}` )
+				return bundle
+			}
+		})
+		// Compile all
+		await client.bundler.compile(
+			searchFiles({
+				regex: /\.(js|html)$/,
+				dir: client.bundler.sourceDir
+			})
+		)
+	}
 }
 
-Main.run()
+Serve.run()

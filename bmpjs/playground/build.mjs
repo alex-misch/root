@@ -8,7 +8,7 @@ import project from "./package.json"
 const builder = new Bundler({
 	source_folder: "src",
 	destination_folder: "dist",
-	complete: () => console.log( 'Done.' )
+	afterBuild: () => console.log( 'Done.' )
 })
 
 const dependencies = project.bmp ? project.bmp.dependencies : {}
