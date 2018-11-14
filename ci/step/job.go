@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
-	"reflect"
 	"sync"
 
+	"github.com/boomfunc/log"
 	"github.com/boomfunc/root/ci/docker"
 	"github.com/boomfunc/root/ci/tools"
 )
@@ -44,7 +44,7 @@ func (env *JobEnvironment) ArtifactPath() string {
 		"artifact",
 		env.session,
 		tools.Sum(env.origin, env.pack),
-		env.name,
+		// env.name,
 	)
 }
 
@@ -129,6 +129,7 @@ func (step *Job) run(ctx context.Context) error {
 	}
 
 	// get image id for container
+	log.Debugf("%s: Running: %s", session, step)
 	image, err := docker.GetImage(ctx, step.Docker)
 	if err != nil {
 		return err
@@ -161,6 +162,7 @@ func (step *Job) Run(ctx context.Context) error {
 		err = step.run(ctx)
 		step.wg.Done()
 	})
+
 	// with waiting of similar jobs
 	step.wg.Wait()
 
@@ -169,5 +171,5 @@ func (step *Job) Run(ctx context.Context) error {
 
 // String implements fmt.Stringer interface
 func (step *Job) String() string {
-	return fmt.Sprintf("JOB(%s, ID=%d)", step.Entrypoint, reflect.ValueOf(step).Pointer())
+	return fmt.Sprintf("JOB(%s)", step.Entrypoint)
 }

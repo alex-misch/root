@@ -3,6 +3,7 @@ package docker
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 
@@ -82,6 +83,8 @@ func RunContainer(ctx context.Context, image, entrypoint, workdir string, paths 
 	case resp := <-statusCh:
 		if resp.Error != nil {
 			return errors.New(resp.Error.Message)
+		} else if resp.StatusCode != 0 {
+			return fmt.Errorf("Exit code: %d. Look at container logs for more information", resp.StatusCode)
 		}
 	}
 

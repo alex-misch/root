@@ -41,7 +41,7 @@ func (group Group) String() string {
 	parts := make([]string, len(group))
 
 	for i, step := range group {
-		parts[i] = fmt.Sprintf("%s", step)
+		parts[i] = fmt.Sprintf("\t%s", step)
 	}
 
 	return fmt.Sprintf("GROUP(\n%s\n)", strings.Join(parts, ",\n"))

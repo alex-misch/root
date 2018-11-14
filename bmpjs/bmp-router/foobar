@@ -8,6 +8,3 @@ jobs:
 
 deps:
   - bmpjs/bmp-core
-
-direct: [test, build, deploy]
-indirect: [test]

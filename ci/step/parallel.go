@@ -47,7 +47,7 @@ func (group Parallel) String() string {
 	parts := make([]string, len(group))
 
 	for i, step := range group {
-		parts[i] = fmt.Sprintf("%s", step)
+		parts[i] = fmt.Sprintf("\t%s", step)
 	}
 
 	return fmt.Sprintf("PARALLEL(\n%s\n)", strings.Join(parts, ",\n"))

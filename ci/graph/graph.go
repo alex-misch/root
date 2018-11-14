@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/boomfunc/log"
 	"github.com/boomfunc/root/ci/step"
 )
 
@@ -59,6 +60,7 @@ func New(root string) (*Graph, error) {
 }
 
 // roots returns all packages in fsgraph (relative to root)
+// must be invoked after .Link()
 func (graph *Graph) roots() []string {
 	all := make([]string, len(graph.nodes))
 
@@ -98,18 +100,11 @@ func (graph *Graph) walk(path string, info os.FileInfo, err error) error {
 		if info, err := os.Stat(config); err == nil && info.Mode().IsRegular() {
 
 			// try to get node struct from file config
-			// TODO: some dynamic config variants (json, yaml, etc)
+			// TODO: some dynamic config variants (json, yaml, etc) semaphore
 			node, err := NodeFromLocalFile(config)
 			if err != nil {
 				return err
 			}
-
-			// // TODO: here we know all we need
-			// fmt.Println("NODE:", root)
-			// for name, _ := range node.Jobs {
-			// 	fmt.Println("JOB:", name)
-			// }
-			// // TODO: here we know all we need
 
 			// assign node to graph with `root` as key
 			graph.SetNode(root, node)
@@ -145,6 +140,8 @@ func (graph *Graph) Link() {
 	}
 }
 
+// addCtx create child step's context from parent and save it to collection
+// collection will be passed to parent context for future using
 func (graph *Graph) addCtx(ctx context.Context, step step.Interface, pack, name string) {
 	ctx = context.WithValue(ctx, "pack", pack)
 	ctx = context.WithValue(ctx, "name", name)
@@ -247,5 +244,8 @@ func (graph *Graph) Run(ctx context.Context) error {
 	// Phase 4.
 	// get final step.Interface for perform
 	// and go deeper into running
-	return graph.steps(direct, indirect).Run(ctx)
+	steps := graph.steps(direct, indirect)
+	log.Debugf("Flow to perform:\n%s", steps)
+
+	return steps.Run(ctx)
 }

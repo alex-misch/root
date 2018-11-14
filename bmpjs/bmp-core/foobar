@@ -2,10 +2,21 @@ jobs:
 
   test:
     docker: docker://node:10-alpine
-    workdir: ./
+    workdir: ./bmpjs/bmp-core
+    entrypoint: |
+      echo 'tested'
+
+    mount:
+      src: /tmp/src
+      cache: /tmp/src/node_modules
+      # artifact: /tmp/src/dist
+
+  build:
+    docker: docker://node:10-alpine
+    workdir: ./bmpjs/bmp-core
     entrypoint: |
       npm install
-      node --experimental-modules ./install.mjs
+      node --experimental-modules ./install.mjs --no-cache
       node --experimental-modules ./build.mjs
 
     mount:
@@ -13,18 +24,10 @@ jobs:
       cache: /tmp/src/node_modules
       artifact: /tmp/src/dist
 
-  build:
-    docker: docker://node:10-alpine
-    entrypoint: |
-      ls -lah /tmp/cache
-      ls -lah /tmp/art
-
-    mount:
-      cache: /tmp/cache
-      artifact: /tmp/art
 
   deploy:
     docker: docker://atlassian/pipelines-awscli
+    workdir: /tmp/art
     entrypoint: |
       ls -lah /tmp/art
 
