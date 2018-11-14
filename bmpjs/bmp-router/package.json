@@ -41,6 +41,7 @@
     "jsdoc": "^3.5.5"
   },
   "dependencies": {
+    "babel-jest": "^23.6.0",
     "rollup": "^0.67.1"
   }
 }

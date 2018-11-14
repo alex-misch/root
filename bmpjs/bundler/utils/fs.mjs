@@ -9,10 +9,10 @@ const createSymlink = (from, to) => {
 }
 
 const emptyFolder = folder => {
-	if ( fs.existsSync(folder) )
-		fs.removeSync( folder )
+	// if ( fs.existsSync(folder) )
+	// 	fs.removeSync( folder )
 
-	fs.mkdirSync( folder )
+	// fs.mkdirSync( folder )
 	console.log( `- COMPLETE: Empty folder ${folder}` )
 }
 

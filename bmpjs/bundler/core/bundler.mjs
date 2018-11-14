@@ -12,8 +12,8 @@ class Bundler {
 		const { destination_folder: dest, source_folder: src } = config
 		const folder = '.'
 
-		this.sourceDir = path.join(folder, src)
-		this.destDir = path.join(folder, dest)
+		this.sourceDir = path.resolve(path.join(folder, src))
+		this.destDir = path.resolve(path.join(folder, dest))
 		if ( !fs.existsSync(this.destDir) )
 			fs.mkdirSync(this.destDir)
 		this.afterBuild = config.afterBuild
@@ -46,6 +46,7 @@ class Bundler {
 		return Promise.all(
 			filelist.map( async filepath => {
 				const { code } = await this.transform( filepath )
+				console.log( 'PUT COMPILED', filepath, 'TO', filepath.replace(this.sourceDir, this.destDir) )
 				await fs.outputFile( filepath.replace(this.sourceDir, this.destDir), code )
 			})
 		)

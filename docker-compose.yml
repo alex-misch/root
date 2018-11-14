@@ -11,12 +11,23 @@ services:
     volumes:
       # PLAYGROUND
       - ./bmpjs/playground:/bmpjs/playground
+      # CORE
+      - ./bmpjs/bmp-core:/bmpjs/bmp-core
+      # ROUTER
+      - ./bmpjs/bmp-router:/bmpjs/bmp-router
+      # BUNDLER
       - ./bmpjs/bundler:/bundler:ro
+
   nginx:
     image: nginx:alpine
     ports:
       - "3000:80"
     volumes:
+      # CORE
+      - ./bmpjs/bmp-core/.tmp:/usr/share/nginx/html/bmp-core
+      # ROUTER
+      - ./bmpjs/bmp-router/.tmp:/usr/share/nginx/html/bmp-router
+
       # PLAYGROUND
       - ./bmpjs/playground/.tmp:/usr/share/nginx/html/playground
       - ./bmpjs/playground/bmp_modules:/usr/share/nginx/html/playground/bmp_modules

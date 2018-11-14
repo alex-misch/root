@@ -3,8 +3,7 @@ jobs:
 
   build-core:
     docker:
-      - image: node:10-alpine
-    parallelism: 2
+      - image: node:10
     steps:
       - checkout
       - run:
@@ -14,11 +13,15 @@ jobs:
             npm install
             node --experimental-modules ./install.mjs
             node --experimental-modules ./build.mjs
+            rm -rf node_modules
+      - persist_to_workspace:
+          root: ./bmpjs
+          paths:
+            - bmp-core/*
 
   build-router:
     docker:
-      - image: node:10-alpine
-    parallelism: 2
+      - image: node:10
     steps:
       - checkout
       - run:
@@ -28,26 +31,40 @@ jobs:
             npm install
             node --experimental-modules ./install.mjs
             node --experimental-modules ./build.mjs
+            rm -rf node_modules
+      - persist_to_workspace:
+          root: ./bmpjs
+          paths:
+            - bmp-router/*
 
   deploy:
     docker:
       - image: atlassian/pipelines-awscli
+
     steps:
       - checkout
+      - attach_workspace:
+          at: ./bmpjs
+
       - run:
-          name: Deploy
-          working_directory: ./bmpjs
-          command: |
-            tar -zcv -C bundler ./dist/* | aws s3 cp - "s3://io-boomfunc-root/bmpjs/bundler.tar.gz" --acl private --cache-control 'public, max-age=0, s-maxage=31536000, must-revalidate'
-            tar -zcv -C bmp-router ./dist/* | aws s3 cp - "s3://io-boomfunc-root/bmpjs/bmp-router.tar.gz" --acl private --cache-control 'public, max-age=0, s-maxage=31536000, must-revalidate'
-            tar -zcv -C bmp-core ./dist/* | aws s3 cp - "s3://io-boomfunc-root/bmpjs/bmp-core.tar.gz" --acl private --cache-control 'public, max-age=0, s-maxage=31536000, must-revalidate'
-            aws cloudfront create-invalidation --distribution-id E39RHHF1ID06TC --paths "/*"
+          working_directory: ./bmpjs/bmp-router
+          command: tar -zcv . | aws s3 cp - "s3://io-boomfunc-root/bmpjs/bmp-router.tar.gz" --acl private --cache-control 'public, max-age=0, s-maxage=31536000, must-revalidate'
+      - run:
+          working_directory: ./bmpjs/bmp-core
+          command: tar -zcv . | aws s3 cp - "s3://io-boomfunc-root/bmpjs/bmp-core.tar.gz" --acl private --cache-control 'public, max-age=0, s-maxage=31536000, must-revalidate'
+      - run:
+          working_directory: ./bmpjs/bundler
+          command: tar -zcv . | aws s3 cp - "s3://io-boomfunc-root/bmpjs/bundler.tar.gz" --acl private --cache-control 'public, max-age=0, s-maxage=31536000, must-revalidate'
+      - run: aws cloudfront create-invalidation --distribution-id E39RHHF1ID06TC --paths "/*"
 
 workflows:
   version: 2
-  deploy-bundler:
+  deploy:
     jobs:
       - build-core
       - build-router
-      # - deploy
+      - deploy:
+          requires:
+            - build-core
+            - build-router
 

@@ -10,8 +10,9 @@ class BMPLit extends HTMLElement {
 
   observe( obj ) {
     return observe( obj, ( tree, property, value ) => {
+			console.log( 'changed', tree, property, value )
       clearTimeout(this.dispatchUpdateTimeout)
-      this.dispatchUpdateTimeout = setTimeout( _ =>{
+      this.dispatchUpdateTimeout = setTimeout( _ => {
 				render(this.render(), this)
       }, 10 )
     })
@@ -34,7 +35,9 @@ class BMPLit extends HTMLElement {
 
 	_attachComponent() {
 
-		render( this.render(), this )
+		/** @var Widget widget */
+		let widget = this.build()
+		render( widget.render() , this )
 		if ( this.onAttached ) {
 			this.onAttached()
 			this.onAttached = undefined

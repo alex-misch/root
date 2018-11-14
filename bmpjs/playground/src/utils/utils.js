@@ -1,5 +1,5 @@
 
-const util = ss => console.log(ss)
+const util = text => text.toUpperCase()
 console.log('123')
 
 export { util }
