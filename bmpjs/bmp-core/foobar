@@ -1,10 +1,38 @@
 jobs:
+
   test:
-    entrypoint: 'TEST `bmp-core`'
+    docker: docker://node:10-alpine
+    workdir: ./
+    entrypoint: |
+      npm install
+      node --experimental-modules ./install.mjs
+      node --experimental-modules ./build.mjs
+
+    mount:
+      src: /tmp/src
+      cache: /tmp/src/node_modules
+      artifact: /tmp/src/dist
+
   build:
-    entrypoint: 'BUILD `bmp-core`'
+    docker: docker://node:10-alpine
+    entrypoint: |
+      ls -lah /tmp/cache
+      ls -lah /tmp/art
+
+    mount:
+      cache: /tmp/cache
+      artifact: /tmp/art
+
   deploy:
-    entrypoint: 'DEPLOY `bmp-core`'
+    docker: docker://atlassian/pipelines-awscli
+    entrypoint: |
+      ls -lah /tmp/art
+
+    mount:
+      artifact: /tmp/art
+
+deps:
+  - base
 
 direct: [test, build, deploy]
 indirect: [test]
