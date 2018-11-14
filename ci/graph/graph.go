@@ -18,6 +18,7 @@ type Graph struct {
 	root  string // same as git repo root
 	nodes map[string]*Node
 	edges map[string][]*Node
+	ctxs  map[step.Interface]context.Context
 }
 
 // New creates new filesystem graph, based in root path
@@ -42,6 +43,7 @@ func New(root string) (*Graph, error) {
 		root:  root,
 		nodes: make(map[string]*Node),
 		edges: make(map[string][]*Node),
+		ctxs:  make(map[step.Interface]context.Context),
 	}
 
 	// fill the graph
@@ -51,7 +53,7 @@ func New(root string) (*Graph, error) {
 	}
 
 	// graph ready, link edges
-	graph.LinkNodes()
+	graph.Link()
 
 	return graph, nil
 }
@@ -102,6 +104,13 @@ func (graph *Graph) walk(path string, info os.FileInfo, err error) error {
 				return err
 			}
 
+			// // TODO: here we know all we need
+			// fmt.Println("NODE:", root)
+			// for name, _ := range node.Jobs {
+			// 	fmt.Println("JOB:", name)
+			// }
+			// // TODO: here we know all we need
+
 			// assign node to graph with `root` as key
 			graph.SetNode(root, node)
 		}
@@ -121,8 +130,8 @@ func (graph *Graph) SetEdge(root string, node *Node) {
 	graph.edges[root] = append(graph.edges[root], node)
 }
 
-// LinkNodes binds all nodes together by their config definition
-func (graph *Graph) LinkNodes() {
+// Link binds all nodes together by their config definition
+func (graph *Graph) Link() {
 	for _, node := range graph.nodes {
 		for _, dep := range node.Deps {
 			// calculate dep with root
@@ -136,13 +145,34 @@ func (graph *Graph) LinkNodes() {
 	}
 }
 
-func (graph *Graph) changedNodes(roots []string) (direct []*Node, indirect []*Node) {
+func (graph *Graph) addCtx(ctx context.Context, step step.Interface, pack, name string) {
+	ctx = context.WithValue(ctx, "pack", pack)
+	ctx = context.WithValue(ctx, "name", name)
+
+	// save to collection
+	graph.ctxs[step] = ctx
+}
+
+// changes returns list of direct nodes changed and indirect nodes changed
+// by direct node's roots
+func (graph *Graph) changes(parent context.Context, roots []string) (direct []*Node, indirect []*Node) {
 	for _, root := range roots {
 		if node, ok := graph.nodes[root]; ok {
+			// create copy of context for this job
+			for name, job := range node.Jobs {
+				graph.addCtx(parent, job, root, name)
+			}
+			// append to output tree
 			direct = append(direct, node)
+
 			// calculate nodes, depends on drect changed (indirect)
 			// add deps to indirect
 			for _, inode := range graph.edges[root] {
+				// create copy of context for this job
+				for name, job := range inode.Jobs {
+					graph.addCtx(parent, job, root, name)
+				}
+				// append to output tree
 				indirect = append(indirect, inode)
 			}
 		}
@@ -151,7 +181,9 @@ func (graph *Graph) changedNodes(roots []string) (direct []*Node, indirect []*No
 	return
 }
 
-func (graph *Graph) jobs(direct []*Node, indirect []*Node) step.Interface {
+// steps return total tree (mixed) of step.Interface
+// built by analyzing changed paths and their belonging to the nodes
+func (graph *Graph) steps(direct []*Node, indirect []*Node) step.Interface {
 	// total steps for resolving all tree's flow
 	total := make([]step.Interface, 0)
 
@@ -189,31 +221,31 @@ func (graph *Graph) jobs(direct []*Node, indirect []*Node) step.Interface {
 	return step.NewGroup(total...)
 }
 
-// step return total tree (mixed) of step.Interface
-// built by analyzing changed paths and their belonging to the nodes
-func (graph *Graph) step(paths ...string) step.Interface {
-	// Get all graph node roots
-	// Get direct changed node's root by provided path
-	// Get direct and indirect nodes changed by changed paths
-	direct, indirect := graph.changedNodes(
-		roots(paths, graph.roots()),
-	)
-
-	// get final tree
-	return graph.jobs(direct, indirect)
-}
-
 // Run implements Step interface
 // run mixed nested step.Interface
 func (graph *Graph) Run(ctx context.Context) error {
-	// get diff
+	// Phase 1. Get graph `raw` changes (get diff)
 	diff, ok := ctx.Value("diff").([]string)
 	if !ok {
 		return ErrWrongDiff
 	}
 
-	// go deeper into running
-	tree := graph.step(diff...)
+	// Phase 2. Get changed nodes
+	// Get direct and indirect nodes changed by changed paths
+	direct, indirect := graph.changes(
+		ctx, // provide parent context from which copies will be created for child steps
+		// Get direct changed node's root by provided path
+		roots(
+			diff,          // `raw` changes paths
+			graph.roots(), // all graph node roots
+		),
+	)
 
-	return tree.Run(ctx)
+	// Phase 3. Fill ctx by subcontexts for all nested steps
+	ctx = context.WithValue(ctx, "ctxs", graph.ctxs)
+
+	// Phase 4.
+	// get final step.Interface for perform
+	// and go deeper into running
+	return graph.steps(direct, indirect).Run(ctx)
 }

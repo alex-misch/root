@@ -46,31 +46,24 @@ func NewSession(origin string) (*Session, error) {
 	return session, nil
 }
 
-// Run is main entrypoint. Runs all steps with the same context
+// Run implements ste.Interface. Run is main entrypoint.
+// Runs all steps with the same context (mixed)
 // here context creates and cancels if something wrong
-func (session *Session) Run() error {
+func (session *Session) Run(ctx context.Context) error {
 	// garbage anyway
-	defer func() {
-		session.repo.Destroy()
-	}()
-
-	// Phase 1. Create context with cancel functionality
-	// and proxy information about high level modules to low level
-	// integration purpose
-	// because each level does not know the context in which it is running
-	ctx, cancel := context.WithCancel(context.Background())
-	// fill from current level
-	ctx = context.WithValue(ctx, "session", session.UUID.String())
-	ctx = context.WithValue(ctx, "repo", tools.Sum(session.repo.Origin))
-	// always cancel the context on return (in error case they will cancel any job)
-	defer cancel()
+	defer session.repo.Destroy()
 
 	// get diff of last repo commit
+	// if we cannot calculate diff what to build - no need to continue session runnning
 	paths, err := session.repo.Diff()
 	if err != nil {
 		return err
 	}
-	// also provide diff to graph
+
+	// fill context from current level
+	// fill all we can to low level steps
+	ctx = context.WithValue(ctx, "session", session.UUID.String())
+	ctx = context.WithValue(ctx, "origin", session.repo.Origin)
 	ctx = context.WithValue(ctx, "diff", paths)
 
 	// run the whole flow

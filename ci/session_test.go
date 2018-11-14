@@ -2,6 +2,8 @@ package ci
 
 import (
 	"testing"
+
+	"github.com/boomfunc/root/ci/step"
 )
 
 func TestSession(t *testing.T) {
@@ -10,7 +12,7 @@ func TestSession(t *testing.T) {
 		t.Fatal("ERROR:", err)
 	}
 
-	if err := session.Run(); err != nil {
+	if err := step.Run(session); err != nil {
 		t.Fatal("ERROR:", err)
 	}
 }

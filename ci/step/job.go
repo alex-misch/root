@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	ErrStepOrphan = errors.New("step: Step run without context")
+	ErrStepOrphan = errors.New("step: Step run without required context")
 )
 
 // JobEnvironment describes the environment in which the job is running
@@ -23,6 +23,10 @@ type JobEnvironment struct {
 	origin  string // repository origin `github.com/boomfunc/root`
 	pack    string // package name relative to session root `base/tools`
 	name    string // job name (`test`, `build`, `deploy`)
+}
+
+func NewEnv(session, origin, pack, name string) *JobEnvironment {
+	return &JobEnvironment{session, origin, pack, name}
 }
 
 func (env *JobEnvironment) SrcPath(workdir string) string {
@@ -90,10 +94,6 @@ func (m JobMount) Entries(workdir string, env *JobEnvironment) [][]string {
 // docker container which receive their workdir as `src` and generate (or not) artifacts
 // .Run() is thread safety, because some separate Jobs should be able to refer same another Job (duplicat case)
 type Job struct {
-	// NOTE: Some tmp kinf of environment
-	env *JobEnvironment
-	// NOTE: TMP
-
 	Mount JobMount `yaml:"mount,omitempty,flow"`
 
 	Workdir    string `yaml:"workdir,omitempty"`    // path to directory to mount as `src`
@@ -115,58 +115,59 @@ func NewJob(workdir, docker, entrypoint string) Interface {
 
 // run runs single docker container
 // with provided src and destination dirs as volumes
-func (job *Job) run(ctx context.Context) error {
-	// take the environment in which the job starts
-	// context must contains project and repo for generating key
-	// use this key for docker container name, getting cache and artifacts from store
-	env, ok := ctx.Value("env").(map[string]interface{})
-	if !ok {
+func (step *Job) run(ctx context.Context) error {
+	var session, origin, pack, name string
+
+	// get required attributes from context and check it
+	session = ctx.Value("session").(string)
+	origin = ctx.Value("origin").(string)
+	pack = ctx.Value("pack").(string)
+	name = ctx.Value("name").(string)
+
+	if session == "" || origin == "" || pack == "" || name == "" {
 		return ErrStepOrphan
 	}
 
-	fmt.Println("JOB CTX:", env)
-
-	if job.env == nil {
-		return ErrStepOrphan
-	}
-
-	// get mount paths
-	paths := job.Mount.Entries(job.Workdir, job.env)
-	fmt.Println("MOUNTS:", paths)
-	fmt.Println("SRC:", job.Mount.SrcPath)
-
-	// TODO: TMP
-	if true {
-		return errors.New("INTERMEDIATE")
-	}
-
-	image, err := docker.GetImage(ctx, job.Docker)
+	// get image id for container
+	image, err := docker.GetImage(ctx, step.Docker)
 	if err != nil {
 		return err
 	}
 
-	// TODO: workdir relative to graph root (session root or repo root) -> from env
-	return docker.RunContainer(ctx, image, job.Entrypoint, job.Workdir)
+	// TODO: defer ImageRemove()
+
+	// Create and run container
+	return docker.RunContainer(
+		ctx,                                        // context for cancellation
+		image, step.Entrypoint, step.Mount.SrcPath, // basic data for docker
+		// calculate environment in which the job starts
+		// use this env for docker container name, getting cache and artifacts volumes path
+		step.Mount.Entries(step.Workdir, NewEnv(session, origin, pack, name)), // get mount paths
+	)
 }
 
 // Run implements Step interface
 // run docker container with provided options
-func (job *Job) Run(ctx context.Context) error {
-	// run only one instance of similar jobs per all session
-	// with eaiting of similar jobs
+func (step *Job) Run(ctx context.Context) error {
+	// error visibility of inner once.Do invoke
 	var err error
 
-	job.once.Do(func() {
-		job.wg.Add(1)
-		err = job.run(ctx)
-		job.wg.Done()
+	// actualize context for this step
+	ctx = CtxFromCtx(ctx, step)
+
+	// run only one instance of similar jobs per all session
+	step.once.Do(func() {
+		step.wg.Add(1)
+		err = step.run(ctx)
+		step.wg.Done()
 	})
-	job.wg.Wait()
+	// with waiting of similar jobs
+	step.wg.Wait()
 
 	return err
 }
 
 // String implements fmt.Stringer interface
-func (job *Job) String() string {
-	return fmt.Sprintf("JOB(%s, ID=%d)", job.Entrypoint, reflect.ValueOf(job).Pointer())
+func (step *Job) String() string {
+	return fmt.Sprintf("JOB(%s, ID=%d)", step.Entrypoint, reflect.ValueOf(step).Pointer())
 }

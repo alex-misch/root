@@ -1,0 +1,23 @@
+jobs:
+
+  test:
+    docker: docker://golang:alpine
+    entrypoint: ls -lah /bmpci
+
+  build:
+    docker: docker://golang
+    entrypoint: go get -v -d ./...; go build -v -o /go/bin/cibin
+    workdir: ./ci
+    mount:
+      artifact: /go/bin
+      src: /go/src/github.com/boomfunc/root/ci
+
+  deploy:
+    docker: docker://golang:alpine
+    entrypoint: go version
+
+deps:
+  - base
+
+direct: [build]
+indirect: [test]

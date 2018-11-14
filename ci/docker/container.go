@@ -33,16 +33,19 @@ func LogContainer(ctx context.Context, id string, w io.Writer) error {
 	return nil
 }
 
-func RunContainer(ctx context.Context, image, entrypoint, workdir string) error {
+func RunContainer(ctx context.Context, image, entrypoint, workdir string, paths [][]string) error {
 	// Create container with dynamic options
 	resp, err := Client.ContainerCreate(
-		ctx, &container.Config{
-			WorkingDir: "/go/src/github.com/boomfunc/root/ci", // NOTE: working directory always same as `source mount` or default by image
+		ctx,
+		&container.Config{
+			WorkingDir: workdir, // NOTE: working directory always same as `source mount` or default by image
 			Image:      image,
 			Entrypoint: []string{"sh", "-c"},
 			Cmd:        []string{entrypoint},
 		},
-		&container.HostConfig{Mounts: Mounts()},
+		&container.HostConfig{
+			Mounts: Mounts(paths...),
+		},
 		nil,
 		"",
 	)
