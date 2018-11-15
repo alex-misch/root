@@ -63,6 +63,7 @@ func (session *Session) Run(ctx context.Context) error {
 	// fill context from current level
 	// fill all we can to low level steps
 	ctx = context.WithValue(ctx, "session", session.UUID.String())
+	ctx = context.WithValue(ctx, "root", session.repo.Path)
 	ctx = context.WithValue(ctx, "origin", session.repo.Origin)
 	ctx = context.WithValue(ctx, "diff", paths)
 

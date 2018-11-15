@@ -116,13 +116,16 @@ func NewJob(workdir, docker, entrypoint string) Interface {
 // run runs single docker container
 // with provided src and destination dirs as volumes
 func (step *Job) run(ctx context.Context) error {
-	var session, origin, pack, name string
+	var session, root, origin, pack, name string
 
 	// get required attributes from context and check it
 	session = ctx.Value("session").(string)
+	root = ctx.Value("root").(string)
 	origin = ctx.Value("origin").(string)
 	pack = ctx.Value("pack").(string)
 	name = ctx.Value("name").(string)
+
+	fmt.Println("ROOT:", root)
 
 	if session == "" || origin == "" || pack == "" || name == "" {
 		return ErrStepOrphan

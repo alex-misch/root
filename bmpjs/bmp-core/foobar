@@ -2,7 +2,7 @@ jobs:
 
   test:
     docker: docker://node:10-alpine
-    workdir: ./bmpjs/bmp-core
+    context: $/ff/dd
     entrypoint: |
       echo 'tested'
 

@@ -12,6 +12,7 @@ func Run(step Interface) error {
 	// integration purpose
 	// because each level does not know the context in which it is running
 	ctx, cancel := context.WithCancel(context.Background())
+	// TODO: timeouts and other mechanics of cancellation
 	// always cancel the context on return (in error case they will cancel any job)
 	defer cancel()
 
