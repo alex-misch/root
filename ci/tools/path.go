@@ -1,8 +1,13 @@
 package tools
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
+)
+
+var (
+	CIROOT = "/bmpci" // describes fs root for storing anything for ci works
 )
 
 // AbsWorkdir is a special tool that returns full absolute path to context dir
@@ -16,4 +21,50 @@ func AbsWorkdir(root, pack, context string) string {
 	} else {
 		return filepath.Join("/", root, pack, context)
 	}
+}
+
+// RepoPath calculates path where repository for session will be cloned
+// Example:
+// /bmpci/src/$(sha origin)
+func RepoPath(origin string) string {
+	return filepath.Join(
+		CIROOT,
+		"src",
+		Sum(origin),
+	)
+}
+
+// ArtifactPath calculates path where container artifacts will be stored
+// Example:
+// /bmpci/artifact/$(sessionUUID)/$(sha origin + pack)
+func ArtifactPath(session, origin, pack string) string {
+	return filepath.Join(
+		CIROOT,
+		"artifact",
+		session,
+		Sum(origin, pack),
+		// env.name,
+	)
+}
+
+// CachePath calculates path where container caches will be stored
+// same as ArtifactPath, but not session dependent
+// Example:
+// /bmpci/cache/$(sha origin + pack)/test
+func CachePath(origin, pack, name string) string {
+	return filepath.Join(
+		CIROOT,
+		"cache",
+		Sum(origin, pack),
+		name,
+	)
+}
+
+// LogPath calculates path where container logs will be stored
+func LogPath(container string) string {
+	return filepath.Join(
+		CIROOT,
+		"log",
+		fmt.Sprintf("%s.log", container),
+	)
 }

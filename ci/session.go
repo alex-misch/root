@@ -19,7 +19,7 @@ type Session struct {
 // repo: github.com/boomfunc/root - what we clonning what is
 func NewSession(origin string) (*Session, error) {
 	// clone repository to `path`
-	repo, err := git.GetRepo(origin, tools.SrcPath(origin))
+	repo, err := git.GetRepo(origin, tools.RepoPath(origin))
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,6 @@ func (session *Session) Run(ctx context.Context) error {
 	// fill context from current level
 	// fill all we can to low level steps
 	ctx = context.WithValue(ctx, "session", session.UUID.String())
-	ctx = context.WithValue(ctx, "root", session.repo.Path)
 	ctx = context.WithValue(ctx, "origin", session.repo.Origin)
 	ctx = context.WithValue(ctx, "diff", paths)
 

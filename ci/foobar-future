@@ -27,18 +27,10 @@ job "deploy" {
 	context = ./ci
 }
 
-group "common" {
+group "direct" {
 	steps = ["test", "build", "deploy"]
 }
 
-parallel "common2" {
-	steps = ["test", "build", "deploy"]
-}
-
-flow "direct" {
-	steps = ["common"]
-}
-
-flow "indirect" {
+parallel "indirect" {
 	steps = ["test"]
 }

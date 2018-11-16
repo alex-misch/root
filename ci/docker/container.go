@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -20,23 +19,42 @@ func RemoveContainer(ctx context.Context, id string) error {
 	})
 }
 
-// LogContainer saves container logs to anything
+// LogContainer saves container logs to anything that implements io.Writer interface (file, socket, pipe)
 func LogContainer(ctx context.Context, id string, w io.Writer) error {
+	// if writer is nil - no need to save logs
+	if w == nil {
+		return nil
+	}
+
 	// get logs (success case)
 	r, err := Client.ContainerLogs(ctx, id, types.ContainerLogsOptions{ShowStdout: true})
 	if err != nil {
 		return err
 	}
 
-	// save
+	// save logs to writer
 	io.Copy(w, r)
 
 	return nil
 }
 
-func RunContainer(ctx context.Context, image, entrypoint, workdir string, paths [][]string) error {
+// RunContainerOptions describes how docker container will be runned
+type RunContainerOptions struct {
+	Image      string     // image identifier to use
+	Entrypoint string     // entrypoint (will be wrapped to sh -c '${entrypoint}')
+	Workdir    string     // where we will be at default?
+	MountPaths [][]string // which volumes we need to mount?
+	Log        io.Writer  // where to save logs
+}
+
+// RunContainer is a complex of the following tasksЖ
+// - create container
+// - run container
+// - save logs
+// - garbage (rm container)
+func RunContainer(ctx context.Context, opts RunContainerOptions) error {
 	// calculate mounts for containers
-	mounts := Mounts(paths...)
+	mounts := Mounts(opts.MountPaths...)
 	// create dirs for mounting
 	if err := CreateMountDirs(mounts); err != nil {
 		return err
@@ -47,10 +65,10 @@ func RunContainer(ctx context.Context, image, entrypoint, workdir string, paths 
 	resp, err := Client.ContainerCreate(
 		ctx,
 		&container.Config{
-			WorkingDir: workdir, // NOTE: working directory always same as `source mount` or default by image
-			Image:      image,
+			WorkingDir: opts.Workdir, // NOTE: working directory always same as `source mount` or default by image
+			Image:      opts.Image,
 			Entrypoint: []string{"sh", "-c"},
-			Cmd:        []string{entrypoint},
+			Cmd:        []string{opts.Entrypoint},
 		},
 		&container.HostConfig{
 			Mounts: mounts,
@@ -66,7 +84,7 @@ func RunContainer(ctx context.Context, image, entrypoint, workdir string, paths 
 	defer RemoveContainer(ctx, resp.ID)
 
 	// save container logs in any way
-	defer LogContainer(ctx, resp.ID, os.Stdout)
+	defer LogContainer(ctx, resp.ID, opts.Log)
 
 	// Start container
 	if err := Client.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
