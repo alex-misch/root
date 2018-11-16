@@ -6,9 +6,9 @@
 	"scripts": {
 		"test": "jest",
 		"dockerbuild": "docker run -it --rm -v $(pwd):/src -w /src node:10-alpine node --experimental-modules ./build.mjs",
-		"bmpinstall": "docker-compose exec component sh -c 'cd project && node --experimental-modules ./install.mjs'",
+		"bmpinstall": "docker-compose exec component sh -c 'cd project && node --experimental-modules ./install.mjs --no-cache'",
 		"build": "node --experimental-modules ./build.mjs",
-		"start": "sh ./bmp_modules/bmpjs/bundler/launch.sh project"
+		"start": "sh ./bmp_modules/bmpjs/bundler/launch.sh ./project"
 	},
 	"author": "",
 	"license": "ISC",

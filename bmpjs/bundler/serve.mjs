@@ -22,7 +22,6 @@ const Serve = {
 	ondisconnect: client => console.log( `Launcher "${client.project_folder}" disconnected.\t\n` ),
 	onerror: err => console.log( 'Fail', err ),
 	async ondata(client, data) {
-		console.log( 'CLIENT | ',data )
 		try {
 			if ( typeof data == 'object' ) {
 				logger.call( client, `Prepare to initialize "${data.project_folder}" project...` )
@@ -40,6 +39,7 @@ const Serve = {
 						this.waiter = null
 						await client.bundler.compile([ ...this.filesToBundle ])
 						this.filesToBundle.clear()
+						logger.call( 'Done ', this.filesToBundle.map( f => `${f}\n\t` ) )
 						logger.call(client,  "Wait for changes..." )
 					}, 200 )
 				}
