@@ -27,10 +27,12 @@ func LogContainer(ctx context.Context, id string, w io.Writer) error {
 	}
 
 	// get logs (success case)
-	r, err := Client.ContainerLogs(ctx, id, types.ContainerLogsOptions{ShowStdout: true})
+	r, err := Client.ContainerLogs(ctx, id, types.ContainerLogsOptions{ShowStdout: true, ShowStderr: true})
 	if err != nil {
 		return err
 	}
+	// logs reader available - close it after reading
+	defer r.Close()
 
 	// save logs to writer
 	io.Copy(w, r)

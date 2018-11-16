@@ -3,37 +3,28 @@ jobs:
   test:
     docker: docker://alpine
     entrypoint: |
-      echo "`cat /tmp/cache/deps` TESTDEPS" > /tmp/cache/deps
       echo 'TESTED' > /tmp/art/test
-      cat /tmp/cache/deps
       cat /tmp/art/test
 
     mount:
-      # cache: /tmp/cache
       artifact: /tmp/art
 
   build:
     docker: docker://alpine
     entrypoint: |
-      echo "`cat /tmp/cache/deps` BUILDDEPS" > /tmp/cache/deps
       echo "`cat /tmp/art/test` BUILDED" > /tmp/art/build
-      cat /tmp/cache/deps
       cat /tmp/art/build
 
     mount:
-      # cache: /tmp/cache
       artifact: /tmp/art
 
   deploy:
     docker: docker://alpine
     entrypoint: |
-      echo "`cat /tmp/cache/deps` DEPLOYDEPS" > /tmp/cache/deps
       echo "`cat /tmp/art/build` DEPLOYED" > /tmp/art/deploy
-      cat /tmp/cache/deps
       cat /tmp/art/deploy
 
     mount:
-      # cache: /tmp/cache
       artifact: /tmp/art
 
 deps:

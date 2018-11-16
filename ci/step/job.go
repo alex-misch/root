@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"sync"
 
 	"github.com/boomfunc/log"
@@ -125,26 +126,31 @@ func NewJob(context, docker, entrypoint string) Interface {
 	}
 }
 
-// func (step *Job) UnmarshalYAML(unmarshal func(interface{}) error) error {
-// 	var job Job
-//
-// 	if err := unmarshal(&job); err != nil {
-// 		return err
-// 	}
-//
-// 	// extend information - id
-// 	job.UUID = uuid.New()
-// 	// change direct job by change pointing to another address
-// 	step = &job
-//
-// 	return nil
-// }
+// UnmarshalYAML implements yaml.Unmarshaler interface
+func (step *Job) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var intermediate struct {
+		Mount      JobMount
+		Context    string
+		Docker     string
+		Entrypoint string
+	}
+
+	if err := unmarshal(&intermediate); err != nil {
+		return err
+	}
+
+	// extend information - id and other fields from intermediate struct
+	step.UUID = uuid.New()
+	step.Context = intermediate.Context
+	step.Docker = intermediate.Docker
+	step.Entrypoint = intermediate.Entrypoint
+
+	return nil
+}
 
 // run runs single docker container
 // with provided src and destination dirs as volumes
 func (step *Job) run(ctx context.Context) error {
-	step.UUID = uuid.New()
-
 	var session, origin, pack, name string
 
 	// trying to get required attributes from context and check it
@@ -162,10 +168,14 @@ func (step *Job) run(ctx context.Context) error {
 	image, err := docker.GetImage(ctx, step.Docker)
 	if err != nil {
 		return err
+	} else {
+		// if image successfully available - we need to drop it on exit
+		// TODO
+		// TODO: defer docker.ImageRemove(image)
+		// TODO
 	}
 
-	// TODO
-	// TODO: defer ImageRemove()
+	// get output for logs
 	// TODO
 
 	// Create and run container
@@ -183,7 +193,7 @@ func (step *Job) run(ctx context.Context) error {
 					step.Context,
 				),
 			),
-			// Log
+			Log: os.Stdout,
 		},
 	)
 }
