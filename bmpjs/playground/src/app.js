@@ -47,78 +47,89 @@ class App extends BMPLit {
 customElements.define('my-app', App)
 
 
-// class BMPRouter extends BMPLit {
-// 	constructor(settings) { super(); this.settings = settings }
-// 	return() {
-// 		return paternMatcher(this.settings)
-// 	}
-// }
+class BMPRouter extends BMPLit {
+	constructor(settings) { super(); this.settings = settings }
+	return() {
+		return paternMatcher(this.settings)
+	}
+}
 
-// class Router {
-// 	constructor() {
-// 		super()
-// 		this.settings = {
-// 			'/': Home
-// 		}
-// 	}
-// 	render() {
-// 		return new BMPRouter(this.settings)
-// 	}
-// }
+class Router {
+	constructor() {
+		super()
+		this.settings = {
+			'/': Home
+		}
+	}
+	render() {
+		return new BMPRouter(this.settings)
+	}
+}
 
-// class HomeBody {
-// 	constructor({title}) {
-// 		this.title = title
-// 	}
-// 	render() {
-// 		return Column({
-// 			children: [
-// 				new Text('some text')
-// 			]
-// 		})
-// 	}
-// }
+class HomeBody {
+	constructor({title}) {
+		this.title = title
+	}
 
-// class SiteNav extends Widget {
-// 	static get tag() {
-// 		return 'sitenav'
-// 	}
-// 	render() {
+	static get specifier() {
+			return 'home-body'
+	}
 
-// 	}
-// }
+	render() {
+		return Column({
+			children: [
+				new Text('some text')
+			]
+		})
+	}
+}
 
-// class Home {
-// 	constructor() {}
-// 	render() {
-// 		return new Scaffold({
-// 			appBar: new SiteNav(),
-// 			body: new HomeBody({title: 'My body'})
-// 		})
-// 	}
-// }
+class SiteNav extends Widget {
+	static get tag() {
+		return 'sitenav'
+	}
+	render() {
 
-// class Scaffold extends BMPLit {
+	}
+}
 
-// 	constructor() {
+class HomeComponent {
+	constructor() {}
 
-// 	}
+	render() {
+		return new Scaffold({
+			appBar: new SiteNav(),
+			body: new HomeBody({title: 'My body'})
+		})
+	}
+}
 
-// 	return() {
-// 		return `
-// 			<header></header>
-// 			<section>${this.render}</section>
-// 		`
-// 	}
-// }
+class Scaffold extends BMPLit {
 
-// class App extends BMPAppClass {
-// 	constructor() { super() }
-// 	render () {
-// 		return new Router()
-// 	}
+	constructor() {
 
-// }
+	}
 
-// initApp(App)
+	return() {
+		return `
+			<header></header>
+			<section>${this.render}</section>
+		`
+	}
+}
+
+class App extends BMPApp {
+
+	constructor() {
+		super()
+	}
+
+
+	render () {
+		return new Router()
+	}
+
+}
+
+initApp(App)
 

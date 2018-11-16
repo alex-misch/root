@@ -33,7 +33,8 @@
   },
   "bmp": {
     "dependencies": {
-      "bmpjs/bundler": "latest"
+      "bmpjs/bundler": "latest",
+      "bmpjs/bmp-core": "latest"
     }
   },
   "devDependencies": {

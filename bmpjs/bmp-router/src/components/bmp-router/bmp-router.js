@@ -1,5 +1,6 @@
 import { isPatternMatchUrl, extractValues } from '../../utils/path-parser.js'
 import { unifyPathname } from '../../utils/path-unifier.js'
+import { BmpCore } from 'bmp-core'
 
 // config of router that can be changed with static method
 let config = null

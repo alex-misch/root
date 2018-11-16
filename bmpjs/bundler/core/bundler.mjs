@@ -46,7 +46,6 @@ class Bundler {
 		return Promise.all(
 			filelist.map( async filepath => {
 				const { code } = await this.transform( filepath )
-				console.log( 'PUT COMPILED', filepath, 'TO', filepath.replace(this.sourceDir, this.destDir) )
 				await fs.outputFile( filepath.replace(this.sourceDir, this.destDir), code )
 			})
 		)
