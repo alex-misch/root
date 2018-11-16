@@ -54,8 +54,9 @@ func GetImage(ctx context.Context, docker string) (string, error) {
 	return info.ID, nil
 }
 
-// func RemoveImage(client *client.Client, id string) error {
-// 	opts, err := client.ImageRemove(context.Background(), id, types.ImageRemoveOptions{Force: true})
+// RemoveImage removes image by their identifier from host
+// func RemoveImage(ctx context.Context, id string) error {
+// 	opts, err := client.ImageRemove(ctx, id, types.ImageRemoveOptions{Force: true})
 // 	fmt.Println(opts)
 // 	return err
 // }

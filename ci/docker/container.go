@@ -46,6 +46,7 @@ type RunContainerOptions struct {
 	Entrypoint string     // entrypoint (will be wrapped to sh -c '${entrypoint}')
 	Workdir    string     // where we will be at default?
 	MountPaths [][]string // which volumes we need to mount?
+	Env        []string   // environment variables to pass to container
 	Log        io.Writer  // where to save logs
 }
 
@@ -69,8 +70,9 @@ func RunContainer(ctx context.Context, opts RunContainerOptions) error {
 		&container.Config{
 			WorkingDir: opts.Workdir, // NOTE: working directory always same as `source mount` or default by image
 			Image:      opts.Image,
-			Entrypoint: []string{"sh", "-c"},
+			Entrypoint: []string{"sh", "-eux", "-c"}, // NOTE: automatically enable set -eux for strict shell execution
 			Cmd:        []string{opts.Entrypoint},
+			Env:        opts.Env,
 		},
 		&container.HostConfig{
 			Mounts: mounts,

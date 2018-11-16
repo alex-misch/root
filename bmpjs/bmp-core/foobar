@@ -34,8 +34,8 @@ jobs:
     mount:
       artifact: /tmp/art
 
-deps:
-  - base
+# deps:
+  # - base
 
 direct: [test, build, deploy]
 indirect: [test]

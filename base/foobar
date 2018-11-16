@@ -1,17 +1,21 @@
 jobs:
 
   test:
-    entrypoint: 'TEST `base`'
-    docker: docker://alpine
+    docker: docker://atlassian/pipelines-awscli
+    entrypoint: |
+      echo "KEY: ${AWS_ACCESS_KEY_ID}"
+      echo "SECRET: ${AWS_SECRET_ACCESS_KEY}"
+      aws s3 ls s3://io-boomfunc-root --recursive
 
   build:
-    entrypoint: 'BUILD `base`'
-    docker: docker://alpine
+    docker: docker://golang:alpine
+    entrypoint: |
+      echo 'BUILDED'
 
   deploy:
-    entrypoint: 'DEPLOY `base`'
-    docker: docker://alpine
-
+    docker: docker://golang:alpine
+    entrypoint: |
+      echo 'DEPLOYED'
 
 direct: [test, build, deploy]
 indirect: [test]

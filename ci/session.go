@@ -46,7 +46,7 @@ func NewSession(origin string) (*Session, error) {
 	return session, nil
 }
 
-// Run implements ste.Interface. Run is main entrypoint.
+// Run implements step.Interface. Run is main entrypoint.
 // Runs all steps with the same context (mixed)
 // here context creates and cancels if something wrong
 func (session *Session) Run(ctx context.Context) error {

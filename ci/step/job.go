@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os"
+	"path/filepath"
 	"sync"
 
 	"github.com/boomfunc/log"
@@ -141,11 +143,45 @@ func (step *Job) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 	// extend information - id and other fields from intermediate struct
 	step.UUID = uuid.New()
+	step.Mount = intermediate.Mount
 	step.Context = intermediate.Context
 	step.Docker = intermediate.Docker
 	step.Entrypoint = intermediate.Entrypoint
 
 	return nil
+}
+
+// logger returns writer fo container logs
+// now it is file located at tools.LogPath
+// TODO: defer garbage
+func (step *Job) logger() (io.Writer, error) {
+	// get abs path for log file
+	path := tools.LogPath(
+		step.UUID.String(),
+	)
+
+	// check directory exists, otherwise create it
+	dir := filepath.Dir(path)
+	if _, err := os.Stat(dir); err != nil {
+		if os.IsNotExist(err) {
+			// not exists -> create dir
+			if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+				return nil, err
+			}
+		} else {
+			// some unexpected error from stat
+			return nil, err
+		}
+	}
+
+	// directory exists - create file
+	f, err := os.Create(path)
+	if err != nil {
+		// error while creating file
+		return nil, err
+	}
+
+	return f, nil
 }
 
 // run runs single docker container
@@ -164,7 +200,6 @@ func (step *Job) run(ctx context.Context) error {
 	}
 
 	// get image id for container
-	log.Debugf("Session(%s) -> %s", session, step)
 	image, err := docker.GetImage(ctx, step.Docker)
 	if err != nil {
 		return err
@@ -176,10 +211,15 @@ func (step *Job) run(ctx context.Context) error {
 	}
 
 	// get output for logs
-	// TODO
+	// can be anything implements io.Writer interface
+	// file, socket, external service, pipe
+	logger, err := step.logger()
+	if err != nil {
+		return err
+	}
 
 	// Create and run container
-	return docker.RunContainer(
+	err = docker.RunContainer(
 		ctx, // context for cancellation
 		docker.RunContainerOptions{
 			Image:      image,
@@ -193,9 +233,19 @@ func (step *Job) run(ctx context.Context) error {
 					step.Context,
 				),
 			),
-			Log: os.Stdout,
+			Log: logger,
 		},
 	)
+
+	// log results
+	// TODO: tmp, look not good
+	if err != nil {
+		log.Errorf("%s -> %s", step, tools.LogPath(step.UUID.String()))
+	} else {
+		log.Infof("%s -> %s", step, tools.LogPath(step.UUID.String()))
+	}
+
+	return err
 }
 
 // Run implements Step interface
