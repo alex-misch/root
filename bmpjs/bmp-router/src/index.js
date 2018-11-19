@@ -1,6 +1,6 @@
 
-import { BmpRouter } from './components/bmp-router/bmp-router.js'
-import { BmpView } from './components/bmp-view/bmp-view.js'
-import { BmpAnchor } from './components/bmp-anchor/bmp-anchor.js'
+import { BmpRouter } from './components/router.js'
+import { BmpView } from './components/view.js'
+import { BmpAnchor } from './components/anchor.js'
 
 export { BmpRouter }

@@ -1,22 +1,35 @@
 
-import BmpCore from "bmp-core"
-import theme from './theme/index.js'
-import { JetsmRouter } from "./router.js";
+import { BmpRouter } from "../../bmp-router/index.js"
 
-
-class JetsmarterApp extends BmpCore.Component {
+/** Main application class */
+class JetsmarterApp extends BmpCore.App {
 
 	static get is() { return 'jetsmarter-app' }
 
+	trackView() {
+		if ( typeof ga == 'function' )
+			ga('send', 'pageview')
+	}
+
+	get urlconf() {
+		return {
+			'/': "$views/home/home.component.js",
+			'/about/': "$views/about/view/about.component.js",
+			'/about/:slug/': "$views/about/detail/about-detail.component.js"
+		}
+	}
+
 	constructor() {
-		this.defineScheme(theme)
+		console.log( this.urlconf )
+		this.router = new BmpRouter({
+			viewDir: './pages',
+			urlconf: this.urlconf,
+			onChange: this.trackView.bind(this),
+		})
 	}
 
 	build() {
-		html`
-			<button @click="${ e => { console.log( 'hello' ) } }">Click me</button>
-		`
-		return new JetsmRouter()
+		return this.router.widget()
 	}
 
 

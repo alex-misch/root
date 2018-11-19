@@ -1,4 +1,4 @@
-import { replaceLink } from "../../utils/replace-link";
+import { replaceLink } from "../utils/replace-link";
 
 const refClick = function(ev) {
   ev.preventDefault()

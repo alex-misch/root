@@ -1,20 +1,33 @@
-import { StatableComponent } from 'bmp-core'
 import { grid } from '../../theme/index.js'
 import { SearchFlights } from './widgets/search-flights/search-flights.component.js';
 import { SuggestedRoutes } from './widgets/suggested-routes/suggested-routes.component.js';
 import { SuggestedPages } from './widgets/suggested-pages/search-pages.component.js';
 
-class HomePage {
+class HomePage extends StatelessWidget {
+
+	static get tagname() {
+		return 'home-page'
+	}
 
 	build() {
 		return (
 			grid.row(
 				grid.col({ common: 12 },
 					this.html`
-						<div class="">${ Theme.h3( 'Jet through life on your own terms', 'white', '' ) }</div>
+						<div class="title">Jet through life on your own terms</div>
+						${ (new SearchFlights()).widget() }
+						${ (new LegOffers()).widget() }
 					`,
-					new SuggestedRoutes(),
-					new SuggestedPages()
+				)
+			),
+			grid.row(
+				grid.col({ common: 12 },
+					(new SuggestedRoutes()).widget(),
+				)
+			),
+			grid.row(
+				grid.col({ common: 12 },
+					(new SuggestedPages()).widget()
 				)
 			)
 		)

@@ -54,7 +54,6 @@ const Serve = {
 			throw new Error( `Fail to initialize project. "working_directory" is not specified in your task` )
 		if ( !project_folder )
 			throw new Error( `Fail to initialize project. "project_folder" is not specified in your task` )
-
 		client.working_directory = working_directory
 		client.project_folder = project_folder
 		client.bundler = new Bundler({

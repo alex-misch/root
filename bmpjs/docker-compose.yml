@@ -1,0 +1,33 @@
+version: '3'
+services:
+  component:
+    image: node:10-alpine
+    environment:
+        - TCP_LISTEN_PORT=9375
+    ports:
+      - "9375:9375"
+    command: node --experimental-modules /bundler/serve.mjs
+    working_dir: /bmpjs
+    volumes:
+      - ./bundler:/bundler
+      - ./:/bmpjs
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "3000:80"
+    volumes:
+      # CORE
+      - ./bmp-core/.tmp:/usr/share/nginx/html/bmp-core
+
+      # ROUTER
+      - ./bmp-router/.tmp:/usr/share/nginx/html/bmp-router
+
+      # PLAYGROUND
+      - ./playground/.tmp:/usr/share/nginx/html/playground
+      - ./playground/bmp_modules:/usr/share/nginx/html/playground/bmp_modules
+
+      # PROJECT
+      - ./project/.tmp:/usr/share/nginx/html/project
+      - ./project/bmp_modules:/usr/share/nginx/html/project/bmp_modules
+

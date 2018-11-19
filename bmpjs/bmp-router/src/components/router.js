@@ -1,13 +1,7 @@
-import { isPatternMatchUrl, extractValues } from '../../utils/path-parser.js'
-import { unifyPathname } from '../../utils/path-unifier.js'
-import { BmpCore } from 'bmp-core'
+import { unifyPathname } from '../utils/path-unifier.js'
+import { isPatternMatchUrl, extractValues } from '../utils/path-parser.js'
 
-// config of router that can be changed with static method
-let config = null
-
-const trackView = (view) => {
-	if ( typeof ga == 'function' ) ga('send', 'pageview')
-}
+import { StatelessWidget } from '../../../bmp-app/index.js'
 
 /**
  * Router web-component class. <br/>
@@ -25,28 +19,22 @@ const trackView = (view) => {
  *    { url: '/benefit/:slug{carhopper}/', template: 'Benefit carhopper detail' }
  *  ]
  * ...
- * <bmp-router data-config="./config.js"></bmp-router>
+ * <bmp-router></bmp-router>
  */
-class BmpRouter extends HTMLElement {
-
-  /** @constructor */
-  constructor () {
-    super()
-    // preset options
-    this.scrollRegistry = {}
-    this.currentRoute = ''
-	}
-
-
-	static config( confObj ) {
-		config = confObj
-	}
-
+class BmpRouter extends StatelessWidget {
 
   static get is() {
 		return 'bmp-router'
 	}
 
+  /** @constructor */
+  constructor (config) {
+    super()
+		// preset options
+		this.config = config
+    this.scrollRegistry = {}
+		this.currentRoute = ''
+	}
 
   /**
    * Getter, returns base path from "base" tag without url origin
@@ -79,24 +67,6 @@ class BmpRouter extends HTMLElement {
   }
 
   /**
-   * Returns config file exports that was declarated in "data-config" attribute
-   * @returns {Promise}
-   */
-  requireConfig() {
-		if ( config ) {
-			return config
-		} else {
-			const confFilePath = this.getAttribute( 'data-config' )
-			if ( !confFilePath )
-				throw new Error( "Configuration file not found" )
-
-			return new Promise( resolve => {
-				require( [confFilePath], resolve )
-			})
-		}
-  }
-
-  /**
    * Removes basepath from location.pathname and return unify pathname
    * @return {string} pathname of current state
    */
@@ -116,6 +86,7 @@ class BmpRouter extends HTMLElement {
   }
 
   getViewConf( pathname ) {
+		// const urls Object.keys( this.config.urlconf )
     return this.config.routes.find( route => {
       return isPatternMatchUrl( route.url, pathname )
     })
@@ -135,25 +106,13 @@ class BmpRouter extends HTMLElement {
    * ...
    */
   _createView( pathname ) {
-    const view = document.createElement( this.config.viewTag )
-    view.setAttribute( 'pathname', pathname )
     const viewConf = this.getViewConf( pathname )
+		const params = extractValues( viewConf.pattern, this.getCurrentPathname() )
 
-    if ( viewConf ) {
-      const params = extractValues( viewConf.url, this.getCurrentPathname() )
-      let { template } = viewConf
-      if ( params ) {
-        const jsonParams = JSON.stringify(params)
-        view.setAttribute( 'params', jsonParams )
-        if ( template.includes( 'view-params' ) )
-          template = template.replace( /view-params=""/g, `view-params='${ jsonParams }'` )
-      }
-      view.innerHTML = template
-    } else {
-      view.innerHTML = this.config.not_found_template
-    }
-
-    this.appendChild( view )
+		return new View({
+			component: viewConf.component,
+			pathname: pathname
+		})
   }
 
   /**
@@ -178,7 +137,6 @@ class BmpRouter extends HTMLElement {
     let pathname = this.getCurrentPathname()
     if ( pathname != this.currentRoute ) { // fired only for changed path
 
-
       if ( this.views.length ) {
         // destroy old view(s)
         this.views.forEach( view => view.setAttribute( 'state', 'anim-out' ) )
@@ -190,6 +148,9 @@ class BmpRouter extends HTMLElement {
       // cache current route
       this.currentRoute = pathname
 
+			// call user func if it set
+			if ( typeof this.config.onRouteChange === 'function' )
+				this.config.onRouteChange()
     }
 
   }

@@ -1,5 +1,5 @@
 import { Bmp } from 'bmp-core'
-import { grid } from '../../theme/index.js'
+import { grid } from '../../../theme/index.js'
 
 class AboutPage extends Bmp.Component {
 
@@ -14,7 +14,6 @@ class AboutPage extends Bmp.Component {
 			)
 		)
 	}
-
 }
 
 export { AboutPage }
