@@ -15,7 +15,7 @@ $gox \
 
 set -eux
 
-go get -d ./...
+go get -d ./ci/...
 
 # calculate base variables
 BASE=`basename "$PWD"`
@@ -26,15 +26,16 @@ VERSION="${CIRCLE_TAG:=LOCAL}"
 ldflags="-X 'main.VERSION=${VERSION}' -X 'main.TIMESTAMP=${TIMESTAMP}'"
 
 # linux 64 bit
-# - alpine
-# - ubuntu
+# - alpine, ubuntu
 GOOS=linux GOARCH=amd64 go build \
 	-v \
 	-ldflags "${ldflags}" \
-	-o /go/bin/${BASE}-Linux-x86_64
+	-o /go/bin/${BASE}-Linux-x86_64 \
+	./ci
 
-# macos
+# - macos
 GOOS=darwin GOARCH=amd64 go build \
 	-v \
 	-ldflags "${ldflags}" \
-	-o /go/bin/${BASE}-Darwin-x86_64
+	-o /go/bin/${BASE}-Darwin-x86_64 \
+	./ci

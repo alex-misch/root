@@ -1,4 +1,4 @@
-package ci
+package session
 
 import (
 	"context"
@@ -17,7 +17,7 @@ type Session struct {
 }
 
 // repo: github.com/boomfunc/root - what we clonning what is
-func NewSession(origin string) (*Session, error) {
+func New(origin string) (*Session, error) {
 	// clone repository to `path`
 	repo, err := git.GetRepo(origin, tools.RepoPath(origin))
 	if err != nil {

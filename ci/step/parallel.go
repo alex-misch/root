@@ -37,9 +37,8 @@ func (group Parallel) Run(ctx context.Context) error {
 
 	// run concurrently
 	return executor.New(
-		ctx,
 		executor.Operation(stepsUp, nil, false),
-	).Run()
+	).Run(ctx)
 }
 
 // String implements fmt.Stringer interface

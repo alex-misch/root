@@ -12,7 +12,6 @@ var (
 	ErrUnsupportedDocker = errors.New("Unsupported type of docker image")
 )
 
-// TODO: context separate - not good
 // getImage pulls or builds image and return resulting id
 // `docker` is path to Dockerfile or path to hub -> build or pull operaiton will be performed
 func GetImage(ctx context.Context, docker string) (string, error) {
