@@ -5,9 +5,9 @@ import (
 	"net"
 	"strings"
 
-	"github.com/boomfunc/log"
 	"github.com/boomfunc/root/base/server"
 	"github.com/boomfunc/root/base/tools"
+	"github.com/boomfunc/root/tools/log"
 	"github.com/urfave/cli"
 )
 

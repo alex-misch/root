@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/boomfunc/log"
 	"github.com/boomfunc/root/ci/docker"
 	"github.com/boomfunc/root/ci/tools"
+	"github.com/boomfunc/root/tools/log"
 	"github.com/google/uuid"
 )
 

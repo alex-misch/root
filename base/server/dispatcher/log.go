@@ -1,7 +1,7 @@
 package dispatcher
 
 import (
-	"github.com/boomfunc/log"
+	"github.com/boomfunc/root/tools/log"
 )
 
 func StartupLog(workerNum int) {

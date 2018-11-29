@@ -3,7 +3,7 @@ package cli
 import (
 	"time"
 
-	"github.com/boomfunc/log"
+	"github.com/boomfunc/root/tools/log"
 )
 
 func StartupLog(name, version string, compiled time.Time) {

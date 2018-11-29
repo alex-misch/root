@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/boomfunc/log"
 	"github.com/boomfunc/root/ci/step"
+	"github.com/boomfunc/root/tools/log"
 )
 
 var (

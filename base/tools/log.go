@@ -4,7 +4,7 @@ import (
 	"os"
 	"runtime/debug"
 
-	"github.com/boomfunc/log"
+	"github.com/boomfunc/root/tools/log"
 )
 
 // TODO clear Stack

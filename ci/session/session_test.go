@@ -3,7 +3,7 @@ package session
 // import (
 // 	"testing"
 //
-// 	"github.com/boomfunc/log"
+// 	"github.com/boomfunc/root/tools/log"
 // 	"github.com/boomfunc/root/ci/step"
 // )
 //
