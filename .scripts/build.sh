@@ -29,6 +29,7 @@ VERSION="${CIRCLE_TAG:=LOCAL}"
 # calculate build/compile specific variables
 ldflags="-X 'main.VERSION=${VERSION}' -X 'main.TIMESTAMP=${TIMESTAMP}'"
 
+# compile and build
 # linux 64 bit
 # - alpine, ubuntu
 GOOS=linux GOARCH=amd64 go build \
@@ -43,3 +44,7 @@ GOOS=darwin GOARCH=amd64 go build \
 	-ldflags "${ldflags}" \
 	-o /go/bin/${BASE}-Darwin-x86_64 \
 	./${NODE} # otherwise -> go build: cannot use -o with multiple packages
+
+# chmod binaries to executable
+chmod +x /go/bin/${BASE}-Linux-x86_64
+chmod +x /go/bin/${BASE}-Darwin-x86_64

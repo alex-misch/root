@@ -1,9 +1,12 @@
 #!/bin/sh
 set -eux
 
-# PROJECT=${1:?'No `project_name` provided'}
-PROJECT='ci'
+# if first arg is node in monorepo graph - apply commands to this node (package),
+# otherwise - to root (all repo nodes)
+# NODE=${1:-.}
+NODE='ci'
 
+# install external dependencies on docker image
 apt-get update
 apt-get install -y jq
 # apk add --update --no-cache \
@@ -18,20 +21,16 @@ apt-get install -y jq
 
 # build base
 # fix, lint and build source code of base app
-# .scripts/fmt.sh
-# .scripts/build.sh
+.scripts/fmt.sh 'base'
+.scripts/build.sh 'base'
 
 # build microservice related src
-# go to micriservice src root
-# cd ${PROJECT}
+# this is cli that will be invoked by `base` (for example)
+.scripts/fmt.sh ${NODE}
+.scripts/build.sh ${NODE}
+# copy bin from /go/bin to our dir (conf needs it here)
+cp /go/bin/${NODE}-$(uname -s)-$(uname -m) ./${NODE}
 
-# fix, lint and build source code of microservice
-# pip install --no-cache-dir -r requirements.txt
-# pip freeze > requirements.txt
-# ../.ci/scripts/fmt.sh
-# ../.ci/scripts/build.sh
-# # copy bin from /go/bin to our dir (conf needs it here)
-# cp /go/bin/${PROJECT}-$(uname -s)-$(uname -m) ./${PROJECT}
 
 # set application variables for run base
 # TODO move to special config in future named boomfunc.yaml
@@ -43,31 +42,5 @@ export BMP_APPLICATION_LAYER='http'
 export BMP_DEBUG_MODE=true
 # export BMP_WORKER_NUM=8
 
-# run base
-go get -d ./base/...
-
-# calculate base variables
-TIMESTAMP=`date +%s`
-VERSION="${CIRCLE_TAG:=LOCAL}"
-
-# calculate build/compile specific variables
-ldflags="-X 'main.VERSION=${VERSION}' -X 'main.TIMESTAMP=${TIMESTAMP}'"
-
-# download via go
-go build \
-	-v \
-	-ldflags "${ldflags}" \
-	-o /boomfunc/base \
-	./base
-
-# download via curl
-# curl https://github.com/boomfunc/base/releases/download/3.0.0-rc4/base-$(uname -s)-$(uname -m) \
-# 	--create-dirs \
-# 	--location \
-# 	--output /boomfunc/base
-# chmod +x /boomfunc/base
-
-
-# /go/bin/base-Linux-x86_64 run tick
-# /go/bin/base-Linux-x86_64 run tcp
-/boomfunc/base run tcp
+# run base with cli onboard
+/go/bin/base-$(uname -s)-$(uname -m) run tcp

@@ -5,6 +5,8 @@ import (
 	"sync"
 )
 
+// execute invokes function from flow and cancel flow if function returns error
+// if error fetched through context cancellation - invoke terminates
 func execute(fn OperationFunc, errCh chan error, ctx context.Context, cancel context.CancelFunc) {
 	// check for incoming signal of uselessness of this function
 	select {
@@ -37,7 +39,8 @@ func errs(errCh chan error) error {
 }
 
 func concurrent(ctx context.Context, fns ...OperationFunc) error {
-	wg := new(sync.WaitGroup)
+	var wg sync.WaitGroup
+
 	errCh := make(chan error, 1)
 	ctx, cancel := context.WithCancel(ctx)
 
