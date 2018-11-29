@@ -15,10 +15,14 @@ $gox \
 
 set -eux
 
-go get -d ./ci/...
+# if first arg is node in monorepo graph - apply commands to this node (package),
+# otherwise - to root (all repo nodes)
+NODE=${1:-.}
+
+go get -d ./${NODE}/...
 
 # calculate base variables
-BASE=`basename "$PWD"`
+BASE=`basename "${NODE}"`
 TIMESTAMP=`date +%s`
 VERSION="${CIRCLE_TAG:=LOCAL}"
 
@@ -31,11 +35,11 @@ GOOS=linux GOARCH=amd64 go build \
 	-v \
 	-ldflags "${ldflags}" \
 	-o /go/bin/${BASE}-Linux-x86_64 \
-	./ci
+	./${NODE} # otherwise -> go build: cannot use -o with multiple packages
 
 # - macos
 GOOS=darwin GOARCH=amd64 go build \
 	-v \
 	-ldflags "${ldflags}" \
 	-o /go/bin/${BASE}-Darwin-x86_64 \
-	./ci
+	./${NODE} # otherwise -> go build: cannot use -o with multiple packages
