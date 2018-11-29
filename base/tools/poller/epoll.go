@@ -55,7 +55,9 @@ func (p *epoll) Events() ([]Event, []Event, []Event, error) {
 		if event.Events&(unix.EPOLLRDHUP|unix.EPOLLHUP) != 0 {
 			// closed by peer
 			// http://man7.org/linux/man-pages/man7/epoll.7.html
-			ce = append(ce, toEvent(event))
+			ev := toEvent(event)
+			unix.Close(int(ev.Fd()))
+			ce = append(ce, ev)
 		} else {
 			// Check event 'ready to read'
 			if event.Events&(unix.EPOLLIN) != 0 {

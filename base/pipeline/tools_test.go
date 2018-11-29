@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/boomfunc/base/tools"
+	"github.com/boomfunc/root/base/tools"
 )
 
 func checkMatrix(t *testing.T, matrix [][]int, objs []Exec) {

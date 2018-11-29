@@ -5,8 +5,9 @@ import (
 	"errors"
 	"io"
 
-	"github.com/boomfunc/base/conf"
-	"github.com/boomfunc/base/server/flow"
+	"github.com/boomfunc/root/base/conf"
+	"github.com/boomfunc/root/base/server/flow"
+	"github.com/boomfunc/root/base/tools/executor"
 )
 
 var (
@@ -47,12 +48,6 @@ func (app *Application) Handle(fl *flow.Data) {
 		return
 	}
 
-	// ip, err := srvctx.GetMeta(ctx, "ip")
-	// log.Debug("IP:", ip)
-	//
-	// values, err := srvctx.Values(ctx)
-	// log.Debug("Q:", values.Q)
-
 	// Resolve view
 	// TODO conf.ErrRouteNotFound
 	// fill context url
@@ -63,18 +58,33 @@ func (app *Application) Handle(fl *flow.Data) {
 
 	// Run pipeline (under app layer)
 	pr, pw := io.Pipe()
-	go func() {
-		// close the writer, so the reader knows there's no more data
-		defer pw.Close()
+	// we will run view through executor
+	ex := executor.New(
+		executor.Operation(
+			[]executor.OperationFunc{
+				func(ctx context.Context) error { return route.Run(ctx, req.Input, pw) },
+				func(ctx context.Context) error {
+					written, err = app.packer.Pack(pr, fl.RWC)
+					return err
+				},
+			},
+			[]executor.OperationFunc{
+				func(ctx context.Context) error { return pw.Close() },
+			},
+			true,
+		),
+	)
+	err = ex.Run(fl.Ctx)
 
-		// BUG: race condition
-		// TODO ErrServerError
-		err = route.Run(fl.Ctx, req.Input, pw)
-	}()
+	// if err != nil {
+	// 	return
+	// }
 
-	// write data to rwc only if all success
-	// TODO ErrServerError
-	written, err = app.packer.Pack(pr, fl.RWC)
+	// log.Debug("APP>PACK")
+	// // write data to rwc only if all success
+	// // TODO ErrServerError
+	// written, err = app.packer.Pack(pr, fl.RWC)
+	// log.Debug("APP>PACKED")
 
 	return
 }

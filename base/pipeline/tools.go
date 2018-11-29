@@ -4,7 +4,7 @@ import (
 	"context"
 	"io"
 
-	"github.com/boomfunc/base/tools/executor"
+	"github.com/boomfunc/root/base/tools/executor"
 )
 
 // piping establishes pipe connections between IO processes (Able)
@@ -56,6 +56,7 @@ func prepareFunc(obj Exec) executor.OperationFunc {
 	}
 }
 
+// run is special shortcut for running pipeline.Exec
 func run(ctx context.Context, objs ...Exec) error {
 	// Phase 1. PREPARE AND CHECK
 	// in case of error it will be rolled back to initial incoming state
@@ -70,8 +71,7 @@ func run(ctx context.Context, objs ...Exec) error {
 	}
 
 	return executor.New(
-		ctx,
-		executor.Operation(prepareUp, prepareDown, false),
-		executor.Operation(executeUp, nil, true),
-	).Run()
+		executor.Operation(prepareUp, prepareDown, false), // prepare all layers (prepare, down otherwise)
+		executor.Operation(executeUp, prepareDown, true),  //execute all layers (execute, down anyway)
+	).Run(ctx)
 }

@@ -1,0 +1,27 @@
+collection:
+
+  # Route
+  - pattern: "geo"
+    pipeline:
+
+      - type: process
+        cmd: python geoip.py
+
+  # Route
+  # AWS ECS ping
+  - pattern: "resize"
+    pipeline:
+
+      - type: process
+        cmd: echo GET
+
+      - type: tcp
+        address: s3.eu-west-2.amazonaws.com
+
+  # Route
+  # AWS ECS ping
+  - pattern: "ping"
+    pipeline:
+
+      - type: process
+        cmd: echo pong

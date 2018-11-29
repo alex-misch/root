@@ -9,7 +9,7 @@ import (
 type operation struct {
 	up            []OperationFunc
 	down          []OperationFunc
-	forceRollback bool
+	forceRollback bool // means that you need to rollback (run down funcs) even if up was successful
 }
 
 func (op *operation) backward(ctx context.Context) error {

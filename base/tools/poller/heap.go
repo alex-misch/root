@@ -2,10 +2,11 @@ package poller
 
 import (
 	"container/heap"
+	// "reflect"
 	"sync"
 
-	"github.com/boomfunc/base/tools"
-	"github.com/boomfunc/log"
+	"github.com/boomfunc/root/base/tools"
+	// "github.com/boomfunc/log"
 )
 
 type HeapItem struct {
@@ -18,10 +19,10 @@ type pollerHeap struct {
 	// poller integration
 	poller Interface
 	once   tools.Once // poller locking
+	wg     sync.WaitGroup
 
 	// mutex and state
 	mutex   sync.Mutex // this mutex guards variables below
-	cond    *sync.Cond
 	pending []*HeapItem
 }
 
@@ -30,7 +31,6 @@ type pollerHeap struct {
 func HeapWithPoller(poller Interface) (heap.Interface, error) {
 	h := new(pollerHeap)
 	h.poller = poller
-	h.cond = sync.NewCond(&h.mutex)
 	h.pending = make([]*HeapItem, 0)
 
 	heap.Init(h)
@@ -96,14 +96,17 @@ func (h *pollerHeap) Swap(i, j int) {
 // adds flow to poller
 func (h *pollerHeap) Push(x interface{}) {
 	if item, ok := x.(*HeapItem); ok {
+		h.mutex.Lock()
+
 		// try to add to poller
-		// TODO error not visible! in transport layer
 		if err := h.poller.Add(item.Fd); err == nil {
 			// fd in poller, store it for .Pop()
-			h.mutex.Lock()
 			h.pending = append(h.pending, item)
-			h.mutex.Unlock()
+		} else {
+			// TODO error not visible! in transport layer
 		}
+
+		h.mutex.Unlock()
 	}
 }
 
@@ -111,26 +114,23 @@ func (h *pollerHeap) Push(x interface{}) {
 // pops first in flow with `ready` status
 func (h *pollerHeap) Pop() interface{} {
 	for {
+		// TODO: loop infinity
+		// h.wg.Add(1)
+
 		// background poll refresh
 		go h.Poll()
 
 		// try to pop ready
 		h.mutex.Lock()
-
-		log.Debug("POPING")
 		value := h.pop()
-		if value == nil {
-			// BUG looks like here some lock is not releasing
-			// TODO debug
-			log.Debug("POPED <nil>, WAIT")
-			h.cond.Wait()
-		} else {
-			log.Debug("POPED REAL, RETURN")
-			h.mutex.Unlock()
-			return value
-		}
-
 		h.mutex.Unlock()
+
+		if value != nil {
+			return value
+		} else {
+			h.wg.Wait()
+			// log.Debug("h.wg.Wait():", reflect.ValueOf(&h.wg).Pointer())
+		}
 	}
 }
 
@@ -166,6 +166,11 @@ func (h *pollerHeap) Poll() {
 	// f is poll with actualizing heap data
 	// Only one running instance of this function per time across all workers
 	f := func() {
+		h.mutex.Lock()
+		h.wg.Add(1) // set waiters wait for this polling
+		// log.Debug("h.wg.Add(1):", reflect.ValueOf(&h.wg).Pointer())
+		h.mutex.Unlock()
+
 		// blocking mode operation !!
 		re, ce := h.poll()
 
@@ -174,7 +179,10 @@ func (h *pollerHeap) Poll() {
 		h.actualize(re, ce) // push ready, excluding closed
 		h.mutex.Unlock()
 
-		h.cond.Broadcast() // release all .Wait()
+		h.mutex.Lock()
+		h.wg.Done() // release waiting
+		// log.Debug("h.wg.Done():", reflect.ValueOf(&h.wg).Pointer())
+		h.mutex.Unlock()
 	}
 
 	// f invokes with mutex locking on once.Do layer

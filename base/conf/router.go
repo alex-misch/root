@@ -7,8 +7,8 @@ import (
 	"net/url"
 	"regexp"
 
-	"github.com/boomfunc/base/pattql"
-	"github.com/boomfunc/base/pipeline"
+	"github.com/boomfunc/root/base/pattql"
+	"github.com/boomfunc/root/base/pipeline"
 )
 
 var (

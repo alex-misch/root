@@ -1,7 +1,7 @@
 package tools
 
 // import (
-// 	"github.com/boomfunc/base/server/context"
+// 	"github.com/boomfunc/root/base/server/context"
 // 	"net/url"
 // 	"testing"
 // 	// "os/exec"
@@ -34,8 +34,8 @@ package tools
 // }
 
 // func TestMklremfle(t *testing.T) {
-// 	out, err := exec.Command("/go/src/github.com/boomfunc/base/geo/geoip", "-lang=ru", "-ip=185.86.151.11").Output()
-// 	// out, err := exec.Command("ls", "-lah", "/go/src/github.com/boomfunc/base/geo").Output()
+// 	out, err := exec.Command("/go/src/github.com/boomfunc/root/base/geo/geoip", "-lang=ru", "-ip=185.86.151.11").Output()
+// 	// out, err := exec.Command("ls", "-lah", "/go/src/github.com/boomfunc/root/base/geo").Output()
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}

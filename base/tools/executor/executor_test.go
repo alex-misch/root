@@ -9,7 +9,6 @@ func TestExecutor(t *testing.T) {
 	obj := &fake{mockBB: true}
 
 	ex := New(
-		context.TODO(),
 		Operation(
 			[]OperationFunc{obj.a},
 			nil,
@@ -38,8 +37,10 @@ func TestExecutor(t *testing.T) {
 	})
 
 	t.Run("Run", func(t *testing.T) {
+		ctx := context.TODO()
+
 		t.Run("Success", func(t *testing.T) {
-			if err := ex.Run(); err != nil {
+			if err := ex.Run(ctx); err != nil {
 				t.Fatalf("Unexpected error, got %q", err.Error())
 			}
 
@@ -58,7 +59,7 @@ func TestExecutor(t *testing.T) {
 				),
 			)
 
-			err := ex.Run()
+			err := ex.Run(ctx)
 			if err == nil {
 				t.Fatal("Expected error, got nil")
 			}

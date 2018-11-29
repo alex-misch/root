@@ -5,7 +5,7 @@ import (
 	"context"
 	"text/template"
 
-	srvctx "github.com/boomfunc/base/server/context"
+	srvctx "github.com/boomfunc/root/base/server/context"
 )
 
 func render(ctx context.Context, s string) string {

@@ -4,12 +4,12 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/boomfunc/base/server/flow"
 	"github.com/boomfunc/log"
+	"github.com/boomfunc/root/base/server/flow"
 )
 
 // TODO ADD https://stackoverflow.com/questions/17817204/how-to-set-ulimit-n-from-a-golang-program
-func StartupLog(transportName, applicationName, addr, config string) {
+func StartupLog(transportName, applicationName, addr, config string, srv *Server) {
 	// calculate current working directory
 	var cwd string
 	cwd, err := filepath.Abs("./")
@@ -18,9 +18,12 @@ func StartupLog(transportName, applicationName, addr, config string) {
 	}
 
 	log.Infof(
-		"server:\tNode: %s",
+		"server:\t%s",
+		log.Wrap(srv.node.String(), log.Bold),
+	)
+
+	log.Infof(
 		"server:\t%s (%s application) up and running on %s",
-		log.Wrap(applicationName, log.Bold),
 		log.Wrap(transportName, log.Bold),
 		log.Wrap(applicationName, log.Bold),
 		log.Wrap(addr, log.Bold, log.Blink),

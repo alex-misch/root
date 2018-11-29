@@ -24,7 +24,7 @@ func execute(fn OperationFunc, errCh chan error, ctx context.Context, cancel con
 // errs is internal API tool for collecting erros from multiple routines or somethink else
 // sended throw channel
 func errs(errCh chan error) error {
-	// returning errors (from channel if exists or nil)
+	// returning errors (from buffered channel if exists or nil)
 	select {
 	case err := <-errCh:
 		// context cancelled by another function
@@ -42,7 +42,10 @@ func concurrent(ctx context.Context, fns ...OperationFunc) error {
 	ctx, cancel := context.WithCancel(ctx)
 
 	// Make sure it's called to release resources even if no errors
-	defer cancel()
+	defer func() {
+		close(errCh)
+		cancel()
+	}()
 
 	for _, fn := range fns {
 		wg.Add(1)

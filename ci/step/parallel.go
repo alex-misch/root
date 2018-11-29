@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/boomfunc/base/tools/executor"
+	"github.com/boomfunc/root/base/tools/executor"
 )
 
 // Parallel is group of container running in parallel (asynchronous)

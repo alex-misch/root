@@ -6,7 +6,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/boomfunc/base/server/flow"
+	"github.com/boomfunc/root/base/server/flow"
 )
 
 // Load test

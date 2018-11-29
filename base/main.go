@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/boomfunc/base/cli"
+	"github.com/boomfunc/root/base/cli"
 )
 
 var VERSION string

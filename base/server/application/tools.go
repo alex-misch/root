@@ -1,7 +1,7 @@
 package application
 
 import (
-	"github.com/boomfunc/base/conf"
+	"github.com/boomfunc/root/base/conf"
 )
 
 func JSON(router *conf.Router) Interface {

@@ -26,18 +26,10 @@ func (o *Once) Do(f func(), reset bool) {
 	if o.lock == 0 {
 		atomic.StoreUint32(&o.lock, 1)
 		f()
+		if reset {
+			atomic.StoreUint32(&o.lock, 0)
+		}
 	}
 
-	if reset {
-		atomic.StoreUint32(&o.lock, 0)
-	}
-	o.m.Unlock()
-}
-
-// Reset indicates that the next call to Do should actually be called
-// once again.
-func (o *Once) Reset() {
-	o.m.Lock()
-	atomic.StoreUint32(&o.lock, 0)
 	o.m.Unlock()
 }

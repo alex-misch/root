@@ -6,13 +6,11 @@ import (
 
 type executor struct {
 	operations []*operation
-	ctx        context.Context
 }
 
-func New(ctx context.Context, operations ...*operation) *executor {
+func New(operations ...*operation) *executor {
 	return &executor{
 		operations: operations,
-		ctx:        ctx,
 	}
 }
 
@@ -22,9 +20,9 @@ func (ex *executor) AddOperations(ops ...*operation) {
 	}
 }
 
-func (ex *executor) Run() error {
+func (ex *executor) Run(ctx context.Context) error {
 	for _, op := range ex.operations {
-		if err := op.Run(ex.ctx); err != nil {
+		if err := op.Run(ctx); err != nil {
 			return err
 		}
 	}

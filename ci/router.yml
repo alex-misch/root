@@ -1,0 +1,9 @@
+collection:
+
+  # Route
+  - pattern: "github"
+    pipeline:
+
+      - type: process
+        cmd: echo 'dddddd'
+        # cmd: ./ci/github.sh

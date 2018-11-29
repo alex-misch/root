@@ -5,9 +5,9 @@ import (
 	"net"
 	"strings"
 
-	"github.com/boomfunc/base/server"
-	"github.com/boomfunc/base/tools"
 	"github.com/boomfunc/log"
+	"github.com/boomfunc/root/base/server"
+	"github.com/boomfunc/root/base/tools"
 	"github.com/urfave/cli"
 )
 
@@ -44,7 +44,7 @@ func runCommandAction(c *cli.Context) {
 	}
 
 	// Run
-	server.StartupLog(strings.ToUpper(transport), strings.ToUpper(application), fmt.Sprintf("%s:%d", ip, port), config)
+	server.StartupLog(strings.ToUpper(transport), strings.ToUpper(application), fmt.Sprintf("%s:%d", ip, port), config, srv)
 	// blocking mode
 	srv.Serve()
 }

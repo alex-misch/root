@@ -57,7 +57,9 @@ func (p *kqueue) Events() ([]Event, []Event, []Event, error) {
 	for _, event := range events {
 		if event.Flags&(unix.EV_EOF) != 0 {
 			// closed by peer
-			ce = append(ce, toEvent(event))
+			ev := toEvent(event)
+			unix.Close(int(ev.Fd()))
+			ce = append(ce, ev)
 		} else {
 			// Check event 'ready to read'
 			if event.Filter&(unix.EVFILT_READ) != 0 {

@@ -3,24 +3,23 @@ package server
 import (
 	"container/heap"
 
-	"github.com/boomfunc/base/server/application"
-	"github.com/boomfunc/base/server/context"
-	"github.com/boomfunc/base/server/dispatcher"
-	"github.com/boomfunc/base/server/flow"
-	"github.com/boomfunc/base/server/transport"
-	"github.com/boomfunc/base/tools"
-	"github.com/boomfunc/base/tools/chronometer"
+	"github.com/boomfunc/root/base/server/application"
+	"github.com/boomfunc/root/base/server/context"
+	"github.com/boomfunc/root/base/server/dispatcher"
+	"github.com/boomfunc/root/base/server/flow"
+	"github.com/boomfunc/root/base/server/transport"
+	"github.com/boomfunc/root/base/tools"
+	"github.com/boomfunc/root/tools/chronometer"
 	"github.com/google/uuid"
 )
 
 type Server struct {
 	node uuid.UUID
 
-	transport  transport.Interface // TODO https://github.com/boomfunc/base/issues/20
+	transport  transport.Interface
 	app        application.Interface
 	dispatcher *dispatcher.Dispatcher
 
-	heap     heap.Interface
 	errCh    chan error
 	outputCh chan *flow.Data
 }
@@ -36,7 +35,7 @@ func (srv *Server) engine() {
 
 		// Phase 2. Obtain socket with data from heap/poller
 		// blocking mode!
-		if flow, ok := heap.Pop(srv.heap).(*flow.Data); ok {
+		if flow, ok := heap.Pop(srv.transport).(*flow.Data); ok {
 			flow.Chronometer.Exit("transport")
 			flow.Chronometer.AddNode("dispatcher", node)
 			context.SetMeta(flow.Ctx, "srv", srv)

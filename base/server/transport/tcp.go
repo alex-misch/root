@@ -5,8 +5,8 @@ import (
 	"net"
 	"time"
 
-	"github.com/boomfunc/base/server/flow"
-	"github.com/boomfunc/base/tools/poller"
+	"github.com/boomfunc/root/base/server/flow"
+	"github.com/boomfunc/root/base/tools/poller"
 )
 
 var (
@@ -17,13 +17,31 @@ var (
 
 type tcp struct {
 	listener *net.TCPListener
-	// server integration
-	heap  heap.Interface // also connect with poller
-	errCh chan error
+	heap     heap.Interface // also connect with poller
+	errCh    chan error
 }
 
-func (tr *tcp) Connect(heap heap.Interface, errCh chan error) {
-	tr.heap = heap
+func (tr *tcp) Len() int {
+	return tr.heap.Len()
+}
+
+func (tr *tcp) Less(i, j int) bool {
+	return tr.heap.Less(i, j)
+}
+
+func (tr *tcp) Swap(i, j int) {
+	tr.heap.Swap(i, j)
+}
+
+func (tr *tcp) Push(x interface{}) {
+	tr.heap.Push(x)
+}
+
+func (tr *tcp) Pop() interface{} {
+	return tr.heap.Pop()
+}
+
+func (tr *tcp) Connect(errCh chan error) {
 	tr.errCh = errCh
 }
 

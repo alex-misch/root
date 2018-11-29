@@ -1,11 +1,13 @@
 package pipeline
 
 import (
+	"bytes"
 	"context"
+	"fmt"
 	"os/exec"
 	"strings"
 
-	"github.com/boomfunc/base/tools"
+	"github.com/boomfunc/root/base/tools"
 )
 
 type process struct {
@@ -59,7 +61,11 @@ func (p *process) check(ctx context.Context) error {
 	return nil
 }
 
+// TODO here is very tmp solution of stderr, look something better
+// TODO: maybe all flow run through executor?
 func (p *process) run(ctx context.Context) error {
+	stderr := new(bytes.Buffer)
+
 	// fill templates from ctx
 	parts := strings.Split(
 		tools.StringFromCtx(ctx, p.cmd), " ",
@@ -69,6 +75,7 @@ func (p *process) run(ctx context.Context) error {
 
 	cmd.Stdin = p.stdin
 	cmd.Stdout = p.stdout
+	cmd.Stderr = stderr
 
 	if cmd.Process == nil {
 		if err := cmd.Start(); err != nil {
@@ -76,7 +83,16 @@ func (p *process) run(ctx context.Context) error {
 		}
 	}
 
-	return cmd.Wait()
+	if err := cmd.Wait(); err != nil {
+		return err
+	}
+
+	// check for case exit code = 0, but stderr got something
+	if len := stderr.Len(); len > 0 {
+		return fmt.Errorf("%s", stderr)
+	}
+
+	return nil
 }
 
 func (p *process) close(ctx context.Context) error {

@@ -4,12 +4,12 @@ import (
 	"errors"
 	"net"
 
-	"github.com/boomfunc/base/conf"
-	"github.com/boomfunc/base/server/application"
-	"github.com/boomfunc/base/server/dispatcher"
-	"github.com/boomfunc/base/server/flow"
-	"github.com/boomfunc/base/server/transport"
-	"github.com/boomfunc/base/tools/poller"
+	"github.com/boomfunc/root/base/conf"
+	"github.com/boomfunc/root/base/server/application"
+	"github.com/boomfunc/root/base/server/dispatcher"
+	"github.com/boomfunc/root/base/server/flow"
+	"github.com/boomfunc/root/base/server/transport"
+	"github.com/google/uuid"
 )
 
 var (
@@ -54,23 +54,18 @@ func New(transportName string, applicationName string, workers int, ip net.IP, p
 	}
 
 	// Phase 4. transport layer recognized, we can create support data for connection layers
-	heap, err := poller.Heap()
-	if err != nil {
-		return nil, err
-	}
 	errCh := make(chan error)
 	outputCh := make(chan *flow.Data)
-	tr.Connect(heap, errCh)
+	tr.Connect(errCh)
 
 	// Phase 5. Create server
 	srv := new(Server)
-	// uuid.New()
+	srv.node = uuid.New()
 	// flow data
 	srv.transport = tr
 	srv.app = app
 	srv.dispatcher = dispatcher.New(workers)
 	// channels and data storages
-	srv.heap = heap
 	srv.errCh = errCh
 	srv.outputCh = outputCh
 
