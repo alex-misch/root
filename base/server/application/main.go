@@ -7,7 +7,7 @@ import (
 
 	"github.com/boomfunc/root/base/conf"
 	"github.com/boomfunc/root/base/server/flow"
-	"github.com/boomfunc/root/base/tools/executor"
+	"github.com/boomfunc/root/tools/executor"
 )
 
 var (

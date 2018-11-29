@@ -4,7 +4,7 @@ import (
 	"context"
 	"io"
 
-	"github.com/boomfunc/root/base/tools/executor"
+	"github.com/boomfunc/root/tools/executor"
 )
 
 // piping establishes pipe connections between IO processes (Able)
