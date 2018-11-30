@@ -6,8 +6,8 @@ import (
 	"strings"
 )
 
-// Parallel is group of container running in parallel (asynchronous)
-type Parallel []Step
+// parallel is group of container running in parallel (asynchronous)
+type parallel []Step
 
 // NewParallel creates group of steps, running in parallel
 // (just utility function)
@@ -19,21 +19,21 @@ func NewParallel(steps ...Step) Step {
 	case 1: // there is single step, no need to group
 		return steps[0]
 	default: // many steps, grouping this
-		return Parallel(steps)
+		return parallel(steps)
 	}
 }
 
 // Run implements Step interface
 // just run one by one
-func (group Parallel) Run(ctx context.Context) error {
-	return concurrent(ctx, group...)
+func (steps parallel) Run(ctx context.Context) error {
+	return concurrent(ctx, steps...)
 }
 
 // String implements fmt.Stringer interface
-func (group Parallel) String() string {
-	parts := make([]string, len(group))
+func (steps parallel) String() string {
+	parts := make([]string, len(steps))
 
-	for i, step := range group {
+	for i, step := range steps {
 		parts[i] = fmt.Sprintf("\t%s", step)
 	}
 

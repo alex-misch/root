@@ -7,7 +7,7 @@ import (
 )
 
 // group is a group of steps running synchronous
-type Group []Step
+type group []Step
 
 // NewGroup creates group of steps
 // (just utility function)
@@ -20,21 +20,21 @@ func NewGroup(steps ...Step) Step {
 	case 1: // there is single step, no need to group
 		return steps[0]
 	default: // many steps, grouping this
-		return Group(steps)
+		return group(steps)
 	}
 }
 
 // Run implements Step interface
 // just run one by one
-func (group Group) Run(ctx context.Context) error {
-	return synchronous(ctx, group...)
+func (steps group) Run(ctx context.Context) error {
+	return synchronous(ctx, steps...)
 }
 
 // String implements fmt.Stringer interface
-func (group Group) String() string {
-	parts := make([]string, len(group))
+func (steps group) String() string {
+	parts := make([]string, len(steps))
 
-	for i, step := range group {
+	for i, step := range steps {
 		parts[i] = fmt.Sprintf("\t%s", step)
 	}
 

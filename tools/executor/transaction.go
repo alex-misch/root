@@ -4,8 +4,8 @@ import (
 	"context"
 )
 
-// Transaction is Step with rollback functionality in case of error
-type Transaction struct {
+// transaction is Step with rollback functionality in case of error
+type transaction struct {
 	up    Step // step to achieve the desired state
 	down  Step // step to rollback to the initial state
 	force bool // indicates that initial state must be rolled back anyway (even if no errors)
@@ -18,11 +18,11 @@ func NewTransaction(up, down Step, force bool) Step {
 	}
 
 	// there is something to up and something to rollback, full transaction
-	return &Transaction{up, down, force}
+	return &transaction{up, down, force}
 }
 
 // backward is small tool for rolling back
-func (t *Transaction) backward(ctx context.Context) error {
+func (t *transaction) backward(ctx context.Context) error {
 	if t.down != nil {
 		return t.down.Run(ctx)
 	}
@@ -31,7 +31,7 @@ func (t *Transaction) backward(ctx context.Context) error {
 }
 
 // Run implements Step interface
-func (t *Transaction) Run(ctx context.Context) error {
+func (t *transaction) Run(ctx context.Context) error {
 	if t.up != nil {
 		// forward stage
 		if err := t.up.Run(ctx); err != nil {
