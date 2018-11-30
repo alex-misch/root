@@ -9,9 +9,9 @@ import (
 // parallel is group of container running in parallel (asynchronous)
 type parallel []Step
 
-// NewParallel creates group of steps, running in parallel
+// Parallel creates group of steps, running in parallel
 // (just utility function)
-func NewParallel(steps ...Step) Step {
+func Parallel(steps ...Step) Step {
 	switch len(steps) {
 	// TODO: what? what empty response?
 	case 0:

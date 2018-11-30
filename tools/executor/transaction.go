@@ -11,7 +11,7 @@ type transaction struct {
 	force bool // indicates that initial state must be rolled back anyway (even if no errors)
 }
 
-func NewTransaction(up, down Step, force bool) Step {
+func Transaction(up, down Step, force bool) Step {
 	// special case - if up and not down - there is no to rollback - no need to create transaction
 	if down == nil {
 		return up
