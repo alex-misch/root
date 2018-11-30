@@ -1,5 +1,9 @@
 package executor
 
+import (
+	"context"
+)
+
 // Func is basic type of step (executable)
 // just wrapper for function that implements Step interface
 type Func func(context.Context) error

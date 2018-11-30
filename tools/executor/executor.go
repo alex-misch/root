@@ -4,28 +4,19 @@ import (
 	"context"
 )
 
-type executor struct {
-	operations []*operation
+// executor is main entrypoint with two kinds of run:
+// - concurrent
+// - synchronous
+type executor []Step
+
+func New(steps ...Step) executor {
+	return executor(steps)
 }
 
-func New(operations ...*operation) *executor {
-	return &executor{
-		operations: operations,
-	}
+func (group executor) Concurrent(ctx context.Context) error {
+	return concurrent(ctx, group...)
 }
 
-func (ex *executor) AddOperations(ops ...*operation) {
-	for _, op := range ops {
-		ex.operations = append(ex.operations, op)
-	}
-}
-
-func (ex *executor) Run(ctx context.Context) error {
-	for _, op := range ex.operations {
-		if err := op.Run(ctx); err != nil {
-			return err
-		}
-	}
-
-	return nil
+func (group executor) Synchronous(ctx context.Context) error {
+	return synchronous(ctx, group...)
 }

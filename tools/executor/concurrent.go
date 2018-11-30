@@ -5,6 +5,8 @@ import (
 	"sync"
 )
 
+// Set of tools for concurrent flow running
+
 // execute is a single step invoсation from flow and cancel flow if error returns
 // if error fetched through context cancellation - invoke terminates
 func execute(step Step, errCh chan error, ctx context.Context, cancel context.CancelFunc) {
@@ -59,7 +61,7 @@ func concurrent(ctx context.Context, steps ...Step) error {
 
 		go func(step Step) {
 			execute(step, errCh, ctx, cancel) // single execution
-			wg.Done() // release waiting
+			wg.Done()                         // release waiting
 		}(step)
 	}
 
