@@ -5,9 +5,9 @@ import (
 	"sync"
 )
 
-// execute invokes function from flow and cancel flow if function returns error
+// execute is a single step invoсation from flow and cancel flow if error returns
 // if error fetched through context cancellation - invoke terminates
-func execute(fn OperationFunc, errCh chan error, ctx context.Context, cancel context.CancelFunc) {
+func execute(step Step, errCh chan error, ctx context.Context, cancel context.CancelFunc) {
 	// check for incoming signal of uselessness of this function
 	select {
 	case <-ctx.Done():
@@ -16,7 +16,7 @@ func execute(fn OperationFunc, errCh chan error, ctx context.Context, cancel con
 	default:
 		// Default is must to avoid blocking
 		// we can start atomic function execution
-		if err := fn(ctx); err != nil {
+		if err := step.Run(ctx); err != nil {
 			errCh <- err
 			cancel()
 		}
@@ -38,7 +38,11 @@ func errs(errCh chan error) error {
 	}
 }
 
-func concurrent(ctx context.Context, fns ...OperationFunc) error {
+// concurrent is special tool that running steps asynchronous (concurrent)
+// error resolving by channels
+// cancellation in case of error through context cancellation
+// wait for completion through sync.WaitGroup
+func concurrent(ctx context.Context, steps ...Step) error {
 	var wg sync.WaitGroup
 
 	errCh := make(chan error, 1)
@@ -50,14 +54,13 @@ func concurrent(ctx context.Context, fns ...OperationFunc) error {
 		cancel()
 	}()
 
-	for _, fn := range fns {
+	for _, step := range steps {
 		wg.Add(1)
 
-		go func(fn OperationFunc) {
-			defer wg.Done()
-
-			execute(fn, errCh, ctx, cancel)
-		}(fn)
+		go func(step Step) {
+			execute(step, errCh, ctx, cancel) // single execution
+			wg.Done() // release waiting
+		}(step)
 	}
 
 	// wait until all completed
