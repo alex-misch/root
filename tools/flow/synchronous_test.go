@@ -9,45 +9,46 @@ import (
 )
 
 func TestSynchronous(t *testing.T) {
+	var a, b, c int
+	var bazErr = errors.New("Error from baz")
+
+	var foo Step = Func(func(ctx context.Context) error {
+		a = 1
+		return nil
+	})
+
+	var bar Step = Func(func(ctx context.Context) error {
+		b = 1
+		return nil
+	})
+
+	var baz Step = Func(func(ctx context.Context) error {
+		c = 1
+		return bazErr
+	})
+
 	tableTests := []struct {
 		steps    []Step
-		i        int // failed number
 		err      error
-		counters []int // slice of counter after execution
+		counters []int // slice of counter after execution in format {a, b, c}
 	}{
-		{ // 2 failed - error arrived
-			[]Step{Dummy(1), Dummy(2), Dummy(3)}, 2, errors.New("dummy: Error from 2"), []int{1, 1, 0}, // second step not invoked, because first failed
-		},
-		{ // 1 failed - error arrived
-			[]Step{Dummy(1), Dummy(2)}, 1, errors.New("dummy: Error from 1"), []int{1, 0}, // second step not invoked, because first failed
-		},
-		{ // totally success case
-			[]Step{Dummy(1), Dummy(2)}, 100500, nil, []int{1, 1},
-		},
+		{[]Step{foo, baz, bar}, bazErr, []int{1, 0, 1}}, // 2 failed - error arrived
+		{[]Step{baz, foo, bar}, bazErr, []int{0, 0, 1}}, // 1 failed - error arrived
+		{[]Step{foo, bar}, nil, []int{1, 1, 0}},         // totally success case
 	}
 
 	for i, tt := range tableTests {
 		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-			// create context
-			ctx := context.WithValue(context.Background(), "dummy", tt.i)
+			// reset counters
+			a, b, c = 0, 0, 0
+
 			// just check returning error data
-			if err := synchronous(ctx, tt.steps...); tt.err != nil {
-				// we expecting error
-				if err.Error() != tt.err.Error() {
-					t.Fatalf("err: expected %q, got %q", tt.err, err)
-				}
-			} else if err != tt.err {
-				// we do not expecting error, just check
+			if err := synchronous(context.TODO(), tt.steps...); tt.err != err {
 				t.Fatalf("err: expected %q, got %q", tt.err, err)
 			}
 
 			// check counter on dummies
-			counters := make([]int, len(tt.steps))
-			for i, step := range tt.steps {
-				counters[i] = step.(*dummy).counter
-			}
-
-			if !reflect.DeepEqual(counters, tt.counters) {
+			if counters := []int{a, b, c}; !reflect.DeepEqual(counters, tt.counters) {
 				t.Fatalf("counters: expected %q, got %q", tt.counters, counters)
 			}
 		})
