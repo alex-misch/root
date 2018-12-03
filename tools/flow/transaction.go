@@ -37,14 +37,17 @@ func (t *transaction) backward(ctx context.Context) error {
 
 // Run implements Step interface
 func (t *transaction) Run(ctx context.Context) error {
-	if t.up != nil {
-		// forward stage
-		if err := t.up.Run(ctx); err != nil {
-			t.backward(ctx) // forward movement failed, need to rollback
-			return err      // but return error from run
-		} else if t.force {
-			return t.backward(ctx) // forward movement failed, need to rollback and return error from backward stage
-		}
+	// check on orphan
+	if t.up == nil {
+		return ErrStepOrphan
+	}
+
+	// forward stage
+	if err := t.up.Run(ctx); err != nil {
+		t.backward(ctx) // forward movement failed, need to rollback
+		return err      // but return error from run
+	} else if t.force {
+		return t.backward(ctx) // forward movement failed, need to rollback and return error from backward stage
 	}
 
 	return nil

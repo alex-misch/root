@@ -6,7 +6,9 @@ import (
 )
 
 var (
-	// describing situation when step haven't got required context information about himself to run
+	// describing situation when step haven't got required context
+	// or some another information about himself to run
+	// in other words - improperly configured step
 	ErrStepOrphan = errors.New("flow: Step run without required context")
 )
 
