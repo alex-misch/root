@@ -4,9 +4,8 @@
   "description": "App build to use with bmp-core modules",
   "scripts": {
     "test": "jest --coverage",
-    "path": "echo /$npm_package_name/$npm_package_version",
-    "start": "docker-compose exec bmp-router sh -c 'bmp-component -w --babel --env=production'",
-    "docs": "jsdoc ./src/* --destination ./docs/ --private --readme ./README.md"
+		"path": "echo /$npm_package_name/$npm_package_version",
+		"build": "node --experimental-modules build.mjs"
   },
   "repository": {
     "type": "git",

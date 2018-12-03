@@ -45,8 +45,15 @@ class Bundler {
 	compile(filelist) {
 		return Promise.all(
 			filelist.map( async filepath => {
-				const { code } = await this.transform( filepath )
-				await fs.outputFile( filepath.replace(this.sourceDir, this.destDir), code )
+
+				const sourceFile = path.resolve(filepath)
+				if ( sourceFile.includes(this.sourceDir) ) {
+					const { code } = await this.transform( filepath )
+					const destFile = sourceFile.replace(this.sourceDir, this.destDir)
+					await fs.outputFile( destFile, code )
+				} else {
+					console.warn( 'SKIP: Trying to compile', filepath, 'but it not in', this.sourceDir )
+				}
 			})
 		)
 	}

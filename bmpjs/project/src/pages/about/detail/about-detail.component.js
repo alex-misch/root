@@ -1,21 +1,12 @@
-import { Bmp } from 'bmp-core'
-import { grid } from '../../theme/index.js'
+import { default as Core } from 'bmpjs/core'
+// import { grid } from '../../theme/grid.js'
 
-class AboutDetailPage extends Bmp.Component {
+class AboutDetailPage extends Core.StatelessWidget {
 
-	build() {
-		return (
-			grid.row(
-				grid.col({ common: 12 },
-					(new SearchFlights()).widget(),
-					(new PriorityRoutesList()).widget(),
-					(new PriorityPagesList()).widget(),
-				)
-			)
-		)
+	render() {
+		return this.html`<h1>About detail page</h1>`
 	}
 
 }
 
 export { AboutDetailPage }
-œ

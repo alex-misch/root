@@ -30,16 +30,18 @@ const Serve = {
 			} else {
 				// filechange
 				if ( client.bundler ) {
+					console.log( client.bundler.sourceDir, data )
 					data
 						.split( `${client.working_directory}/`)
-						.filter( pathname => pathname.includes(client.bundler.sourceDir) )
+						.filter( pathname => pathname.includes(`${client.project_folder}/src`) )
 						.forEach( filepath => this.filesToBundle.add( filepath ) )
 					clearTimeout( this.waiter ) // throttled
 					this.waiter = setTimeout( async () => {
 						this.waiter = null
-						await client.bundler.compile([ ...this.filesToBundle ])
+						const filelist = [...this.filesToBundle]
 						this.filesToBundle.clear()
-						logger.call( 'Done ', this.filesToBundle.map( f => `${f}\n\t` ) )
+						logger.call(client, 'Files changed ', ...filelist )
+						await client.bundler.compile( filelist )
 						logger.call(client,  "Wait for changes..." )
 					}, 200 )
 				}
@@ -51,9 +53,10 @@ const Serve = {
 	},
 	async initBundler(client, {working_directory, project_folder}) {
 		if ( !working_directory )
-			throw new Error( `Fail to initialize project. "working_directory" is not specified in your task` )
+			throw new Error( `Fail to initialize project. "working_directory" is not specified in your launcher` )
 		if ( !project_folder )
-			throw new Error( `Fail to initialize project. "project_folder" is not specified in your task` )
+			throw new Error( `Fail to initialize project. "project_folder" is not specified in your launcher` )
+
 		client.working_directory = working_directory
 		client.project_folder = project_folder
 		client.bundler = new Bundler({

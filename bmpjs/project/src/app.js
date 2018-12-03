@@ -1,38 +1,34 @@
+import { default as Core } from 'bmpjs/core'
+import { BmpRouter } from 'bmpjs/router'
+import { config } from './app.config.js'
 
-import { BmpRouter } from "../../bmp-router/index.js"
+class MyApp extends Core.StatelessWidget {
 
-/** Main application class */
-class JetsmarterApp extends BmpCore.App {
-
-	static get is() { return 'jetsmarter-app' }
+	static get tagname() {
+		return 'my-app'
+	}
 
 	trackView() {
-		if ( typeof ga == 'function' )
+		if (typeof ga == 'function')
 			ga('send', 'pageview')
 	}
 
-	get urlconf() {
-		return {
-			'/': "$views/home/home.component.js",
-			'/about/': "$views/about/view/about.component.js",
-			'/about/:slug/': "$views/about/detail/about-detail.component.js"
-		}
-	}
+	// get componentsRegistry() {
+	// 	return config.components
+	// }
 
 	constructor() {
-		console.log( this.urlconf )
-		this.router = new BmpRouter({
-			viewDir: './pages',
-			urlconf: this.urlconf,
-			onChange: this.trackView.bind(this),
+		super()
+		this.router = BmpRouter.widget({
+			viewDir: config.viewdir,
+			urlconf: config.urlconf,
+			onChange: this.trackView.bind(this)
 		})
 	}
 
-	build() {
-		return this.router.widget()
+	content() {
+		this.render(this.router, this)
 	}
-
-
 }
 
-export { JetsmarterApp }
+customElements.define( MyApp.tagname, MyApp )

@@ -1,10 +1,10 @@
 // import { html, directive } from '../node_modules/lit-html/lit-html'
 
-import { fetch } from './polyfill/fetch-polyfill.js'
-import closestPolyfill from './polyfill/closest-polyfill.js'
+import { fetch } from './polyfill/fetch.js'
+import closestPolyfill from './polyfill/closest.js'
 
 /** Main Application class */
-import { App } from './core/app/app.js';
+import { BmpApp } from './core/app/bmp-app.js';
 
 /** Widgets */
 import { StatefullWidget } from './core/widget/statefull-widget.js';
@@ -18,15 +18,14 @@ if ( !window.fetch ) window.fetch = fetch
 if ( !Element.prototype.closest ) closestPolyfill( Element.prototype )
 
 
-export {
+export default {
 	fetch,
 
-	App,
+	BmpApp,
 
 	CssJS,
 
 	StatelessWidget,
-	StatefullWidget,
-
+	StatefullWidget
 }
 

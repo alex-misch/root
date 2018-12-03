@@ -1,5 +1,5 @@
 
-import Bmp from 'bmp-core'
+import Bmp from 'bmpjs/core'
 
 class Header extends Bmp.CustomElement {
 

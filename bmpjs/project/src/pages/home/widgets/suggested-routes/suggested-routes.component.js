@@ -1,44 +1,16 @@
+import { default as Core } from 'bmpjs/core'
+// import { default as css } from './suggested-routes.css.js'
 
-import { DynamicWidget } from 'bmp-core'
 
-import { default as css } from './suggested-routes.css.js'
-
-class SuggestedRoutes extends WebComponentWidget {
+class SuggestedRoutes extends Core.StatelessWidget {
 
 	static get tagname() {
-		return 'suggested-routes';
+		return 'suggested-routes'
 	}
 
 
-	styles() {
-		return this.setCss(css)
-	}
-
-	async ready() {
-		return Promise.resolve()
-	}
-
-	beforeAttached() {
-
-	}
-
-	afterAttached() {
-
-	}
-
-	beforeDetached() {
-
-	}
-
-	afterDetached() {
-
-	}
-
-	widget() {
-		return this.html`
-			<p>Hello</p>
-			<p>world!</p>
-		`
+	content() {
+		return `suggested-routes. parent counter: ${this.context.homepage.counter}`
 	}
 
 }

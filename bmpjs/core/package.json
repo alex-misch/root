@@ -5,9 +5,8 @@
   "main": "utility/watch.js",
   "scripts": {
     "path": "echo /$npm_package_name/$npm_package_version",
-    "test": "test",
-    "build": "node bundler/build",
-    "start": "docker-compose exec bmp-core sh -c 'bmp-component --watch --env=production --babel'"
+    "test": "jest",
+    "build": "node --experimental-modules ./build.mjs"
   },
   "repository": {
     "type": "git",

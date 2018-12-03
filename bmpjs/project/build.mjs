@@ -37,9 +37,7 @@ builder.describe({
 			plugins: jsplugins
 		})
 		console.log( '- COMPLETE: rollup', filepath )
-		return await bundle.generate({
-			format: "amd"
-		})
+		return await bundle.generate({ format: "amd" })
 	}
 })
 

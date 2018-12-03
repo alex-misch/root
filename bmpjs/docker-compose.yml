@@ -18,10 +18,10 @@ services:
       - "3000:80"
     volumes:
       # CORE
-      - ./bmp-core/.tmp:/usr/share/nginx/html/bmp-core
+      - ./bmp-core:/usr/share/nginx/html/bmp-core
 
       # ROUTER
-      - ./bmp-router/.tmp:/usr/share/nginx/html/bmp-router
+      - ./bmp-router:/usr/share/nginx/html/bmp-router
 
       # PLAYGROUND
       - ./playground/.tmp:/usr/share/nginx/html/playground

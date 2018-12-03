@@ -1,5 +1,5 @@
 
-import { Template } from 'bmp-core'
+import { Template } from 'bmpjs/core'
 
 import { elem, text } from '../theme/index.js'
 
@@ -14,7 +14,7 @@ class Footer extends Bmp.CustomElement {
 	}
 
 
-	build() {
+	content() {
 		return `
 			<p>Footer</p>
 		`

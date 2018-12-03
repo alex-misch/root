@@ -1,10 +1,11 @@
 import { replaceLink } from "../utils/replace-link";
+import { BmpRouter } from "./bmp-router";
 
 const refClick = function(ev) {
   ev.preventDefault()
 
   const link = this.querySelector('a')
-  if ( link ) document.querySelector( 'bmp-router' ).go(link.pathname + link.search)
+  if ( link ) this.closest( BmpRouter.tagname ).go(link.pathname + link.search)
 }
 
 

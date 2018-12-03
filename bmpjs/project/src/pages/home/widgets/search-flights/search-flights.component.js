@@ -1,8 +1,20 @@
+import { default as Core } from 'bmpjs/core'
+import { default as style } from './search-flights.css'
 
-import { StatableComponent } from 'bmp-core'
-import { default as css } from './search-flights.css.js'
+class SearchFlights extends Core.StatelessWidget {
 
-class SearchFlights extends StatableComponent {
+	static get tagname() {
+		return 'search-flights'
+	}
+
+	get styles() {
+		return style
+	}
+
+	content() {
+		return `search-flight. parent counter: ${this.context.counter}`
+	}
+
 
 }
 

@@ -1,3 +1,4 @@
+
 const observe = ( o, callback ) => {
   const buildProxy = ( prefix, o ) => {
     return Object.seal(

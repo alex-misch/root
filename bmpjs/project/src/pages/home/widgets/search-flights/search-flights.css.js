@@ -1,5 +1,5 @@
-import { Theme } from "bmp-core";
+export default `
 
-export default Theme.css`
-	display: block;
+
+
 `

@@ -1,8 +1,13 @@
+import { default as Core } from 'bmpjs/core'
 
-import { StatableComponent } from 'bmp-core'
+class SearchPages extends Core.StatelessWidget {
+	static get tagname() {
+		return 'suggested-routes';
+	}
 
-class SuggestedPages extends StatableComponent {
+	content() {
+		return `search-pages. parent counter: ${this.context.counter}`
+	}
 
 }
-
-export { SuggestedPages }
+export { SearchPages }

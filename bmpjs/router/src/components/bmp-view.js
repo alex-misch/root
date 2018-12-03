@@ -1,20 +1,20 @@
 import { getDuration } from "../utils/css-duration";
+import { default as Core } from 'bmpjs/bmp-core'
 
-import { StatelessWidget } from '../../../bmp-app/index.js'
+
 /**
  * View base class. All events must be changed by attribte
  * @class
  * @example
  * <bmp-view></bmp-view>
  */
-class View extends StatelessWidget {
+class BmpView extends Core.StatelessWidget {
 
-  constructor (config) {
-		console.log( config )
+  constructor () {
 		super()
 	}
 
-  static get is() {
+  static get tagname() {
 		return 'bmp-view'
 	}
 
@@ -43,8 +43,12 @@ class View extends StatelessWidget {
     setTimeout( _ => {
       this.setAttribute( 'state', 'anim-in' ) // delay for animate trigger
     }, 50)
-  }
+	}
+
+	content() {
+		return this.context.component.widget()
+	}
 
 }
 
-export { View }
+export { BmpView }
