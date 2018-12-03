@@ -32,16 +32,10 @@ NODE='ci'
 # copy necessary bins from /go/bin to our dir (conf needs it here because related path to node root)
 cp /go/bin/${NODE}-$(uname -s)-$(uname -m) ./${NODE}
 
-# TODO move to special config in future named boomfunc.yaml
-# TODO https://github.com/urfave/cli#values-from-alternate-input-sources-yaml-toml-and-others
-# export BMP_DEBUG_MODE=true
-# export BMP_CONFIG='./ci/router.yml'
-# export BMP_CONFIG='https://bitbucket.org/!api/2.0/snippets/letsnetdevinternal/eazARA/files/example.yml'
-# export BMP_APPLICATION_LAYER='http'
-# export BMP_WORKER_NUM=8
-
 # run base with microservice cli onboard
 # set application variables for run base
+# TODO move to special config in future named boomfunc.yaml
+# TODO https://github.com/urfave/cli#values-from-alternate-input-sources-yaml-toml-and-others
 BMP_DEBUG_MODE=true \
 BMP_CONFIG='./ci/router.yml' \
 BMP_APPLICATION_LAYER='http' \
