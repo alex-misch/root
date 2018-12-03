@@ -11,6 +11,7 @@ import (
 
 	"github.com/boomfunc/root/ci/docker"
 	"github.com/boomfunc/root/ci/tools"
+	"github.com/boomfunc/root/tools/flow"
 	"github.com/boomfunc/root/tools/log"
 	"github.com/google/uuid"
 )
@@ -120,7 +121,7 @@ type Job struct {
 }
 
 // NewJob returns single step for docker running
-func NewJob(context, docker, entrypoint string) Interface {
+func NewJob(context, docker, entrypoint string) flow.Step {
 	return &Job{
 		Context:    context,
 		Docker:     docker,
@@ -248,7 +249,7 @@ func (step *Job) run(ctx context.Context) error {
 	return err
 }
 
-// Run implements Step interface
+// Run implements flow.Step interface
 // run docker container with provided options
 func (step *Job) Run(ctx context.Context) error {
 	// error visibility of inner once.Do invoke

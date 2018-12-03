@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/boomfunc/root/ci/step"
+	"github.com/boomfunc/root/tools/flow"
 	"github.com/boomfunc/root/tools/log"
 )
 
@@ -19,7 +19,7 @@ type Graph struct {
 	root  string // same as git repo root
 	nodes map[string]*Node
 	edges map[string][]*Node
-	ctxs  map[step.Interface]context.Context
+	ctxs  map[flow.Step]context.Context
 }
 
 // New creates new filesystem graph, based in root path
@@ -44,7 +44,7 @@ func New(root string) (*Graph, error) {
 		root:  root,
 		nodes: make(map[string]*Node),
 		edges: make(map[string][]*Node),
-		ctxs:  make(map[step.Interface]context.Context),
+		ctxs:  make(map[flow.Step]context.Context),
 	}
 
 	// fill the graph
@@ -142,7 +142,7 @@ func (graph *Graph) Link() {
 
 // addCtx create child step's context from parent and save it to collection
 // collection will be passed to parent context for future using
-func (graph *Graph) addCtx(ctx context.Context, step step.Interface, pack, name string) {
+func (graph *Graph) addCtx(ctx context.Context, step flow.Step, pack, name string) {
 	ctx = context.WithValue(ctx, "pack", pack)
 	ctx = context.WithValue(ctx, "name", name)
 
@@ -178,16 +178,16 @@ func (graph *Graph) changes(parent context.Context, roots []string) (direct []*N
 	return
 }
 
-// steps return total tree (mixed) of step.Interface
+// steps return total tree (mixed) of flow.Step
 // built by analyzing changed paths and their belonging to the nodes
-func (graph *Graph) steps(direct []*Node, indirect []*Node) step.Interface {
+func (graph *Graph) steps(direct []*Node, indirect []*Node) flow.Step {
 	// total steps for resolving all tree's flow
-	total := make([]step.Interface, 0)
+	total := make([]flow.Step, 0)
 
 	// TODO DRY code? No, have not heard
 	// Phase 1. Indirect jobs. Check referencing dependencies works
 	// iterate each node and collect steps
-	indirects := make([]step.Interface, 0)
+	indirects := make([]flow.Step, 0)
 	for _, node := range indirect {
 		// check steps exists
 		// may return nil, job or another step (for example group or parallel)
@@ -195,13 +195,13 @@ func (graph *Graph) steps(direct []*Node, indirect []*Node) step.Interface {
 			indirects = append(indirects, step)
 		}
 	}
-	if step := step.NewParallel(indirects...); step != nil {
+	if step := flow.Concurrent(indirects...); step != nil {
 		total = append(total, step)
 	}
 
 	// Phase 2. Direct jobs. Nodes that was changed directly
 	// iterate each node and collect steps
-	directs := make([]step.Interface, 0)
+	directs := make([]flow.Step, 0)
 	for _, node := range direct {
 		// check steps exists
 		// may return nil, job or another step (for example group or parallel)
@@ -209,17 +209,17 @@ func (graph *Graph) steps(direct []*Node, indirect []*Node) step.Interface {
 			directs = append(directs, step)
 		}
 	}
-	if step := step.NewParallel(directs...); step != nil {
+	if step := flow.Concurrent(directs...); step != nil {
 		total = append(total, step)
 	}
 	// TODO end of DRY code
 
 	// return total flow
-	return step.NewGroup(total...)
+	return flow.Group(total...)
 }
 
 // Run implements Step interface
-// run mixed nested step.Interface
+// run mixed nested flow.Step interface
 func (graph *Graph) Run(ctx context.Context) error {
 	// Phase 1. Get graph `raw` changes (get diff)
 	diff, ok := ctx.Value("diff").([]string)
@@ -242,7 +242,7 @@ func (graph *Graph) Run(ctx context.Context) error {
 	ctx = context.WithValue(ctx, "ctxs", graph.ctxs)
 
 	// Phase 4.
-	// get final step.Interface for perform
+	// get final flow.Step for perform
 	// and go deeper into running
 	steps := graph.steps(direct, indirect)
 	log.Debugf("Flow to perform:\n%s", steps)

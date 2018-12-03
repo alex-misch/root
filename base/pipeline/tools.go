@@ -4,7 +4,7 @@ import (
 	"context"
 	"io"
 
-	"github.com/boomfunc/root/tools/executor"
+	"github.com/boomfunc/root/tools/flow"
 )
 
 // piping establishes pipe connections between IO processes (Able)
@@ -37,41 +37,51 @@ func piping(input io.ReadCloser, output io.WriteCloser, objs ...Able) error {
 	return nil
 }
 
-func executeFunc(obj Exec) executor.OperationFunc {
-	return func(ctx context.Context) error {
+func executeStep(obj Exec) flow.Step {
+	return flow.Func(func(ctx context.Context) error {
 		if err := obj.run(ctx); err != nil {
 			obj.close(ctx)
 			return err
 		}
 		return obj.close(ctx)
-	}
+	})
 }
 
-func prepareFunc(obj Exec) executor.OperationFunc {
-	return func(ctx context.Context) error {
+func prepareStep(obj Exec) flow.Step {
+	return flow.Func(func(ctx context.Context) error {
 		if err := obj.prepare(ctx); err != nil {
 			return err
 		}
 		return obj.check(ctx)
-	}
+	})
 }
 
 // run is special shortcut for running pipeline.Exec
 func run(ctx context.Context, objs ...Exec) error {
 	// Phase 1. PREPARE AND CHECK
 	// in case of error it will be rolled back to initial incoming state
-	prepareUp := make([]executor.OperationFunc, len(objs))
-	prepareDown := make([]executor.OperationFunc, len(objs))
-	executeUp := make([]executor.OperationFunc, len(objs))
+	prepareUp := make([]flow.Step, len(objs))
+	prepareDown := make([]flow.Step, len(objs))
+	executeUp := make([]flow.Step, len(objs))
 
 	for i, obj := range objs {
-		prepareUp[i] = prepareFunc(obj)
-		executeUp[i] = executeFunc(obj)
-		prepareDown[i] = obj.close
+		prepareUp[i] = prepareStep(obj)
+		executeUp[i] = executeStep(obj)
+		prepareDown[i] = flow.Func(obj.close)
 	}
 
-	return executor.New(
-		executor.Operation(prepareUp, prepareDown, false), // prepare all layers (prepare, down otherwise)
-		executor.Operation(executeUp, prepareDown, true),  //execute all layers (execute, down anyway)
+	return flow.Group(
+		// First step, prepare all layers (prepare, down otherwise)
+		flow.Transaction(
+			flow.Concurrent(prepareUp...),
+			flow.Concurrent(prepareDown...),
+			false,
+		),
+		// Second step, execute all layers (execute, down anyway)
+		flow.Transaction(
+			flow.Concurrent(executeUp...),
+			flow.Concurrent(prepareDown...),
+			true,
+		),
 	).Run(ctx)
 }

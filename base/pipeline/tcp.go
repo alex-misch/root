@@ -87,6 +87,7 @@ func (s *tcp) run(ctx context.Context) error {
 	return nil
 }
 
+// TODO: flow.Concurrent
 func (s *tcp) close(ctx context.Context) (err error) {
 	defer func() {
 		s.conn = nil
@@ -100,7 +101,10 @@ func (s *tcp) close(ctx context.Context) (err error) {
 		}
 	}()
 
-	// close connection
-	err = s.conn.Close()
+	// close connection if exists
+	if s.conn != nil {
+		err = s.conn.Close()
+	}
+
 	return
 }

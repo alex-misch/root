@@ -7,7 +7,7 @@ import (
 
 	"github.com/boomfunc/root/base/conf"
 	"github.com/boomfunc/root/base/server/flow"
-	"github.com/boomfunc/root/tools/executor"
+	executor "github.com/boomfunc/root/tools/flow"
 )
 
 var (
@@ -59,22 +59,17 @@ func (app *Application) Handle(fl *flow.Data) {
 	// Run pipeline (under app layer)
 	pr, pw := io.Pipe()
 	// we will run view through executor
-	ex := executor.New(
-		executor.Operation(
-			[]executor.OperationFunc{
-				func(ctx context.Context) error { return route.Run(ctx, req.Input, pw) },
-				func(ctx context.Context) error {
-					written, err = app.packer.Pack(pr, fl.RWC)
-					return err
-				},
-			},
-			[]executor.OperationFunc{
-				func(ctx context.Context) error { return pw.Close() },
-			},
-			true,
+	err = executor.Transaction(
+		executor.Concurrent(
+			executor.Func(func(ctx context.Context) error { return route.Run(ctx, req.Input, pw) }),
+			executor.Func(func(ctx context.Context) error {
+				written, err = app.packer.Pack(pr, fl.RWC)
+				return err
+			}),
 		),
-	)
-	err = ex.Run(fl.Ctx)
+		executor.Func(func(ctx context.Context) error { return pw.Close() }),
+		true,
+	).Run(fl.Ctx)
 
 	// if err != nil {
 	// 	return

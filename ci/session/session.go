@@ -5,15 +5,15 @@ import (
 
 	"github.com/boomfunc/root/ci/git"
 	"github.com/boomfunc/root/ci/graph"
-	"github.com/boomfunc/root/ci/step"
 	"github.com/boomfunc/root/ci/tools"
+	"github.com/boomfunc/root/tools/flow"
 	"github.com/google/uuid"
 )
 
 type Session struct {
 	UUID uuid.UUID
 	repo *git.Repository
-	step step.Interface
+	step flow.Step
 }
 
 // repo: github.com/boomfunc/root - what we clonning what is
@@ -46,7 +46,8 @@ func New(origin string) (*Session, error) {
 	return session, nil
 }
 
-// Run implements step.Interface. Run is main entrypoint.
+// Run implements flow.Step interface
+// Run is main entrypoint.
 // Runs all steps with the same context (mixed)
 // here context creates and cancels if something wrong
 func (session *Session) Run(ctx context.Context) error {

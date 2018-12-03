@@ -3,7 +3,7 @@ package cli
 import (
 	"github.com/boomfunc/root/base/tools"
 	"github.com/boomfunc/root/ci/session"
-	"github.com/boomfunc/root/ci/step"
+	"github.com/boomfunc/root/tools/flow"
 	"github.com/boomfunc/root/tools/log"
 	"github.com/urfave/cli"
 )
@@ -37,7 +37,7 @@ func runCommandAction(c *cli.Context) {
 
 	// logging
 	log.Debugf("Session `%s` is runnning", session.UUID)
-	if err := step.Run(session); err != nil {
+	if err := flow.Execute(session); err != nil {
 		tools.FatalLog(err)
 	}
 	log.Debugf("Session `%s` successful", session.UUID)

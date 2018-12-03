@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/boomfunc/root/ci/step"
+	"github.com/boomfunc/root/tools/flow"
 	"gopkg.in/yaml.v2"
 )
 
@@ -46,8 +47,8 @@ func NodeFromLocalFile(name string) (*Node, error) {
 
 // steps returns Step slice by their names from collection
 // in `names` order
-func (node *Node) steps(names []string) step.Interface {
-	steps := make([]step.Interface, 0)
+func (node *Node) steps(names []string) flow.Step {
+	steps := make([]flow.Step, 0)
 
 	for _, name := range names {
 		// try to get job from collections
@@ -57,5 +58,5 @@ func (node *Node) steps(names []string) step.Interface {
 		}
 	}
 
-	return step.NewGroup(steps...)
+	return flow.Group(steps...)
 }
