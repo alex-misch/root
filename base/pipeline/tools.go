@@ -37,7 +37,7 @@ func piping(input io.ReadCloser, output io.WriteCloser, objs ...Able) error {
 	return nil
 }
 
-// run is special shortcut for running pipeline.Exec
+// run is special shortcut for running pipeline.Execs
 func run(ctx context.Context, objs ...Exec) error {
 	// Phase 1. PREPARE AND CHECK
 	// in case of error it will be rolled back to initial incoming state
@@ -62,7 +62,6 @@ func run(ctx context.Context, objs ...Exec) error {
 			false,
 		),
 		// Second step, execute all layers (execute, down anyway)
-		// TODO: error here
 		flow.Transaction(
 			flow.Concurrent(run...),
 			flow.Concurrent(close...),
