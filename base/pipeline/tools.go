@@ -46,26 +46,18 @@ func run(ctx context.Context, objs ...Exec) error {
 	close := make([]flow.Step, len(objs))
 
 	for i, obj := range objs {
-		prerun[i] = flow.Group(
-			flow.Func(obj.prepare),
-			flow.Func(obj.check),
-		) // group of two operations step by step - `prepare` and `check`
-		run[i] = flow.Func(obj.run)     // just func `run` from interface
-		close[i] = flow.Func(obj.close) // just func `close` from interface
+		// prerun is a group of two operations step by step - `prepare` and `check`
+		prerun[i] = flow.Group(flow.Func(obj.prepare), flow.Func(obj.check))
+		// run is a group of two operations step by step - `run` and `close`
+		run[i] = flow.Group(flow.Func(obj.run), flow.Func(obj.close))
+		// close is a just func `close` from interface
+		close[i] = flow.Func(obj.close)
 	}
 
 	return flow.Group(
-		// First step, prepare all layers (prepare, down otherwise)
-		flow.Transaction(
-			flow.Concurrent(prerun...),
-			flow.Concurrent(close...),
-			false,
-		),
-		// Second step, execute all layers (execute, down anyway)
-		flow.Transaction(
-			flow.Concurrent(run...),
-			flow.Concurrent(close...),
-			true,
-		),
+		// First step, prepare all layers (prepare, down only if error occured)
+		flow.Transaction(flow.Concurrent(prerun...), flow.Concurrent(close...), false),
+		// Second step, execute all layers concurrently (run, close anyway)
+		flow.Concurrent(run...),
 	).Run(ctx)
 }

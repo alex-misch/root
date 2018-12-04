@@ -62,20 +62,27 @@ func TestRouteUnmarshalYAML(t *testing.T) {
 
 	// t.Log(output)
 
-	// default route
-	url, _ = url.Parse("/foobar/bar/baz")
-	route, err = router.Match(url)
-	if err != nil {
-		t.Fatal(err)
-	}
+	t.Run("default", func(t *testing.T) {
+		url, err := url.Parse("/foobar/bar/baz")
+		if err != nil {
+			t.Fatal(err)
+		}
 
-	input = bytes.NewBuffer([]byte{})
-	output = bytes.NewBuffer([]byte{})
+		route, err := router.Match(url)
+		if err != nil {
+			t.Fatal(err)
+		}
 
-	err = route.pipeline.Run(context.TODO(), input, output)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// t.Log(output)
+		input := bytes.NewBuffer([]byte{})
+		output := bytes.NewBuffer([]byte{})
 
+		if err := route.pipeline.Run(context.TODO(), input, output); err != nil {
+			t.Fatal(err)
+		}
+
+		// check result
+		if output.String() != "'nobody home...'\n" {
+			t.Fatalf("expected %q, got %q", "'nobody home...'\n", output.String())
+		}
+	})
 }
