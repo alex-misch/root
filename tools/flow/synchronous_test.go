@@ -32,6 +32,7 @@ func TestSynchronous(t *testing.T) {
 		err      error
 		counters []int // slice of counter after execution in format {a, b, c}
 	}{
+		{[]Step{nil, nil, nil}, nil, []int{0, 0, 0}},    // run nils, nothing changes, just skip
 		{[]Step{foo, baz, bar}, bazErr, []int{1, 0, 1}}, // 2 failed - error arrived
 		{[]Step{baz, foo, bar}, bazErr, []int{0, 0, 1}}, // 1 failed - error arrived
 		{[]Step{foo, bar}, nil, []int{1, 1, 0}},         // totally success case

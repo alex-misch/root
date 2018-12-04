@@ -20,6 +20,11 @@ type Step interface {
 // Execute is universal runnner for all objects implements Step interface
 // Main idea is creating shared context with timeout and cancel functionality
 func Execute(step Step) error {
+	// Pre Phase. NOTE: step might be nil -> we need to check if it makes sense at all
+	if step == nil {
+		return nil
+	}
+
 	// Phase 1. Create context with cancel functionality
 	// and proxy information about high level modules to low level
 	// integration purpose

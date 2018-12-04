@@ -1,6 +1,6 @@
 package flow
 
-// normalize returns actual steps (withput nil values)
+// normalize returns actual steps (without nil values)
 func normalize(steps ...Step) []Step {
 	if steps == nil || len(steps) == 0 {
 		return nil

@@ -114,6 +114,14 @@ func TestExecute(t *testing.T) {
 }
 
 func TestAsynchronous(t *testing.T) {
+	t.Run("nils", func(t *testing.T) {
+		var step1, step2, step3 Step
+
+		if err := asynchronous(context.TODO(), step1, step2, step3); err != nil {
+			t.Fatal(err)
+		}
+	})
+
 	t.Run("success", func(t *testing.T) {
 		var a, b, c int
 		// define steps

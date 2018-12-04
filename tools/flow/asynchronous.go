@@ -57,6 +57,11 @@ func asynchronous(ctx context.Context, steps ...Step) error {
 	}()
 
 	for _, step := range steps {
+		// Pre Phase. NOTE: step might be nil -> we need to check if it makes sense at all
+		if step == nil {
+			continue
+		}
+
 		wg.Add(1)
 
 		go func(step Step) {
