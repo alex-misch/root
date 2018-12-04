@@ -38,6 +38,8 @@ func piping(input io.ReadCloser, output io.WriteCloser, objs ...Able) error {
 }
 
 // run is special shortcut for running pipeline.Execs
+// there is two steps: first is to prepare and check all layers
+// and second is run them
 func run(ctx context.Context, objs ...Exec) error {
 	// Phase 1. PREPARE AND CHECK
 	// in case of error it will be rolled back to initial incoming state
@@ -48,8 +50,8 @@ func run(ctx context.Context, objs ...Exec) error {
 	for i, obj := range objs {
 		// prerun is a group of two operations step by step - `prepare` and `check`
 		prerun[i] = flow.Group(flow.Func(obj.prepare), flow.Func(obj.check))
-		// run is a group of two operations step by step - `run` and `close`
-		run[i] = flow.Group(flow.Func(obj.run), flow.Func(obj.close))
+		// run is a transaction with mandatory rollback (`run` is up and `close` is down)
+		run[i] = flow.Transaction(flow.Func(obj.run), flow.Func(obj.close), true)
 		// close is a just func `close` from interface
 		close[i] = flow.Func(obj.close)
 	}
