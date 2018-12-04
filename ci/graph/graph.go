@@ -247,5 +247,5 @@ func (graph *Graph) Run(ctx context.Context) error {
 	steps := graph.steps(direct, indirect)
 	log.Debugf("Flow to perform:\n%s", steps)
 
-	return steps.Run(ctx)
+	return flow.ExecuteWithContext(ctx, steps)
 }

@@ -37,3 +37,14 @@ func Execute(step Step) error {
 	// run the step
 	return step.Run(ctx)
 }
+
+// ExecuteWithContext is universal runnner for all objects implements Step interface
+// unnecessary nonsense to avoid copy a check for a non-nil step
+func ExecuteWithContext(ctx context.Context, step Step) error {
+	// Pre Phase. NOTE: step might be nil -> we need to check if it makes sense at all
+	if step == nil {
+		return nil
+	}
+
+	return step.Run(ctx)
+}

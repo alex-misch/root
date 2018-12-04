@@ -68,5 +68,5 @@ func (session *Session) Run(ctx context.Context) error {
 	ctx = context.WithValue(ctx, "diff", paths)
 
 	// run the whole flow
-	return session.step.Run(ctx)
+	return flow.ExecuteWithContext(ctx, session.step)
 }
