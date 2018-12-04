@@ -39,4 +39,23 @@ func TestConcurrent(t *testing.T) {
 			})
 		}
 	})
+
+	t.Run("String", func(t *testing.T) {
+		tableTests := []struct {
+			steps []Step
+			s     string
+		}{
+			{nil, "%!s(<nil>)"},
+			{[]Step{}, "%!s(<nil>)"},
+			{[]Step{Dummy(1), Dummy(2), Dummy(5)}, "CONCURRENT(\n\tDUMMY(1),\n\tDUMMY(2),\n\tDUMMY(5)\n)"},
+			{[]Step{Dummy(1), nil, Dummy(5)}, "CONCURRENT(\n\tDUMMY(1),\n\tDUMMY(5)\n)"},
+		}
+		for i, tt := range tableTests {
+			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+				if s := fmt.Sprintf("%s", Concurrent(tt.steps...)); s != tt.s {
+					t.Fatalf("expected %q, got %q", tt.s, s)
+				}
+			})
+		}
+	})
 }

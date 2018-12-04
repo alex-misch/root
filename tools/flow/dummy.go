@@ -37,3 +37,8 @@ func (step *dummy) Run(ctx context.Context) error {
 	// all other cases - success
 	return nil
 }
+
+// String implements fmt.Stringer interface
+func (step *dummy) String() string {
+	return fmt.Sprintf("DUMMY(%d)", step.i)
+}

@@ -12,3 +12,8 @@ type Func func(context.Context) error
 func (f Func) Run(ctx context.Context) error {
 	return f(ctx)
 }
+
+// String implements fmt.Stringer interface
+func (f Func) String() string {
+	return "FUNC(<truncated>)"
+}
