@@ -37,50 +37,35 @@ func piping(input io.ReadCloser, output io.WriteCloser, objs ...Able) error {
 	return nil
 }
 
-func executeStep(obj Exec) flow.Step {
-	return flow.Func(func(ctx context.Context) error {
-		if err := obj.run(ctx); err != nil {
-			obj.close(ctx)
-			return err
-		}
-		return obj.close(ctx)
-	})
-}
-
-func prepareStep(obj Exec) flow.Step {
-	return flow.Func(func(ctx context.Context) error {
-		if err := obj.prepare(ctx); err != nil {
-			return err
-		}
-		return obj.check(ctx)
-	})
-}
-
 // run is special shortcut for running pipeline.Exec
 func run(ctx context.Context, objs ...Exec) error {
 	// Phase 1. PREPARE AND CHECK
 	// in case of error it will be rolled back to initial incoming state
-	prepareUp := make([]flow.Step, len(objs))
-	prepareDown := make([]flow.Step, len(objs))
-	executeUp := make([]flow.Step, len(objs))
+	prerun := make([]flow.Step, len(objs))
+	run := make([]flow.Step, len(objs))
+	close := make([]flow.Step, len(objs))
 
 	for i, obj := range objs {
-		prepareUp[i] = prepareStep(obj)
-		executeUp[i] = executeStep(obj)
-		prepareDown[i] = flow.Func(obj.close)
+		prerun[i] = flow.Group(
+			flow.Func(obj.prepare),
+			flow.Func(obj.check),
+		) // group of two operations step by step - `prepare` and `check`
+		run[i] = flow.Func(obj.run)     // just func `run` from interface
+		close[i] = flow.Func(obj.close) // just func `close` from interface
 	}
 
 	return flow.Group(
 		// First step, prepare all layers (prepare, down otherwise)
 		flow.Transaction(
-			flow.Concurrent(prepareUp...),
-			flow.Concurrent(prepareDown...),
+			flow.Concurrent(prerun...),
+			flow.Concurrent(close...),
 			false,
 		),
 		// Second step, execute all layers (execute, down anyway)
+		// TODO: error here
 		flow.Transaction(
-			flow.Concurrent(executeUp...),
-			flow.Concurrent(prepareDown...),
+			flow.Concurrent(run...),
+			flow.Concurrent(close...),
 			true,
 		),
 	).Run(ctx)
