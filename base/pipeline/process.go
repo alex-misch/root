@@ -61,6 +61,8 @@ func (p *process) check(ctx context.Context) error {
 	return nil
 }
 
+// NOTE: this kind also hungs - problem not here!!!!
+// TODO: keep this file original, problem not here
 // TODO here is very tmp solution of stderr, look something better
 // TODO: maybe all flow run through executor?
 func (p *process) run(ctx context.Context) error {
@@ -71,8 +73,8 @@ func (p *process) run(ctx context.Context) error {
 		tools.StringFromCtx(ctx, p.cmd), " ",
 	)
 
-	cmd := exec.Command(parts[0], parts[1:]...)
-
+	// create command with cancel functinality
+	cmd := exec.CommandContext(ctx, parts[0], parts[1:]...)
 	cmd.Stdin = p.stdin
 	cmd.Stdout = p.stdout
 	cmd.Stderr = stderr
