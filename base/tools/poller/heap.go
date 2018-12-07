@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/boomfunc/root/base/tools"
-	// "github.com/boomfunc/root/tools/log"
 )
 
 type HeapItem struct {
@@ -134,7 +133,6 @@ func (h *pollerHeap) Pop() interface{} {
 		if value != nil {
 			return value
 		} else {
-			// log.Debug("h.wg.Wait():", reflect.ValueOf(&h.wg).Pointer())
 			h.cond.Wait()
 		}
 	}
