@@ -59,6 +59,17 @@ func (tr *tcp) Serve() {
 			continue
 		}
 
+		// set timeouts
+		// if err := conn.SetReadDeadline(time.Now().Add(readTimeout)); err != nil {
+		// 	tr.errCh <- err
+		// 	continue
+		// }
+		//
+		// if err := conn.SetWriteDeadline(time.Now().Add(writeTimeout)); err != nil {
+		// 	tr.errCh <- err
+		// 	continue
+		// }
+
 		// push incoming connection to heap
 		flow := flow.New(conn)
 		item := &poller.HeapItem{Fd: fd, Value: flow}
