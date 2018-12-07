@@ -150,7 +150,7 @@ func (h *pollerHeap) poll() ([]uintptr, []uintptr) {
 		var err error
 		// fetching events from poller
 		// blocking mode !!!
-		re, _, ce, err = h.poller.Events()
+		re, ce, err = h.poller.Events()
 		if err != nil {
 			// some error from poller -> poll again
 			continue

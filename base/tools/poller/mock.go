@@ -48,7 +48,7 @@ func (p *mock) Del(fd uintptr) error {
 	return nil
 }
 
-func (p *mock) events() ([]Event, []Event, []Event) {
+func (p *mock) events() ([]Event, []Event) {
 	var re, ce []Event
 
 	for _, fd := range p.re {
@@ -58,25 +58,25 @@ func (p *mock) events() ([]Event, []Event, []Event) {
 		ce = append(ce, mockEvent{fd})
 	}
 
-	return re, nil, ce
+	return re, ce
 }
 
-func (p *mock) Events() ([]Event, []Event, []Event, error) {
+func (p *mock) Events() ([]Event, []Event, error) {
 	p.invokes++
 
 	if p.invokes == 1 || p.inifinity {
 		// FIRST INVOKE - BY RULE
 		if p.err {
 			// case when error from poller
-			return nil, nil, nil, errors.New("Error from poller")
+			return nil, nil, errors.New("Error from poller")
 		}
 		// imitation polling
 		time.Sleep(time.Second * 1)
 
-		re, _, ce := p.events()
-		return re, nil, ce, nil
+		re, ce := p.events()
+		return re, ce, nil
 	} else {
 		// SECOND - RETURN hardcoded events (otherwise block)
-		return []Event{mockEvent{100}, mockEvent{500}}, nil, []Event{mockEvent{200}, mockEvent{300}}, nil
+		return []Event{mockEvent{100}, mockEvent{500}}, []Event{mockEvent{200}, mockEvent{300}}, nil
 	}
 }

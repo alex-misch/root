@@ -46,33 +46,28 @@ func (p *kqueue) Del(fd uintptr) error {
 	return nil
 }
 
-func (p *kqueue) Events() ([]Event, []Event, []Event, error) {
+func (p *kqueue) Events() ([]Event, []Event, error) {
 	events, err := p.wait()
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, err
 	}
 
 	// something received, try it
-	var re, we, ce []Event
+	var re, ce []Event
 	for _, event := range events {
+		ev := toEvent(event)
+
 		if event.Flags&(unix.EV_EOF) != 0 {
 			// closed by peer
-			ev := toEvent(event)
 			unix.Close(int(ev.Fd()))
 			ce = append(ce, ev)
-		} else {
+		} else if event.Filter&(unix.EVFILT_READ) != 0 {
 			// Check event 'ready to read'
-			if event.Filter&(unix.EVFILT_READ) != 0 {
-				re = append(re, toEvent(event))
-			}
-			// Check event 'ready to write'
-			if event.Filter&(unix.EVFILT_WRITE) != 0 {
-				we = append(we, toEvent(event))
-			}
+			re = append(re, ev)
 		}
 	}
 
-	return re, we, ce, err
+	return re, ce, err
 }
 
 func (p *kqueue) wait() ([]unix.Kevent_t, error) {

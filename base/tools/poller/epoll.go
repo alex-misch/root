@@ -31,8 +31,12 @@ func New() (Interface, error) {
 }
 
 func (p *epoll) Add(fd uintptr) error {
+	if err := unix.SetNonblock(int(fd), true); err != nil {
+		return err
+	}
+
 	event := &unix.EpollEvent{
-		Events: unix.EPOLLIN | unix.EPOLLOUT | unix.EPOLLRDHUP | unix.EPOLLET,
+		Events: unix.EPOLLIN | unix.EPOLLRDHUP | unix.EPOLLET | unix.EPOLLONESHOT,
 		Fd:     int32(fd),
 	}
 
@@ -43,34 +47,29 @@ func (p *epoll) Del(fd uintptr) error {
 	return unix.EpollCtl(p.fd, unix.EPOLL_CTL_DEL, int(fd), nil)
 }
 
-func (p *epoll) Events() ([]Event, []Event, []Event, error) {
+func (p *epoll) Events() ([]Event, []Event, error) {
 	events, err := p.wait()
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, err
 	}
 
 	// something received, try it
-	var re, we, ce []Event
+	var re, ce []Event
 	for _, event := range events {
+		ev := toEvent(event)
+
 		if event.Events&(unix.EPOLLRDHUP|unix.EPOLLHUP) != 0 {
 			// closed by peer
 			// http://man7.org/linux/man-pages/man7/epoll.7.html
-			ev := toEvent(event)
 			unix.Close(int(ev.Fd()))
 			ce = append(ce, ev)
-		} else {
+		} else if event.Events&(unix.EPOLLIN) != 0 {
 			// Check event 'ready to read'
-			if event.Events&(unix.EPOLLIN) != 0 {
-				re = append(re, toEvent(event))
-			}
-			// Check event 'ready to write'
-			if event.Events&(unix.EPOLLOUT) != 0 {
-				we = append(we, toEvent(event))
-			}
+			re = append(re, ev)
 		}
 	}
 
-	return re, we, ce, nil
+	return re, ce, nil
 }
 
 func (p *epoll) wait() ([]unix.EpollEvent, error) {
