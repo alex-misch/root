@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"fmt"
 )
 
 // transaction is Step with rollback functionality in case of error
@@ -51,4 +52,9 @@ func (t *transaction) Run(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+// String implements fmt.Stringer interface
+func (t *transaction) String() string {
+	return fmt.Sprintf("TRANSACTION(\n%s\n%s\n)", t.up, t.down)
 }

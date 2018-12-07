@@ -71,7 +71,7 @@ func asynchronous(ctx context.Context, steps ...Step) error {
 	}
 
 	// wait until all completed
-	wg.Wait()
+	wg.Wait() // TODO: hungs here if some function failed, but abother bocking - we need to skip this
 
 	// handle errors from concurrent goroutines
 	return errs(errCh)
