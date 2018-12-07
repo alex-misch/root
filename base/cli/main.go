@@ -42,7 +42,7 @@ func Run(VERSION, TIMESTAMP string) {
 		cli.BoolFlag{
 			Name:   "debug",
 			Usage:  debugFlagUsage,
-			EnvVar: "BMP_DEBUG_MODE",
+			EnvVar: "BMP_BASE_DEBUG_MODE",
 		},
 	}
 	app.Commands = []cli.Command{
@@ -53,25 +53,25 @@ func Run(VERSION, TIMESTAMP string) {
 				cli.IntFlag{
 					Name:   "port",
 					Usage:  portFlagUsage,
-					EnvVar: "BMP_PORT",
+					EnvVar: "BMP_BASE_PORT",
 					Value:  8080,
 				},
 				cli.IntFlag{
 					Name:   "workers",
 					Usage:  portFlagUsage,
-					EnvVar: "BMP_WORKER_NUM",
+					EnvVar: "BMP_BASE_WORKER_NUM",
 					Value:  runtime.NumCPU(),
 				},
 				cli.StringFlag{
 					Name:   "config",
 					Usage:  configFlagUsage,
-					EnvVar: "BMP_CONFIG",
+					EnvVar: "BMP_BASE_CONFIG",
 					Value:  "/boomfunc/app/conf.yml",
 				},
 				cli.StringFlag{
 					Name:   "app",
 					Usage:  appFlagUsage,
-					EnvVar: "BMP_APPLICATION_LAYER",
+					EnvVar: "BMP_BASE_APP_LAYER",
 					Value:  "http",
 				},
 			},
