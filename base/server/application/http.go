@@ -60,12 +60,14 @@ func (packer *httpPacker) Pack(r io.Reader, w io.Writer) (int64, error) {
 	response := &http.Response{
 		Status:     "200 OK",
 		StatusCode: 200,
-		Proto:      "HTTP/1.1",
-		ProtoMajor: 1,
-		ProtoMinor: 1,
+		Proto:      packer.request.Proto,
+		ProtoMajor: packer.request.ProtoMajor,
+		ProtoMinor: packer.request.ProtoMinor,
 		Body:       tools.ReadCloser(r),
 		Request:    packer.request,
 	}
+
+	// headers section
 	response.Header = make(http.Header)
 
 	// CORS ISSUE while not structured application layer

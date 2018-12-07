@@ -26,6 +26,7 @@ func (task Task) Solve() {
 		tools.FatalLog(ErrWrongContext)
 	}
 
+	// unexpected errors resolving
 	defer func() {
 		if r := recover(); r != nil {
 			switch typed := r.(type) {
@@ -37,11 +38,14 @@ func (task Task) Solve() {
 		}
 	}()
 
-	defer task.flow.RWC.Close()
-
+	// solve server task and measure time
 	task.flow.Chronometer.Enter("app")
-	srv.app.Handle(task.flow)
+	srv.app.Handle(task.flow) // TODO hungs here
 	task.flow.Chronometer.Exit("app")
 
+	// task solved, data is written, socket can be closed
+	task.flow.RWC.Close()
+
+	// log results
 	srv.outputCh <- task.flow
 }

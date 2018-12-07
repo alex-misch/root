@@ -41,7 +41,7 @@ func (r *Route) match(uri string) bool {
 }
 
 func (r *Route) Run(ctx context.Context, input io.Reader, output io.Writer) error {
-	return r.pipeline.Run(ctx, input, output)
+	return r.pipeline.Run(ctx, input, output) // TODO: hungs here
 }
 
 func (r *Route) UnmarshalYAML(unmarshal func(interface{}) error) error {

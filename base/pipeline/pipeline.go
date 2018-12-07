@@ -33,7 +33,7 @@ func (p Pipeline) Run(ctx context.Context, input io.Reader, output io.Writer) er
 		return err
 	}
 
-	return run(ctx, execs...)
+	return run(ctx, execs...) // TODO: hungs here
 }
 
 func (p *Pipeline) UnmarshalYAML(unmarshal func(interface{}) error) error {

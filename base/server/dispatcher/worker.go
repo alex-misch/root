@@ -24,7 +24,7 @@ func (w *Worker) Start() {
 		select {
 		case task := <-w.TaskChannel:
 			// we have received some task to solve!
-			task.Solve()
+			task.Solve() // TODO hungs here
 
 		case <-w.quit:
 			// we have received a signal to stop!
