@@ -2,7 +2,7 @@ package poller
 
 import (
 	"container/heap"
-	// "reflect"
+	"fmt"
 	"sync"
 
 	"github.com/boomfunc/root/base/tools"
@@ -15,11 +15,18 @@ type HeapItem struct {
 	ready bool
 }
 
+// String implements fmt.Stringer interface
+func (item *HeapItem) String() string {
+	return fmt.Sprintf("HeapItem(fd: %d, value: %v, ready: %t)", item.Fd, item.Value, item.ready)
+}
+
 type pollerHeap struct {
 	// poller integration
+	// and sync locking section
 	poller Interface
-	once   tools.Once // poller locking
-	wg     sync.WaitGroup
+	once   tools.Once  // poller invoking once per time
+	locker sync.Locker // poller locker
+	cond   *sync.Cond  // poller ready (waiting) condition
 
 	// mutex and state
 	mutex   sync.Mutex // this mutex guards variables below
@@ -31,6 +38,8 @@ type pollerHeap struct {
 func HeapWithPoller(poller Interface) (heap.Interface, error) {
 	h := new(pollerHeap)
 	h.poller = poller
+	h.locker = new(locker)
+	h.cond = sync.NewCond(h.locker)
 	h.pending = make([]*HeapItem, 0)
 
 	heap.Init(h)
@@ -92,7 +101,7 @@ func (h *pollerHeap) Swap(i, j int) {
 	// h.mutex.Unlock()
 }
 
-// Pop implements heap.Interface
+// Push implements heap.Interface
 // adds flow to poller
 func (h *pollerHeap) Push(x interface{}) {
 	if item, ok := x.(*HeapItem); ok {
@@ -114,9 +123,6 @@ func (h *pollerHeap) Push(x interface{}) {
 // pops first in flow with `ready` status
 func (h *pollerHeap) Pop() interface{} {
 	for {
-		// TODO: loop infinity
-		// h.wg.Add(1)
-
 		// background poll refresh
 		go h.Poll()
 
@@ -128,8 +134,8 @@ func (h *pollerHeap) Pop() interface{} {
 		if value != nil {
 			return value
 		} else {
-			h.wg.Wait()
 			// log.Debug("h.wg.Wait():", reflect.ValueOf(&h.wg).Pointer())
+			h.cond.Wait()
 		}
 	}
 }
@@ -166,10 +172,14 @@ func (h *pollerHeap) Poll() {
 	// f is poll with actualizing heap data
 	// Only one running instance of this function per time across all workers
 	f := func() {
-		h.mutex.Lock()
-		h.wg.Add(1) // set waiters wait for this polling
-		// log.Debug("h.wg.Add(1):", reflect.ValueOf(&h.wg).Pointer())
-		h.mutex.Unlock()
+		// lock polling condition
+		h.locker.Lock()
+
+		// release waiting
+		defer func() {
+			h.cond.Broadcast()
+			h.locker.Unlock()
+		}()
 
 		// blocking mode operation !!
 		re, ce := h.poll()
@@ -177,11 +187,6 @@ func (h *pollerHeap) Poll() {
 		// events are received (and they are!)
 		h.mutex.Lock()
 		h.actualize(re, ce) // push ready, excluding closed
-		h.mutex.Unlock()
-
-		h.mutex.Lock()
-		h.wg.Done() // release waiting
-		// log.Debug("h.wg.Done():", reflect.ValueOf(&h.wg).Pointer())
 		h.mutex.Unlock()
 	}
 

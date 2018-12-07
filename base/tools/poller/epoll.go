@@ -74,8 +74,7 @@ func (p *epoll) Events() ([]Event, []Event, []Event, error) {
 }
 
 func (p *epoll) wait() ([]unix.EpollEvent, error) {
-	// TODO max events???
-	events := make([]unix.EpollEvent, 32)
+	events := make([]unix.EpollEvent, MaxEvents)
 
 	// blocking mode
 	n, err := unix.EpollWait(p.fd, events, -1)

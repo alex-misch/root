@@ -2,6 +2,10 @@ package poller
 
 // https://people.freebsd.org/~jlemon/papers/kqueue.pdf
 
+const (
+	MaxEvents = 1024 // TODO max events???
+)
+
 type Event interface {
 	Fd() uintptr
 }

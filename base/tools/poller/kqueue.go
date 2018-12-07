@@ -76,8 +76,7 @@ func (p *kqueue) Events() ([]Event, []Event, []Event, error) {
 }
 
 func (p *kqueue) wait() ([]unix.Kevent_t, error) {
-	// TODO max events???
-	events := make([]unix.Kevent_t, 32)
+	events := make([]unix.Kevent_t, MaxEvents)
 
 	// blocking mode
 	n, err := unix.Kevent(p.fd, nil, events, nil)
