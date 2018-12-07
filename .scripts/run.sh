@@ -36,7 +36,8 @@ cp /go/bin/${NODE}-$(uname -s)-$(uname -m) ./${NODE}
 # set application variables for run base
 # TODO move to special config in future named boomfunc.yaml
 # TODO https://github.com/urfave/cli#values-from-alternate-input-sources-yaml-toml-and-others
-BMP_DEBUG_MODE=true \
-BMP_CONFIG='./ci/router.yml' \
-BMP_APPLICATION_LAYER='http' \
+BMP_BASE_DEBUG_MODE=true \
+BMP_BASE_CONFIG='./ci/router.yml' \
+BMP_BASE_APP_LAYER='http' \
+BMP_BASE_WORKER_NUM=1 \
 	/go/bin/base-$(uname -s)-$(uname -m) run tcp
