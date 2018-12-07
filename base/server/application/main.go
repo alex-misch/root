@@ -59,27 +59,15 @@ func (app *Application) Handle(fl *flow.Data) {
 	// Run pipeline (under app layer)
 	pr, pw := io.Pipe()
 	// we will run view through executor
-	err = executor.Transaction(
-		executor.Concurrent(
-			executor.Func(func(ctx context.Context) error { return route.Run(ctx, req.Input, pw) }),
-			executor.Func(func(ctx context.Context) error {
-				written, err = app.packer.Pack(pr, fl.RWC)
-				return err
-			}),
-		),
-		executor.Func(func(ctx context.Context) error { return pw.Close() }),
-		true,
-	).Run(fl.Ctx)
-
-	// if err != nil {
-	// 	return
-	// }
-
-	// log.Debug("APP>PACK")
-	// // write data to rwc only if all success
-	// // TODO ErrServerError
-	// written, err = app.packer.Pack(pr, fl.RWC)
-	// log.Debug("APP>PACKED")
+	err = executor.Concurrent(
+		executor.Func(func(ctx context.Context) error {
+			return route.Run(ctx, req.Input, pw) // TODO: hungs here
+		}),
+		executor.Func(func(ctx context.Context) error {
+			_, err := app.packer.Pack(pr, fl.RWC)
+			return err
+		}),
+	).Run(fl.Ctx) // TODO: hungs here
 
 	return
 }
