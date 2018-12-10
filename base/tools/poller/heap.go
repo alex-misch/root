@@ -133,7 +133,7 @@ func (h *pollerHeap) Pop() interface{} {
 		if value != nil {
 			return value
 		} else {
-			h.cond.Wait()
+			h.cond.Wait() // TODO: broadcast before wait -> hang
 		}
 	}
 }
@@ -169,6 +169,8 @@ func (h *pollerHeap) poll() ([]uintptr, []uintptr) {
 func (h *pollerHeap) Poll() {
 	// f is poll with actualizing heap data
 	// Only one running instance of this function per time across all workers
+	// TODO: because we need to make sure that h.cond.Broadcast is called after your call to h.cond.Wait
+	// TODO: otherwise - deadlock
 	f := func() {
 		// lock polling condition
 		h.locker.Lock()

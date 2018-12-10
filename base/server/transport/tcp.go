@@ -49,6 +49,7 @@ func (tr *tcp) Serve() {
 	for {
 		conn, err := tr.listener.AcceptTCP()
 		if err != nil {
+			// TODO: use of closed network connection might be here - maybe exit? otherwise infinity loop
 			tr.errCh <- err
 			continue
 		}

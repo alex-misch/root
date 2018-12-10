@@ -37,7 +37,7 @@ func (d *Dispatcher) OccupyWorker() *Worker {
 	return <-d.WorkerPool
 }
 
-// ReleaseWorker returns busy worker to dispatcher system
+// AttachWorker returns busy worker to dispatcher system
 // and releases its resources
 // may be used for initial state or for `release` worker
 func (d *Dispatcher) AttachWorker(w *Worker) {

@@ -16,16 +16,23 @@ type Task struct {
 // this function will be passed to dispatcher system
 // and will be run at parallel
 func (task Task) Solve() {
+	// socket should be closed in any way
+	defer task.flow.RWC.Close()
+
+	// we need some context from global env to know how to solve this task
 	srvInterface, err := context.GetMeta(task.flow.Ctx, "srv")
 	if err != nil {
-		tools.FatalLog(err)
+		tools.ErrorLog(err)
+		return
 	}
 
 	srv, ok := srvInterface.(*Server)
 	if !ok {
-		tools.FatalLog(ErrWrongContext)
+		tools.ErrorLog(ErrWrongContext)
+		return
 	}
 
+	// here we have server pointer and can work with app
 	// unexpected errors resolving
 	defer func() {
 		if r := recover(); r != nil {
@@ -42,9 +49,6 @@ func (task Task) Solve() {
 	task.flow.Chronometer.Enter("app")
 	srv.app.Handle(task.flow) // TODO hungs here
 	task.flow.Chronometer.Exit("app")
-
-	// task solved, data is written, socket can be closed
-	task.flow.RWC.Close()
 
 	// log results
 	srv.outputCh <- task.flow

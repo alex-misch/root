@@ -3,13 +3,13 @@ package dispatcher
 // Worker represents the worker that executes the Task
 type Worker struct {
 	TaskChannel chan Task
-	quit        chan bool
+	quit        chan struct{}
 }
 
 func NewWorker() *Worker {
 	return &Worker{
 		TaskChannel: make(chan Task),
-		quit:        make(chan bool),
+		quit:        make(chan struct{}),
 	}
 }
 
@@ -35,7 +35,5 @@ func (w *Worker) Start() {
 
 // Stop signals the worker to stop listening for work requests.
 func (w *Worker) Stop() {
-	go func() {
-		w.quit <- true
-	}()
+	w.quit <- struct{}{}
 }
