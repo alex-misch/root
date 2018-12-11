@@ -3,7 +3,7 @@ import { Bundler } from './bmp_modules/bmpjs/bundler/core/bundler'
 import fs from 'fs'
 import rollup from "rollup"
 import babelPlugin from "rollup-plugin-babel"
-import project from "./package.json"
+import package from "./package.json"
 
 const builder = new Bundler({
 	source_folder: "src",
@@ -11,7 +11,7 @@ const builder = new Bundler({
 	afterBuild: () => console.log( 'Done.' )
 })
 
-const dependencies = project.bmp ? project.bmp.dependencies : {}
+const dependencies = package.bmp ? package.bmp.dependencies : {}
 if ( Object.entries(dependencies).length ) {
 	Object.keys(dependencies).forEach( key => {
 		dependencies[key] = `./bmp_modules/${ key }/src/index.js`

@@ -1,5 +1,5 @@
 import { getDuration } from "../utils/css-duration";
-import { default as Core } from 'bmpjs/bmp-core'
+import { default as Core } from 'bmpjs/core'
 
 
 /**

@@ -23,10 +23,6 @@ services:
       # ROUTER
       - ./bmp-router:/usr/share/nginx/html/bmp-router
 
-      # PLAYGROUND
-      - ./playground/.tmp:/usr/share/nginx/html/playground
-      - ./playground/bmp_modules:/usr/share/nginx/html/playground/bmp_modules
-
       # PROJECT
       - ./project/.tmp:/usr/share/nginx/html/project
       - ./project/bmp_modules:/usr/share/nginx/html/project/bmp_modules

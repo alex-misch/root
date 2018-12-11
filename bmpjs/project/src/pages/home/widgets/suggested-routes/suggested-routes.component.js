@@ -10,7 +10,9 @@ class SuggestedRoutes extends Core.StatelessWidget {
 
 
 	content() {
-		return `suggested-routes. parent counter: ${this.context.homepage.counter}`
+		return this.html`
+			<p>suggested-routes. context: ${ JSON.stringify(this.context) }</p>
+		`
 	}
 
 }

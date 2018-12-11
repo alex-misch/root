@@ -1,4 +1,4 @@
-import { default as Core } from "bmpjs/bmp-core"
+import { default as Core } from "bmpjs/core"
 
 import { BmpView } from './bmp-view.js'
 
@@ -104,6 +104,7 @@ class BmpRouter extends Core.StatelessWidget {
 		this._updateScroll(pathname)
 
 		this.currentRoute = pathname
+
 		return view
 	}
 

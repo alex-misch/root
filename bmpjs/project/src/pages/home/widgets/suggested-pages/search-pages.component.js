@@ -6,7 +6,9 @@ class SearchPages extends Core.StatelessWidget {
 	}
 
 	content() {
-		return `search-pages. parent counter: ${this.context.counter}`
+		return this.html`
+			<p>search-pages. context: ${ JSON.stringify(this.context) }</p>
+		`
 	}
 
 }

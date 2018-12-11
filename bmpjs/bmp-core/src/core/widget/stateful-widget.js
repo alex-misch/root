@@ -1,8 +1,7 @@
 import { StatelessWidget } from "./stateless-widget.js";
-import { render } from '../../../node_modules/lit-html/lib/render.js'
 import { observe } from '../../shared/proxy-observe.js'
 
-class StatefullWidget extends StatelessWidget {
+class StatefulWidget extends StatelessWidget {
 	constructor() {
 		super()
 	}
@@ -26,4 +25,4 @@ class StatefullWidget extends StatelessWidget {
 
 }
 
-export { StatefullWidget }
+export { StatefulWidget }

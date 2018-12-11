@@ -12,7 +12,10 @@ class SearchFlights extends Core.StatelessWidget {
 	}
 
 	content() {
-		return `search-flight. parent counter: ${this.context.counter}`
+		console.log(this.context)
+		return this.html`
+			<p>search-flight. context: ${ JSON.stringify(this.context) }</p>
+		`
 	}
 
 

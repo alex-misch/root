@@ -4,7 +4,7 @@ initApp = appClass => {
 	document.body.insertAdjacentHTML('beforeend', appClass.html())
 }
 /*******/
-import { BMPLit } from "bmpjs/bmp-core"
+import { BMPLit } from "bmpjs/core"
 import { BmpRouter } from "bmpjs/bmp-router"
 import { util } from './utils/utils.js'
 
@@ -26,14 +26,10 @@ class App extends BMPLit {
 				{ pattern: '/about/', tagName: 'about-component' }
 			]
 		})
-
-		this.context = this.observe({
-			counter: 0
-		})
 	}
 
 	render() {
-		console.log( this.context )
+
 
 		return this.html`
 			<h1>Hello from ${ util("bmp") } app!</h1>

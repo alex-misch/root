@@ -19,15 +19,14 @@ class MyApp extends Core.StatelessWidget {
 
 	constructor() {
 		super()
-		this.router = BmpRouter.widget({
+	}
+
+	content() {
+		return BmpRouter.widget({
 			viewDir: config.viewdir,
 			urlconf: config.urlconf,
 			onChange: this.trackView.bind(this)
 		})
-	}
-
-	content() {
-		this.render(this.router, this)
 	}
 }
 

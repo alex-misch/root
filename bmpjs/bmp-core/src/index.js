@@ -7,7 +7,7 @@ import closestPolyfill from './polyfill/closest.js'
 import { BmpApp } from './core/app/bmp-app.js';
 
 /** Widgets */
-import { StatefullWidget } from './core/widget/statefull-widget.js';
+import { StatefulWidget } from './core/widget/stateful-widget.js';
 import { StatelessWidget } from './core/widget/stateless-widget.js';
 
 /** CssJS */
@@ -17,7 +17,6 @@ import { CssJS } from './core/cssjs/cssjs-lit.js';
 if ( !window.fetch ) window.fetch = fetch
 if ( !Element.prototype.closest ) closestPolyfill( Element.prototype )
 
-
 export default {
 	fetch,
 
@@ -26,6 +25,6 @@ export default {
 	CssJS,
 
 	StatelessWidget,
-	StatefullWidget
+	StatefulWidget
 }
 
