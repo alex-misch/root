@@ -169,16 +169,8 @@ func (h *pollerHeap) poll() ([]uintptr, []uintptr) {
 // NOTE: Poll may be invoked as many times as wants - only one instance of this will be really invoked
 func (h *pollerHeap) Poll(locking bool) {
 	// f is poll with actualizing heap data
-	// Only one running instance of this function per time across all workers
+	// Only one running instance of this function per time across all workers -> under Once.Do
 	f := func() {
-		// lock polling condition
-		// NOTE: if locking == false this Polling will not wait h.cond.L.Unlock from another routine
-		// NOTE: otherwise it will wait, for example to be sure h.cond.Wait() already invoked
-		if locking {
-			h.cond.L.Lock() // NOTE: if h.cond.L.Lock() invoked before - this will wait for h.cond.Wait()
-			defer h.cond.L.Unlock()
-		}
-
 		// blocking mode operation !!
 		re, ce := h.poll()
 
@@ -190,6 +182,18 @@ func (h *pollerHeap) Poll(locking bool) {
 		// release waiting for this instance of polling
 		// NOTE: only real invokes of .poll() (real Once.Do) can release waiting goroutines
 		h.cond.Broadcast()
+	}
+
+	// lock polling condition
+	// NOTE: important note
+	// if locking == false this Polling will not wait h.cond.L.Unlock from another routine
+	// otherwise it will wait, for example to be sure h.cond.Wait() already invoked
+	//
+	// NOTE: also special note:
+	// if we don't block it here there is danger locking inside f will be 'faked' and nobody will throw broadcasr signal
+	if locking {
+		h.cond.L.Lock() // NOTE: if h.cond.L.Lock() invoked before - this will wait for h.cond.Wait()
+		defer h.cond.L.Unlock()
 	}
 
 	// f invokes with mutex locking on once.Do layer
