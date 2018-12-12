@@ -29,7 +29,7 @@ func TestHeap(t *testing.T) {
 			t.Fatal(err)
 		}
 		if !ok {
-			t.Fatal("hp.type -> Expected *pollerHeap")
+			t.Fatal("hp.(type) -> Expected *pollerHeap")
 		}
 		pollerHeapState(t, hp, 0)
 	})
@@ -42,7 +42,7 @@ func TestHeap(t *testing.T) {
 			t.Fatal(err)
 		}
 		if !ok {
-			t.Fatal("hp.type -> Expected *mock")
+			t.Fatal("hp.(type) -> Expected *mock")
 		}
 		pollerHeapState(t, hp, 0)
 	})
@@ -195,7 +195,7 @@ func TestHeapPrivate(t *testing.T) {
 			re      []uintptr
 			ce      []uintptr
 		}{
-			// in case error or e,pty we return hardcoded values (100, 500), (200,300) otherwise operation will block
+			// in case error or empty we return hardcoded values (100, 500), (200,300) otherwise operation will block
 			{MockPoller([]uintptr{1, 2}, []uintptr{3, 4}, true), 2, []uintptr{100, 500}, []uintptr{200, 300}}, // mock return empty because error
 			{MockPoller([]uintptr{}, []uintptr{}, false), 2, []uintptr{100, 500}, []uintptr{200, 300}},        // mock return empty because empty (second continue)
 			{MockPoller([]uintptr{1, 2}, []uintptr{3, 4}, false), 1, []uintptr{1, 2}, []uintptr{3, 4}},        // normal return in one polling
