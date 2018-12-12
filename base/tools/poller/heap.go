@@ -178,10 +178,6 @@ func (h *pollerHeap) Poll(locking bool) {
 		h.mutex.Lock()
 		h.actualize(re, ce) // push ready, excluding closed
 		h.mutex.Unlock()
-
-		// release waiting for this instance of polling
-		// NOTE: only real invokes of .poll() (real Once.Do) can release waiting goroutines
-		h.cond.Broadcast()
 	}
 
 	// lock polling condition
@@ -199,7 +195,12 @@ func (h *pollerHeap) Poll(locking bool) {
 	// f invokes with mutex locking on once.Do layer
 	// but once.m is a different mutex than h.mutex
 	// -> f() not thread safety
-	h.once.Do(f, true)
+	real := h.once.Do(f, true)
+	if real {
+		// release waiting for this instance of polling
+		// NOTE: only real invokes of .poll() (real Once.Do) can release waiting goroutines
+		h.cond.Broadcast()
+	}
 }
 
 func (h *pollerHeap) PollWait() {

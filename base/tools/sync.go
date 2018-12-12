@@ -16,20 +16,25 @@ type Once struct {
 // Do simulates sync.Once.Do by executing the specified function
 // only once, until Reset is triggered after sucessfull f return.
 // See http://golang.org/pkg/sync/#Once
-func (o *Once) Do(f func(), reset bool) {
+// returns boolean indicates is it real invoke or fake
+func (o *Once) Do(f func(), reset bool) bool {
 	if atomic.LoadUint32(&o.lock) == 1 {
-		return
+		return false
 	}
 
 	o.m.Lock()
+	defer o.m.Unlock()
 
 	if o.lock == 0 {
 		atomic.StoreUint32(&o.lock, 1)
-		f()
 		if reset {
-			atomic.StoreUint32(&o.lock, 0)
+			defer atomic.StoreUint32(&o.lock, 0)
 		}
+
+		f()
+
+		return true
 	}
 
-	o.m.Unlock()
+	return false
 }
