@@ -23,9 +23,8 @@ type pollerHeap struct {
 	// poller integration
 	// and sync locking section
 	poller Interface
-	once   tools.Once  // poller invoking once per time
-	locker sync.Locker // poller locker
-	cond   *sync.Cond  // poller ready (waiting) condition
+	once   tools.Once // poller invoking only once per time
+	cond   *sync.Cond // poller ready (waiting) condition
 
 	// mutex and state
 	mutex   sync.Mutex // this mutex guards variables below
@@ -37,8 +36,7 @@ type pollerHeap struct {
 func HeapWithPoller(poller Interface) (heap.Interface, error) {
 	h := new(pollerHeap)
 	h.poller = poller
-	h.locker = new(locker)
-	h.cond = sync.NewCond(h.locker)
+	h.cond = sync.NewCond(new(sync.Mutex))
 	h.pending = make([]*HeapItem, 0)
 
 	heap.Init(h)
@@ -123,18 +121,20 @@ func (h *pollerHeap) Push(x interface{}) {
 func (h *pollerHeap) Pop() interface{} {
 	for {
 		// background poll refresh
-		go h.Poll()
+		go h.Poll(false) // NOTE: this polling instance do not wait any conditions, will release blindly
 
 		// try to pop ready
 		h.mutex.Lock()
 		value := h.pop()
 		h.mutex.Unlock()
 
+		// check for wait
 		if value != nil {
 			return value
-		} else {
-			h.cond.Wait() // TODO: broadcast before wait -> hang
 		}
+
+		// we checked fetched value and it is not valid -. we need to wait for nearest polling
+		h.PollWait()
 	}
 }
 
@@ -166,20 +166,18 @@ func (h *pollerHeap) poll() ([]uintptr, []uintptr) {
 
 // Poll is thread safety operation for waiting events from poller
 // and actualize heap data
-func (h *pollerHeap) Poll() {
+// NOTE: Poll may be invoked as many times as wants - only one instance of this will be really invoked
+func (h *pollerHeap) Poll(locking bool) {
 	// f is poll with actualizing heap data
 	// Only one running instance of this function per time across all workers
-	// TODO: because we need to make sure that h.cond.Broadcast is called after your call to h.cond.Wait
-	// TODO: otherwise - deadlock
 	f := func() {
 		// lock polling condition
-		h.locker.Lock()
-
-		// release waiting
-		defer func() {
-			h.cond.Broadcast()
-			h.locker.Unlock()
-		}()
+		// NOTE: if locking == false this Polling will not wait h.cond.L.Unlock from another routine
+		// NOTE: otherwise it will wait, for example to be sure h.cond.Wait() already invoked
+		if locking {
+			h.cond.L.Lock() // NOTE: if h.cond.L.Lock() invoked before - this will wait for h.cond.Wait()
+			defer h.cond.L.Unlock()
+		}
 
 		// blocking mode operation !!
 		re, ce := h.poll()
@@ -188,12 +186,28 @@ func (h *pollerHeap) Poll() {
 		h.mutex.Lock()
 		h.actualize(re, ce) // push ready, excluding closed
 		h.mutex.Unlock()
+
+		// release waiting for this instance of polling
+		// NOTE: only real invokes of .poll() (real Once.Do) can release waiting goroutines
+		h.cond.Broadcast()
 	}
 
 	// f invokes with mutex locking on once.Do layer
 	// but once.m is a different mutex than h.mutex
 	// -> f() not thread safety
 	h.once.Do(f, true)
+}
+
+func (h *pollerHeap) PollWait() {
+	// NOTE: this guarantees that h.cond.Wait() will be called before h.cond.Broadcast()
+	// NOTE: in case whent we invoke .Poll with locking == true
+	h.cond.L.Lock()
+
+	go h.Poll(true) // NOTE: this polling instance will wait for ublocking (in .Wait in our case) and release existing waiting routines
+	h.cond.Wait()
+
+	// release waiting
+	h.cond.L.Unlock()
 }
 
 // actualize called after success polling process finished
