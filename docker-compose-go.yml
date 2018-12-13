@@ -13,7 +13,7 @@ x-defaults:
 
   logging: &logging
     options:
-      max-size: 200k
+      max-size: 2m
 
   service: &service
     image: golang
@@ -23,15 +23,10 @@ x-defaults:
 
 services:
 
+  # containers for writing, building and linting code
   build:
     << : *service
     command: .scripts/build.sh
-
-  run:
-    << : *service
-    command: .scripts/run.sh
-    ports:
-        - "8080:8080"
 
   test:
     << : *service
@@ -44,6 +39,15 @@ services:
   fmt:
     << : *service
     command: .scripts/fmt.sh
+
+  # container for running microservices under base
+  ms:
+    << : *service
+    command: .scripts/run.sh
+    ports:
+      - "8080:8080"
+    sysctls:
+      net.core.somaxconn: 100000
 
 volumes:
   src-vol:

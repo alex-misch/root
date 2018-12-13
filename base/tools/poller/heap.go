@@ -4,6 +4,7 @@ import (
 	"container/heap"
 	"fmt"
 	"sync"
+	"sync/atomic"
 
 	"github.com/boomfunc/root/base/tools"
 )
@@ -22,9 +23,10 @@ func (item *HeapItem) String() string {
 type pollerHeap struct {
 	// poller integration
 	// and sync locking section
-	poller Interface
-	once   tools.Once // poller invoking only once per time
-	cond   *sync.Cond // poller ready (waiting) condition
+	poller  Interface
+	once    tools.Once // poller invoking only once per time
+	cond    *sync.Cond // poller ready (waiting) condition
+	waiting uint32     // special int indicating that now some routine is waiting for broadcasting from .Poll()
 
 	// mutex and state
 	mutex   sync.Mutex // this mutex guards variables below
@@ -121,7 +123,7 @@ func (h *pollerHeap) Push(x interface{}) {
 func (h *pollerHeap) Pop() interface{} {
 	for {
 		// background poll refresh
-		go h.Poll(false) // NOTE: this polling instance do not wait any conditions, will release blindly
+		go h.Poll()
 
 		// try to pop ready
 		h.mutex.Lock()
@@ -167,7 +169,7 @@ func (h *pollerHeap) poll() ([]uintptr, []uintptr) {
 // Poll is thread safety operation for waiting events from poller
 // and actualize heap data
 // NOTE: Poll may be invoked as many times as wants - only one instance of this will be really invoked
-func (h *pollerHeap) Poll(locking bool) {
+func (h *pollerHeap) Poll() {
 	// f is poll with actualizing heap data
 	// Only one running instance of this function per time across all workers -> under Once.Do
 	f := func() {
@@ -183,40 +185,39 @@ func (h *pollerHeap) Poll(locking bool) {
 	// f invokes with mutex locking on once.Do layer
 	// but once.m is a different mutex than h.mutex
 	// -> f() not thread safety
-	if h.once.DoReset(f) {
-		// real invocation of poller
-		log.Debugf("POLL(%s); locking: %t; real: true", id, locking)
+	// NOTE: only real invokes of .poll() (real Once.Do) can release waiting goroutines
+	// NOTE: and! only if some waiters exists
+	if h.once.DoReset(f) && atomic.LoadUint32(&h.waiting) == 1 {
+		// set flag back to nonwait
+		h.mutex.Lock()
+		h.waiting = 0
+		h.mutex.Unlock()
 
-		// lock polling condition
-		// NOTE: important note
-		// if locking == false this Polling will not wait h.cond.L.Unlock from another routine
-		// otherwise it will wait, for example to be sure h.cond.Wait() already invoked
-		//
-		// NOTE: also special note:
-		// if we don't block it here there is danger locking inside f will be 'faked' and nobody will throw broadcasr signal
-		if locking {
-			h.cond.L.Lock() // NOTE: if h.cond.L.Lock() invoked before - this will wait for h.cond.Wait()
-			log.Debugf("Waiting(%s)", id)
-			defer h.cond.L.Unlock()
-		}
-
-		// NOTE: only real invokes of .poll() (real Once.Do) can release waiting goroutines
-		// release waiting for this instance of polling
-		defer h.cond.Broadcast()
-	}
+		// broadcasr waiters (all) (no care about multiple invokes)
+		h.cond.Broadcast()
 	}
 }
 
+// PollWait is special tool ths will block until some instance of .Poll() wake up by throwing a broadcast signal
 func (h *pollerHeap) PollWait() {
-	// NOTE: this guarantees that h.cond.Wait() will be called before h.cond.Broadcast()
-	// NOTE: in case whent we invoke .Poll with locking == true
-	h.cond.L.Lock()
+	h.cond.L.Lock() // NOTE: this guarantees that h.cond.Wait() will be called before h.cond.Broadcast()
+	defer h.cond.L.Unlock()
 
-	go h.Poll(true) // NOTE: this polling instance will wait for ublocking (in .Wait in our case) and release existing waiting routines
+	go func() {
+		h.cond.L.Lock() // NOTE: this will wait for h.cond.Wait()
+		defer h.cond.L.Unlock()
+
+		// we waiting broadcasting signal (signal wake up waiting)
+		h.mutex.Lock()
+		h.waiting = 1
+		h.mutex.Unlock()
+
+		// run helper instance of polling (event if it will faked waiting flag set to 1)
+		// NOTE: it is just companion for case when now is no .Poll() is running
+		h.Poll()
+	}()
+
 	h.cond.Wait()
-
-	// release waiting
-	h.cond.L.Unlock()
 }
 
 // actualize called after success polling process finished
