@@ -78,7 +78,7 @@ func (srv *Server) listen() {
 				// TODO https://play.golang.org/p/dNV2qI90EKQ
 				// TODO https://blog.quickmediasolutions.com/2015/09/13/non-blocking-channels-in-go.html
 				go func() {
-					srv.errCh <- flow.Stat.Error
+					srv.errCh <- err
 				}()
 			}
 		}

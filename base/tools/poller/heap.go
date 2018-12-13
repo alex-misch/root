@@ -4,7 +4,6 @@ import (
 	"container/heap"
 	"fmt"
 	"sync"
-	"sync/atomic"
 
 	"github.com/boomfunc/root/base/tools"
 )
@@ -186,8 +185,11 @@ func (h *pollerHeap) Poll() {
 	// but once.m is a different mutex than h.mutex
 	// -> f() not thread safety
 	// NOTE: only real invokes of .poll() (real Once.Do) can release waiting goroutines
-	// NOTE: and! only if some waiters exists
-	if h.once.DoReset(f) && atomic.LoadUint32(&h.waiting) == 1 {
+	h.mutex.Lock()
+	need := h.waiting == 1 // NOTE: and! only if some waiters exists
+	h.mutex.Unlock()
+
+	if h.once.DoReset(f) && need {
 		// set flag back to nonwait
 		h.mutex.Lock()
 		h.waiting = 0
