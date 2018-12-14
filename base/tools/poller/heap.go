@@ -136,7 +136,7 @@ func (h *pollerHeap) Pop() interface{} {
 		}
 
 		// we checked fetched value and it is not valid -. we need to wait for nearest polling
-		h.PollWait()
+		h.Wait()
 	}
 }
 
@@ -200,28 +200,39 @@ func (h *pollerHeap) Poll() {
 	}
 }
 
-// PollWait is special tool ths will block until some instance of .Poll() wake up by throwing a broadcast signal
-// TODO: unresolved thing: multiple goroutines with settings wait flag and PollWait and their locking
-func (h *pollerHeap) PollWait() {
+// wait is private rool that enables waiting flag and runs Poll companion
+func (h *pollerHeap) wait() {
+	h.cond.L.Lock()   // NOTE: this will wait for h.cond.Wait()
+	h.cond.L.Unlock() // NOTE: return state to unlocked (concurrent .wait() will be passed and .Poll() will be faked instead waiting and invoke new real .Poll())
+
+	// we waiting broadcasting signal (signal wake up waiting)
+	h.mutex.Lock()
+	atomic.StoreUint32(&h.waiting, 1)
+	h.mutex.Unlock()
+
+	// run helper instance of polling (event if it will faked waiting flag set to 1)
+	// NOTE: it is just companion for case when now is no .Poll() is running
+	h.Poll()
+}
+
+// Wait is special tool ths will block until some instance of .Poll() wake up by throwing a broadcast signal
+func (h *pollerHeap) Wait() {
 	h.cond.L.Lock() // NOTE: this guarantees that h.cond.Wait() will be called before h.cond.Broadcast()
 	defer h.cond.L.Unlock()
 
-	// TODO: MAYBE run this goroutine only if no wait? because if wait - some Poll wirking and no broafcasted yet
-	go func() {
-		h.cond.L.Lock()   // NOTE: this will wait for h.cond.Wait()
-		h.cond.L.Unlock() // NOTE: return state
+	go h.wait()
 
-		// we waiting broadcasting signal (signal wake up waiting)
-		h.mutex.Lock()
-		atomic.StoreUint32(&h.waiting, 1)
-		h.mutex.Unlock()
+	// // TODO: MAYBE run this goroutine only if no wait? because if wait - some Poll wirking and no broafcasted yet
+	// h.mutex.Lock()
+	// if atomic.LoadUint32(&h.waiting) == 0 {
+	// 	h.mutex.Unlock()
+	// 	go h.wait()
+	// } else {
+	// 	h.mutex.Unlock()
+	// }
+	// // TODO
 
-		// run helper instance of polling (event if it will faked waiting flag set to 1)
-		// NOTE: it is just companion for case when now is no .Poll() is running
-		h.Poll()
-	}()
-
-	h.cond.Wait()
+	h.cond.Wait() // NOTE: this unlocks .wait() invoked in goroutine above
 }
 
 // actualize called after success polling process finished
