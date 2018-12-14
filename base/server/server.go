@@ -102,6 +102,7 @@ func (srv *Server) Serve() {
 	go srv.engine()
 
 	// Here we can test some of our system requirements and performance recommendations
+	// TODO: deprecated calculations, refactor
 	PerformanceLog(cap(srv.dispatcher))
 
 	// GOROUTINE 1 (main) - this goroutine
