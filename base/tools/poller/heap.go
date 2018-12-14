@@ -201,13 +201,15 @@ func (h *pollerHeap) Poll() {
 }
 
 // PollWait is special tool ths will block until some instance of .Poll() wake up by throwing a broadcast signal
+// TODO: unresolved thing: multiple goroutines with settings wait flag and PollWait and their locking
 func (h *pollerHeap) PollWait() {
 	h.cond.L.Lock() // NOTE: this guarantees that h.cond.Wait() will be called before h.cond.Broadcast()
 	defer h.cond.L.Unlock()
 
+	// TODO: MAYBE run this goroutine only if no wait? because if wait - some Poll wirking and no broafcasted yet
 	go func() {
-		h.cond.L.Lock() // NOTE: this will wait for h.cond.Wait()
-		defer h.cond.L.Unlock()
+		h.cond.L.Lock()   // NOTE: this will wait for h.cond.Wait()
+		h.cond.L.Unlock() // NOTE: return state
 
 		// we waiting broadcasting signal (signal wake up waiting)
 		h.mutex.Lock()
