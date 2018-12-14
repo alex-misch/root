@@ -4,6 +4,7 @@ import (
 	"container/heap"
 	"fmt"
 	"sync"
+	"sync/atomic"
 
 	"github.com/boomfunc/root/base/tools"
 )
@@ -184,17 +185,16 @@ func (h *pollerHeap) Poll() {
 	// f invokes with mutex locking on once.Do layer
 	// but once.m is a different mutex than h.mutex
 	// -> f() not thread safety
+	real := h.once.DoReset(f) // NOTE: if we move under h.mutex.Lock() inner f will block
+
 	// NOTE: only real invokes of .poll() (real Once.Do) can release waiting goroutines
 	h.mutex.Lock()
-	need := h.waiting == 1 // NOTE: and! only if some waiters exists
-	h.mutex.Unlock()
+	defer h.mutex.Unlock()
 
-	if h.once.DoReset(f) && need {
+	if real && atomic.LoadUint32(&h.waiting) == 1 {
+		// NOTE: and! only if some waiters exists
 		// set flag back to nonwait
-		h.mutex.Lock()
-		h.waiting = 0
-		h.mutex.Unlock()
-
+		atomic.StoreUint32(&h.waiting, 0)
 		// broadcasr waiters (all) (no care about multiple invokes)
 		h.cond.Broadcast()
 	}
@@ -211,7 +211,7 @@ func (h *pollerHeap) PollWait() {
 
 		// we waiting broadcasting signal (signal wake up waiting)
 		h.mutex.Lock()
-		h.waiting = 1
+		atomic.StoreUint32(&h.waiting, 1)
 		h.mutex.Unlock()
 
 		// run helper instance of polling (event if it will faked waiting flag set to 1)
