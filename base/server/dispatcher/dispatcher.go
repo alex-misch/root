@@ -1,45 +1,58 @@
 package dispatcher
 
+// WORKER is nil value, just null object in the queue for channel blocking when all workers busy
+var WORKER = struct{}{}
+
 // Task is abstract job
 // something that the worker can do
 type Task interface {
 	Solve()
 }
 
-type Dispatcher struct {
-	// A pool of workers that are registered with the dispatcher
-	WorkerPool chan *Worker
-	MaxWorkers int
-}
+type Dispatcher chan struct{}
 
 // New returns new Dispatcher instance with all channels linked
-func New(MaxWorkers int) *Dispatcher {
-	return &Dispatcher{
-		WorkerPool: make(chan *Worker, MaxWorkers),
-		MaxWorkers: MaxWorkers,
+// with buffered waiting channel of MaxWorkers ( cap(Dispatcher) == Dispatcher )
+func New(MaxWorkers int) Dispatcher {
+	return make(chan struct{}, MaxWorkers)
+}
+
+func (d Dispatcher) Prepare() {
+	n := cap(d)
+
+	d.Add(n)      // fill the pool of workers
+	StartupLog(n) // log about dispatcher status
+}
+
+// Wait waits for nearest freed resource in channel (blocking operation)
+// this will block until all workers is idle
+func (d Dispatcher) Wait() {
+	<-d
+}
+
+// Do send task to worker's task channel
+// then worker registered back to pool of free resources
+func (d Dispatcher) Do(task Task) {
+	if task == nil {
+		// idle
+		d.Add(1) // return worker to pool
 	}
+
+	go func() {
+		// we have received some task to solve!
+		task.Solve()
+		// attach worker back to pool
+		d.Add(1)
+	}()
 }
 
-func (d *Dispatcher) Prepare() {
-	// starting n number of workers
-	for i := 0; i < d.MaxWorkers; i++ {
-		worker := NewWorker()
-		d.AttachWorker(worker)
-		go worker.Start()
+// AddWorker adds worker to channel
+// This means that free resources have appeared in the resource pool
+// and tasks can be performed.
+func (d Dispatcher) Add(n int) {
+	// NOTE: if n > left places - this operation will hung
+	// TODO: maybe throw error pool full?
+	for i := 0; i < n; i++ {
+		d <- WORKER
 	}
-
-	StartupLog(d.MaxWorkers)
-}
-
-// OccupyWorker returns free worker from dispatcher system
-// this will block until all worker is idle
-func (d *Dispatcher) OccupyWorker() *Worker {
-	return <-d.WorkerPool
-}
-
-// AttachWorker returns busy worker to dispatcher system
-// and releases its resources
-// may be used for initial state or for `release` worker
-func (d *Dispatcher) AttachWorker(w *Worker) {
-	w.attach(d)
 }

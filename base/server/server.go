@@ -18,7 +18,7 @@ type Server struct {
 
 	transport  transport.Interface
 	app        application.Interface
-	dispatcher *dispatcher.Dispatcher
+	dispatcher dispatcher.Dispatcher
 
 	errCh    chan error
 	outputCh chan *flow.Data
@@ -27,32 +27,31 @@ type Server struct {
 func (srv *Server) engine() {
 	for {
 		// Phase 1. get worker
-		// try to fetch empty worker
+		// try to fetch empty worker resource
 		// blocking mode!
-		node := chronometer.NewNode()
-		worker := srv.dispatcher.OccupyWorker()
+		node := chronometer.NewNode() // with chronometer measuring
+		srv.dispatcher.Wait()         // NOTE: will release on nearest freed worker
 		node.Exit()
 
-		// Phase 2. Obtain socket with data from heap/poller
-		// blocking mode!
+		// Phase 2. generate server task for resolving on dispatcher resources
+		var task dispatcher.Task // NOTE: dispatcher will skip empty tasks and release resources
+		// Obtain RWC with data from heap/poller. NOTE: blocking mode!
 		if flow, ok := heap.Pop(srv.transport).(*flow.Data); ok {
 			flow.Chronometer.Exit("transport")
 			flow.Chronometer.AddNode("dispatcher", node)
 			context.SetMeta(flow.Ctx, "srv", srv)
-			// send to worker's channel
-			// blocking send operation!
-			// TODO be careful -> blocking operation if worker not listening channel
-			// TODO because unbuffered and no receiver
-			worker.TaskChannel <- Task{flow}
+			// generate valid server task
+			task = Task{flow}
 		} else {
 			// something wrong received
 			// we don't know how to work with this
-			// TODO same shit as earlier
+			// TODO be careful -> blocking operation if nobody listening channel (because unbuffered and no receiver)
 			srv.errCh <- ErrWrongFlow
 		}
 
-		// Phase 3. Return worker to dispatcher in any way
-		srv.dispatcher.AttachWorker(worker)
+		// Phase 3. resolve server task throw dispatcher resources
+		// NOTE: main caveat: release worker back (look at dispatcher package)
+		srv.dispatcher.Do(task)
 	}
 }
 
@@ -103,7 +102,7 @@ func (srv *Server) Serve() {
 	go srv.engine()
 
 	// Here we can test some of our system requirements and performance recommendations
-	PerformanceLog(srv.dispatcher.MaxWorkers)
+	PerformanceLog(cap(srv.dispatcher))
 
 	// GOROUTINE 1 (main) - this goroutine
 	// This is thread blocking procedure - infinity loop
