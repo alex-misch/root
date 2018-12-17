@@ -1,3 +1,12 @@
+// Package flow provides primitives for running some 'tasks'
+// main idea: there is always something that can be done (`Step` interface)
+// there are also resources (some abstract 'workers')
+// package provides combintation of tools for running
+// 1) how much we want to allocate resources for execution
+// 2) do we want to wait for the result
+// 3) timeout and cancellation functionality for all nested flow
+
+// TODO: based on first two we need some heaps for Step's and Resources (with blocking .Pop())
 package flow
 
 import (
