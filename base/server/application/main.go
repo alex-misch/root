@@ -11,8 +11,9 @@ import (
 )
 
 var (
-	ErrBadRequest  = errors.New("server/application: cannot parse request")
-	ErrServerError = errors.New("server/application: internal server error")
+	ErrBadRequest  = errors.New("server/application: Bad request")
+	ErrServerError = errors.New("server/application: Internal error")
+	ErrNotFound    = errors.New("server/application: Route not found")
 )
 
 type Interface interface {
