@@ -10,7 +10,6 @@ var view = flow.Dispatcher(
 	2, // os.cpu for example
 	flow.Group(
 
-
 		// NOTE: this block is about parsing incoming stream
 		// ErrBadRequest or ErrRouteNotFound might be thrown
 		flow.Func(func(ctx context.Context) error {
@@ -29,13 +28,12 @@ var view = flow.Dispatcher(
 			return nil
 		}),
 
-
 		// NOTE: this block is about pipeline logic and concrete view per route
 		// ErrServerError only might be thrown
 		flow.Concurrent( // NOTE: concurrent with waiting (one part reads and process, another write answer)
 			flow.Func(func(ctx context.Context) error {
 				// pipeline run
-				// NOTE: fetch input and output from context - otherwise orphan
+				// NOTE: fetch pipeline, input and output from context - otherwise orphan
 				// TODO: return pipeline.Run(ctx, req.Input, pw)
 				return nil
 			}),
@@ -48,11 +46,11 @@ var view = flow.Dispatcher(
 			}),
 		),
 
-
 		// NOTE: this block is about debugging and logging
 		// NOTE this step might be omitted if error (but it's no good)
 		flow.Func(func(ctx context.Context) error {
 			// access log and error log
+			return nil
 		}),
 	),
 )
