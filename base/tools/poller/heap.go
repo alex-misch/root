@@ -222,7 +222,7 @@ func (h *pollerHeap) Wait() {
 
 	go h.wait()
 
-	// // TODO: MAYBE run this goroutine only if no wait? because if wait - some Poll wirking and no broafcasted yet
+	// // TODO: MAYBE run this goroutine only if no wait? because if wait - some Poll working and no broadcasted yet
 	// h.mutex.Lock()
 	// if atomic.LoadUint32(&h.waiting) == 0 {
 	// 	h.mutex.Unlock()

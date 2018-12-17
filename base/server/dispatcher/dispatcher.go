@@ -12,9 +12,9 @@ type Task interface {
 type Dispatcher chan struct{}
 
 // New returns new Dispatcher instance with all channels linked
-// with buffered waiting channel of MaxWorkers ( cap(Dispatcher) == Dispatcher )
-func New(MaxWorkers int) Dispatcher {
-	return make(chan struct{}, MaxWorkers)
+// with buffered waiting channel of workers ( cap(Dispatcher) == Dispatcher )
+func New(workers int) Dispatcher {
+	return make(chan struct{}, workers)
 }
 
 func (d Dispatcher) Prepare() {
@@ -46,7 +46,7 @@ func (d Dispatcher) Do(task Task) {
 	}()
 }
 
-// AddWorker adds worker to channel
+// Add adds worker to channel
 // This means that free resources have appeared in the resource pool
 // and tasks can be performed.
 func (d Dispatcher) Add(n int) {
