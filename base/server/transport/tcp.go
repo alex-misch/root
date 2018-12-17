@@ -49,7 +49,10 @@ func (tr *tcp) Serve() {
 	for {
 		conn, err := tr.listener.AcceptTCP()
 		if err != nil {
-			// TODO: use of closed network connection might be here - maybe exit? otherwise infinity loop
+			// if err, ok := err.(net.Error); ok {
+			// 	// this can be temporary error, we can just reconnect
+			// 	fmt.Println("TMP ERROR FROM TCP, need to reconnect:", err.Temporary())
+			// }
 			tr.errCh <- err
 			continue
 		}
