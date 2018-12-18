@@ -26,9 +26,9 @@ func TestDispatcher(t *testing.T) {
 			{[]Step{foo}, 2, foo},
 			{[]Step{foo}, 1, foo}, // NOTE: subcase not working here (len == 1 above)
 			{[]Step{Concurrent(foo)}, 2, foo},
-			// sub case with group
-			{[]Step{foo, bar}, 2, Group(foo, bar)},
-			{[]Step{foo, bar}, 3, Group(foo, bar)},
+			// sub case with concurrent
+			{[]Step{foo, bar}, 2, Concurrent(foo, bar)},
+			{[]Step{foo, bar}, 3, Concurrent(foo, bar)},
 		}
 		for i, tt := range tableTests {
 			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
@@ -57,8 +57,8 @@ func TestDispatcher(t *testing.T) {
 			{nil, 0, "%!s(<nil>)"},
 			{[]Step{}, 2, "%!s(<nil>)"},
 			{[]Step{nil, nil}, 1, "%!s(<nil>)"},
-			{[]Step{Dummy(1), Dummy(2), Dummy(5)}, 3, "GROUP(\n\tDUMMY(1),\n\tDUMMY(2),\n\tDUMMY(5)\n)"},
-			{[]Step{Dummy(1), Dummy(2), Dummy(5)}, 4, "GROUP(\n\tDUMMY(1),\n\tDUMMY(2),\n\tDUMMY(5)\n)"},
+			{[]Step{Dummy(1), Dummy(2), Dummy(5)}, 3, "CONCURRENT(\n\tDUMMY(1),\n\tDUMMY(2),\n\tDUMMY(5)\n)"},
+			{[]Step{Dummy(1), Dummy(2), Dummy(5)}, 4, "CONCURRENT(\n\tDUMMY(1),\n\tDUMMY(2),\n\tDUMMY(5)\n)"},
 			{[]Step{Dummy(1), nil, Dummy(5)}, 1, "DISPATCHER(\n\tDUMMY(1),\n\tDUMMY(5)\n)"},
 		}
 		for i, tt := range tableTests {

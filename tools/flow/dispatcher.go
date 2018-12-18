@@ -16,8 +16,9 @@ type dispatcher struct {
 }
 
 // Dispatcher creates group of steps, running in parallel (concurrent)
-// also with pool of cincurrent goroutines
+// also with pool of concurrent goroutines
 // (just utility function)
+// NOTE: dispatcher is same as Concurrent, but with pool provided
 func Dispatcher(workers int, steps ...Step) Step {
 	// filter unusable steps
 	steps = normalize(steps...)
@@ -28,8 +29,8 @@ func Dispatcher(workers int, steps ...Step) Step {
 		return nil
 	case l == 1: // there is single step, no need to group
 		return steps[0]
-	case l <= workers: // subcase , if workers >= steps - just return group
-		return group(steps) // inner type creation - no need to normalize and check steps again
+	case l <= workers: // subcase , if workers >= steps - just return concurrent without resource limits
+		return concurrent(steps) // inner type creation - no need to normalize and check steps again
 	default: // many steps, grouping this with pool of workers
 		return &dispatcher{
 			workers: make(chan struct{}, workers),
@@ -40,7 +41,14 @@ func Dispatcher(workers int, steps ...Step) Step {
 
 // wait waits for nearest freed resource in channel (blocking operation)
 // this will block until all workers is idle
+// NOTE: wait implements `pool` interface
 func (d *dispatcher) wait() {
+	<-d.workers
+}
+
+// release is just shortcut for releasing single worker
+// NOTE: wait implements `pool` interface
+func (d *dispatcher) release() {
 	<-d.workers
 }
 
@@ -55,25 +63,12 @@ func (d *dispatcher) add(n int) {
 	}
 }
 
-// is special tool that wraps incoming step to step with logic of waiting dispatcher workers
-func (d *dispatcher) wrap(step Step) Step {
-	return Func(func(ctx context.Context) error {
-		d.wait()
-		defer d.add(1)
-
-		return step.Run(ctx)
-	})
-}
-
 func (d *dispatcher) Run(ctx context.Context) error {
 	// fill the pool of workers (prepare)
 	d.add(cap(d.workers))
-
-	// wrap each step to wait dispatcher resources
-	steps := make([]Step, 0) // TODO
-
-	// run concurrently
-	return asynchronous(ctx, steps...)
+	// run asynchronous with waiting and with resource limits based on worker's channel
+	// NOTE: dispatcher implements `pool` interface itself // TODO: looks not good => move to separate struct
+	return asynchronous(ctx, true, d, d.steps...)
 }
 
 // String implements fmt.Stringer interface

@@ -117,7 +117,7 @@ func TestAsynchronous(t *testing.T) {
 	t.Run("nils", func(t *testing.T) {
 		var step1, step2, step3 Step
 
-		if err := asynchronous(context.TODO(), step1, step2, step3); err != nil {
+		if err := asynchronous(context.TODO(), true, nil, step1, step2, step3); err != nil {
 			t.Fatal(err)
 		}
 	})
@@ -139,7 +139,7 @@ func TestAsynchronous(t *testing.T) {
 		})
 
 		// run tool
-		if err := asynchronous(context.TODO(), step1, step2, step3); err != nil {
+		if err := asynchronous(context.TODO(), true, nil, step1, step2, step3); err != nil {
 			t.Fatal(err)
 		}
 
@@ -172,7 +172,7 @@ func TestAsynchronous(t *testing.T) {
 		})
 
 		// run tool
-		err := asynchronous(context.TODO(), step1, step2, step3)
+		err := asynchronous(context.TODO(), true, nil, step1, step2, step3)
 		if err == nil {
 			t.Fatal("Expected error, got nil")
 		}

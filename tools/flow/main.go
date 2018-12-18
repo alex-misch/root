@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	// describing situation when step haven't got required context
+	// describing situation when Step haven't got required context
 	// or some another information about himself to run
 	// in other words - improperly configured step
 	ErrStepOrphan = errors.New("flow: Step run without required context")
@@ -24,6 +24,13 @@ var (
 // Step interface describes somethink that can be runned in some flow
 type Step interface {
 	Run(context.Context) error
+}
+
+// pool is interface for control the number of simultaneous goroutines
+// using in `asynchronous`
+type pool interface {
+	wait()    // wait for free resource available
+	release() // return resource back to pool
 }
 
 // Execute is universal runnner for all objects implements Step interface

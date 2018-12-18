@@ -29,7 +29,8 @@ func Concurrent(steps ...Step) Step {
 // Run implements Step interface
 // just run one by one
 func (steps concurrent) Run(ctx context.Context) error {
-	return asynchronous(ctx, steps...)
+	// run asynchronous with waiting and without resource limits
+	return asynchronous(ctx, true, nil, steps...)
 }
 
 // String implements fmt.Stringer interface

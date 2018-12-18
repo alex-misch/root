@@ -44,7 +44,7 @@ func errs(errCh chan error) error {
 // error resolving by channels
 // cancellation in case of error through context cancellation
 // wait for completion through sync.WaitGroup
-func asynchronous(ctx context.Context, steps ...Step) error {
+func asynchronous(ctx context.Context, wait bool, resources pool, steps ...Step) error {
 	var wg sync.WaitGroup
 
 	errCh := make(chan error, 1)
@@ -62,11 +62,23 @@ func asynchronous(ctx context.Context, steps ...Step) error {
 			continue
 		}
 
-		wg.Add(1)
+		// wait for resource
+		// NOTE: resources interface might be nil => no limits and no wait-release logic
+		if resources != nil {
+			resources.wait()
+		}
 
+		wg.Add(1)
 		go func(step Step) {
+			defer func() {
+				wg.Done() // release waiting
+				// NOTE: resources interface might be nil => no limits and no wait-release logic
+				if resources != nil {
+					resources.release() // release working resources
+				}
+			}()
+
 			execute(step, errCh, ctx, cancel) // single execution
-			wg.Done()                         // release waiting
 		}(step)
 	}
 
