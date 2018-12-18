@@ -6,6 +6,16 @@ import (
 )
 
 // Set of tools for concurrent flow running
+// there is some variants:
+// waiting response
+// control cocurrently working goroutines throw `pool` interface
+//
+// some examples:
+//
+// with wait and without any concurrent num restrictions - `Concurrent`
+// with wait and with concurrent num restrictions - `Dispatcher`
+// without wait and without any concurrent num restrictions - ??????? (TODO)
+// without wait and with concurrent num restrictions - `Delay`
 
 // execute is a single step invoсation from flow and cancel flow if error returns
 // if error fetched through context cancellation - invoke terminates
@@ -68,10 +78,20 @@ func asynchronous(ctx context.Context, wait bool, resources pool, steps ...Step)
 			resources.wait()
 		}
 
-		wg.Add(1)
+		// if we don't need to wait for flow execution - disable sync logic
+		if wait {
+			wg.Add(1)
+		}
+
+		// Main Phase, run goroutine for step execution
+		// after execution release all resources if need
 		go func(step Step) {
 			defer func() {
-				wg.Done() // release waiting
+				// if we don't need to wait for flow execution - disable sync logic
+				if wait {
+					wg.Done() // release waiting
+				}
+
 				// NOTE: resources interface might be nil => no limits and no wait-release logic
 				if resources != nil {
 					resources.release() // release working resources
@@ -82,9 +102,16 @@ func asynchronous(ctx context.Context, wait bool, resources pool, steps ...Step)
 		}(step)
 	}
 
-	// wait until all completed
-	wg.Wait() // TODO: hungs here if some function failed, but abother bocking - we need to skip this
+	// if we don't need to wait for flow execution - disable sync logic
+	// NOTE: if delay - error not visible
+	if wait {
+		// wait until all completed
+		wg.Wait() // TODO: hungs here if some function failed, but abother bocking - we need to skip this
 
-	// handle errors from concurrent goroutines
-	return errs(errCh)
+		// handle errors from concurrent goroutines
+		return errs(errCh)
+	}
+
+	// delay case
+	return nil
 }
