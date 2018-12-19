@@ -1,3 +1,5 @@
+// Package Pipeline provides special functionality for execution layers (steps) one by one
+// Main idea that output of [n] layer is input to [n+1] layer
 package pipeline
 
 import (
