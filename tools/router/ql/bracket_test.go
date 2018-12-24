@@ -40,6 +40,8 @@ func TestBracket(t *testing.T) {
 		}{
 			{"", ""},
 			{"{}", ""},
+			{"{", ""},
+			{"}", ""},
 			{"{foo|bar|baz}", "foo|bar|baz"},
 			{"{foo|bar|baz", "foo|bar|baz"},
 		}
