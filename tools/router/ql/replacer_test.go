@@ -6,12 +6,34 @@ import (
 )
 
 func TestReplacer(t *testing.T) {
+	t.Run("common", func(t *testing.T) {
+		t.Run("fallback", func(t *testing.T) {
+			// NOTE: common test cases checks for fallback value for each replacer (empty source)
+			replacers := []Replacer{
+				defaultReplacer,
+				groupReplacer("lolkek"),
+				queryReplacer,
+			}
+			expecting := ""
+			for _, replacer := range replacers {
+				// empty source - fallback returned
+				if out := replacer(""); out != expecting {
+					t.Fatalf("Expected %q, got %q", expecting, out)
+				}
+				if out := replacer(" "); out != expecting {
+					t.Fatalf("Expected %q, got %q", expecting, out)
+				}
+			}
+		})
+	})
+
+	// NOTE: each testcases below are testing real values (not common values logic)
 	t.Run("default", func(t *testing.T) {
 		tableTests := []struct {
 			source string // source
 			out    string // expected value of replacer output
 		}{
-			{"", "(?:)"},
+			{"*", "(?:.*)"},
 			{"foo|bar|baz", "(?:foo|bar|baz)"},
 			{"foo|bar|*", "(?:foo|bar|.*)"},
 		}
@@ -32,8 +54,7 @@ func TestReplacer(t *testing.T) {
 			source string // source
 			out    string // expected value of replacer output
 		}{
-			{"", "(?<lolkek>)"},
-			{" ", "(?<lolkek> )"},
+			{"*", "(?<lolkek>.*)"},
 			{"foo|bar|baz", "(?<lolkek>foo|bar|baz)"},
 			{"foo|bar|*", "(?<lolkek>foo|bar|.*)"},
 		}
@@ -54,8 +75,6 @@ func TestReplacer(t *testing.T) {
 			source string // source
 			out    string // expected value of replacer output
 		}{
-			{"", "TODO"},  // fallback value
-			{" ", "TODO"}, // fallback value
 			// unvalued
 			{"foobar", "^(?=.*(?:^|&)foobar(?:=(?P<foobar>[^&#]*))?).*$"},
 			{" foobar  ", "^(?=.*(?:^|&)foobar(?:=(?P<foobar>[^&#]*))?).*$"}, // key is always trimmed

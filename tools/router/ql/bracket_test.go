@@ -6,12 +6,19 @@ import (
 )
 
 func TestBracket(t *testing.T) {
+	// DEBUG
+	// DEBUG: for debugging this is first test entrypoint
+	// DEBUG
 	t.Run("String", func(t *testing.T) {
 		tableTests := []struct {
 			source string // source
 			out    string // expected value of String() method
 		}{
-			{"", "(?:)"},
+			// empty values - fallback
+			{"", ""},
+			{"param:", ""},
+			{"?:", ""},
+			// real values
 			{"foo|bar|baz", "(?:foo|bar|baz)"},
 			{"foo|bar|*", "(?:foo|bar|.*)"},
 		}
@@ -50,8 +57,8 @@ func TestBracket(t *testing.T) {
 			bracket := NewBracket(tt.source)
 
 			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-				if bracket.source != tt.out {
-					t.Fatalf("Expected %q, got %q", tt.out, bracket.source)
+				if out := string(bracket); out != tt.out {
+					t.Fatalf("Expected %q, got %q", tt.out, out)
 				}
 			})
 		}

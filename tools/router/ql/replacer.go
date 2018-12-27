@@ -12,25 +12,39 @@ var (
 	UnvalueWrapper = "(?:^|&)%[1]s(?:=(?P<%[1]s>[^&#]*))?"
 	// regex wrapper for binding part's regex to the general expression
 	JoinWrapper = "(?=.*%s)"
+
+	// universal string replacer replaces our base shortctus
+	// can be used anywhere as string
+	// for example:
+	// {*} will be (?:.*)
+	// {image:*} will be (?<image>.*)
+	// TODO: expand the list as you like
+	shortcuts = strings.NewReplacer(
+		"*", ".*", // {*} will be .* in context of using
+	)
 )
 
 // Replacer is function that returns reg expression as string from source
 type Replacer func(string) string
 
-// defaultReplacer replacer replaces with non capturing group
+// defaultReplacer replacer replaces entries as regexp non capturing group
 var defaultReplacer Replacer = func(source string) string {
-	return fmt.Sprintf("(?:%s)", strings.NewReplacer(
-		"*", ".*", // {*} will be (?:.*)
-	).Replace(source))
+	// Prephase. check for empty source -> return fallback
+	if strings.Trim(source, " ") == "" {
+		return ""
+	}
+	return fmt.Sprintf("(?:%s)", shortcuts.Replace(source))
 }
 
-// groupReplacer returns replacer which replaces with group capturing
+// groupReplacer returns replacer which replaces entries as regexp with group capturing
 // group name provided for generation regexp
 func groupReplacer(group string) Replacer {
 	return func(source string) string {
-		return fmt.Sprintf("(?<%s>%s)", group, strings.NewReplacer(
-			"*", ".*", // {param:*} will be (?<param>.*)
-		).Replace(source))
+		// Prephase. check for empty source -> return fallback
+		if strings.Trim(source, " ") == "" {
+			return ""
+		}
+		return fmt.Sprintf("(?<%s>%s)", group, shortcuts.Replace(source))
 	}
 }
 
@@ -45,7 +59,7 @@ func groupReplacer(group string) Replacer {
 var queryReplacer Replacer = func(source string) string {
 	// Prephase. check for empty source -> return fallback
 	if strings.Trim(source, " ") == "" {
-		return "FALLBACK!!"
+		return ""
 	}
 
 	// Phase 1. Split params by special `ql` separator - & (like in query)

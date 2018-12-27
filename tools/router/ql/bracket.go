@@ -17,16 +17,14 @@ var (
 // where replacer replaces out shortcuts to regex expression
 // wrapper describes which replacer to use
 //
-// example: {?:a,b,c=foo} means that we will replacer source (a,b,c=foo) according to wrapper for GET query params (?:)
-type Bracket struct {
-	source string
-}
+// example: {?:a&b&c=foo} means that we will replace source (a&b&c=foo) according to wrapper for GET query params (?:)
+type Bracket string
 
-func NewBracket(source string) *Bracket {
-	return &Bracket{
-		// match may include leading and trailing '{}'
-		source: strings.Trim(source, "{}"),
-	}
+func NewBracket(source string) Bracket {
+	return Bracket(
+		// match from regexp may include leading and trailing '{}'
+		strings.Trim(source, "{}"),
+	)
 }
 
 // String implements fmt.Stringer interface
@@ -34,9 +32,8 @@ func NewBracket(source string) *Bracket {
 func (b Bracket) String() string {
 	// Phase 1. Get wrapper and associated replacer
 	var wrapper, source string
-	var replacer Replacer
 
-	if parts := strings.SplitN(b.source, ":", 2); len(parts) == 2 {
+	if parts := strings.SplitN(string(b), ":", 2); len(parts) == 2 {
 		// case when wrapper part exists
 		wrapper = parts[0]
 		source = parts[1]
@@ -44,6 +41,13 @@ func (b Bracket) String() string {
 		// case when default wrapper must be used
 		source = parts[0]
 	}
+
+	// Middle phase. is source empty - nothing to do - empty logic
+	if source == "" {
+		return ""
+	}
+
+	var replacer Replacer
 
 	// NOTE: expand the list of functionality here
 	switch wrapper {
