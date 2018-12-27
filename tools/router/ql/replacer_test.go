@@ -54,9 +54,9 @@ func TestReplacer(t *testing.T) {
 			source string // source
 			out    string // expected value of replacer output
 		}{
-			{"*", "(?<lolkek>.*)"},
-			{"foo|bar|baz", "(?<lolkek>foo|bar|baz)"},
-			{"foo|bar|*", "(?<lolkek>foo|bar|.*)"},
+			{"*", "(?P<lolkek>.*)"},
+			{"foo|bar|baz", "(?P<lolkek>foo|bar|baz)"},
+			{"foo|bar|*", "(?P<lolkek>foo|bar|.*)"},
 		}
 
 		var replacer Replacer = groupReplacer("lolkek")

@@ -15,6 +15,8 @@ func TestRegexp(t *testing.T) {
 		{"/{data|static}/{*}.{jpg|png|jpeg}", "^/?(?:data|static)/(?:.*).(?:jpg|png|jpeg)"},
 		{"^{data|static}/{*}.{jpg|png|jpeg}", "^/?(?:data|static)/(?:.*).(?:jpg|png|jpeg)"},
 		{"{data|static}/{*}.{jpg|png|jpeg}", "^/?(?:data|static)/(?:.*).(?:jpg|png|jpeg)"},
+		// with naming
+		{"{store:data|static}/{*}.{expr:jpg|png|jpeg}", "^/?(?P<store>data|static)/(?:.*).(?P<expr>jpg|png|jpeg)"},
 	}
 
 	for i, tt := range tableTests {

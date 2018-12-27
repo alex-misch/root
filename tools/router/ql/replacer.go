@@ -44,7 +44,7 @@ func groupReplacer(group string) Replacer {
 		if strings.Trim(source, " ") == "" {
 			return ""
 		}
-		return fmt.Sprintf("(?<%s>%s)", group, shortcuts.Replace(source))
+		return fmt.Sprintf("(?P<%s>%s)", group, shortcuts.Replace(source))
 	}
 }
 
