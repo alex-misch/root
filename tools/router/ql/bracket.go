@@ -42,7 +42,6 @@ func (b Bracket) String() string {
 		source = parts[1]
 	} else {
 		// case when default wrapper must be used
-		wrapper = ""
 		source = parts[0]
 	}
 
