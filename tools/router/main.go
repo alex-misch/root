@@ -10,7 +10,8 @@ import (
 )
 
 var (
-	ErrNotFound = errors.New("tools/router: Route not found")
+	ErrNotFound         = errors.New("tools/router: Route not found")
+	ErrUriInappropriate = errors.New("tools/router: Inappropriate uri")
 )
 
 // Router is collection of endpoints in priority order
@@ -36,10 +37,15 @@ type Route struct {
 	step    flow.Step
 }
 
-// match return bool meaning this route is applicable to requested url
+// Match return bool meaning this route is applicable to requested uri
 func (r *Route) Match(uri string) bool {
-	// TODO here extend context for URl values
 	return r.pattern.MatchString(uri)
+}
+
+// Match trying to match incoming string on pattern and return map of captured data and
+// bool meaning this string was matched
+func (r *Route) MatchParams(uri string) (map[string]string, error) {
+	return MatchParams(r.pattern, uri)
 }
 
 // Run runs associted Step interface
