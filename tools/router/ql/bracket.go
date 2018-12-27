@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	bracketsRegexp = regexp.MustCompile("{.*?}") // lazy!!
+	bracketsRegexp = regexp.MustCompile("{.*?}") // lazy for catch only to the nearest closing tag!!
 )
 
 // Bracket is some dynamic object in our pattern
@@ -50,13 +50,14 @@ func (b Bracket) String() string {
 	var replacer Replacer
 
 	// NOTE: expand the list of functionality here
+	// NOTE: do not forget add to common testcase
 	switch wrapper {
 	case "?": // we translating get params query
 		replacer = queryReplacer
 	case "": // we tranlsting usual regex non capturing group
 		replacer = defaultReplacer
 	default: // we tranlsting usual regex with capturing content
-		replacer = groupReplacer(wrapper) // get replacer by group name (group name parsed from wrapper part)
+		replacer = groupReplacer(wrapper) // get replacer by group name (group name parsed from as `wrapper` variable)
 	}
 
 	// Phase 2. Get final regexp from parsed source accorfing to chosen wrapper
