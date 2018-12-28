@@ -48,8 +48,10 @@ class Bundler {
 
 				const sourceFile = path.resolve(filepath)
 				if ( sourceFile.includes(this.sourceDir) ) {
-					const { code } = await this.transform( filepath )
-					const destFile = sourceFile.replace(this.sourceDir, this.destDir)
+					const { code, extension } = await this.transform( filepath )
+					let destFile = sourceFile.replace(this.sourceDir, this.destDir)
+					if ( extension > '' ) destFile += `.${extension}`
+					console.log( `--> ${destFile}` )
 					await fs.outputFile( destFile, code )
 				} else {
 					console.warn( 'SKIP: Trying to compile', filepath, 'but it not in', this.sourceDir )

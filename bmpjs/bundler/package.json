@@ -18,11 +18,11 @@
   "author": "boomfunc",
   "license": "ISC",
   "homepage": "https://bitbucket.org/letsnetdevinternal/initial#readme",
-	"bmp": {
-		"dependencies": {
-			"bmpjs/bundler": "latest"
-		}
-	},
+  "bmp": {
+    "dependencies": {
+      "bmpjs/bundler": "latest"
+    }
+  },
   "dependencies": {
     "fs-extra": "^7.0.0"
   },

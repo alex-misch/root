@@ -16,7 +16,8 @@ class StatelessWidget extends HTMLElement {
 	 *	@return {String} tagname that will be used as custom element
 	 */
 	static get tagname() {
-		throw new Error( '"tagname" getter not defined in ComponentWidget' )
+		const errText = `(${this.name}) "tagname" static getter not defined (required by StatelessWidget)`
+		throw new Error( errText )
 	}
 
 	/**
@@ -66,15 +67,8 @@ class StatelessWidget extends HTMLElement {
 	/** Lit-HTML generator
 	 *
 	 * @return instace of lit html generator
-	 * @example this.html`
-	 * 	<div class="inner">
-	 * 		<h3>Title of page</h3>
-	 * 		<p>Paragraph of page</p>
-	 * 	</div>
-	 * `
-	 */
+	 * */
 	get html() {
-		// this.oldWidgetList = arguments
 		return html
 	}
 
@@ -93,7 +87,6 @@ class StatelessWidget extends HTMLElement {
 
 	/**
 	 * inspect passed function for possibility of calling and call it if it possible
-	 * @async
 	 * @private
 	 * @example this._hook( 'beforeRender' )
 	 */
@@ -108,7 +101,6 @@ class StatelessWidget extends HTMLElement {
 	/**
 	 * Render content of element (when it attached)
 	 * Content must be returned by "content" method
-	 * @async
 	 */
 	render() {
 		if ( typeof this.content == 'function' ) {

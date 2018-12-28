@@ -1,0 +1,4 @@
+
+class CssJsSass extends CssJs {
+
+}

@@ -1,0 +1,253 @@
+@import "./vars.sass"
+*
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+
+jetsmarter-app
+	-webkit-transition: none
+	transition: none
+	display: block
+	overflow: hidden
+	&.mw-is-open
+		position: fixed
+		left: 0
+		right: 0
+
+	::selection
+		background: #FE6A57//TODO move to theme
+		color: #FFF
+
+	::-moz-selection
+		background: #FE6A57//TODO move to theme
+		color: #FFF
+
+	.preloader
+		&.hidden
+			display: none
+
+		&.inline
+
+			height: 200px
+			position: relative
+			svg
+				-webki-ttransform: scale(0.3)
+				transform: scale(0.3)
+	.text-center
+		text-align: center
+		// padding-top: 3em
+
+	p, p input
+		font-family: $font-roboto
+
+	.mw1200
+		max-width: 1200px
+		margin: auto
+
+	.big-text
+		font-size: 3em
+		color: #000
+
+	bmp-view
+		display: block
+		color: #fff
+		left: 0
+		top: 0
+		opacity: 0
+		position: relative
+		width: 100%
+		min-height: 100vh
+		-webkit-transition: opacity .3s
+		transition: opacity .3s
+		&[state="anim-in"]
+			opacity: 1
+
+		&[state="anim-out"]
+			opacity: 0
+
+
+	.mdc-layout-grid
+
+		max-width: 1200px
+
+	nav .mdc-layout-grid
+		max-width: 100%
+
+	.stretch
+		> .mdc-layout-grid
+			max-width: 100%
+
+
+	.btn-reset
+		position: relative
+		display: block
+		padding: 0
+		background: transparent
+		margin: 0
+		-webkit-appearance: none
+		-moz-appearance: none
+		appearance: none
+		-webkit-tap-highlight-color: transparent
+		outline: none
+		border: none
+		text-align: center
+		text-decoration: none
+		display: block
+		cursor: pointer
+
+
+	.btn
+		padding: 0
+		margin: 0
+		-webkit-appearance: none
+		-moz-appearance: none
+		appearance: none
+		-webkit-tap-highlight-color: transparent
+		outline: none
+		border: none
+		width: 100%
+		max-width: 300px
+		cursor: pointer
+		height: 45px
+		border-radius: 45px
+		font-weight: 400
+		text-align: center
+		text-decoration: none
+		display: block
+		border-radius: 5px
+		span
+			font-family: Roboto
+			font-weight: 200
+			font-size: 16px
+			text-transform: uppercase
+			transition-duration: .3s
+			transition-timing-function: ease-in-out
+
+		&.btn-primary
+			background:#fff
+			color: #000
+
+		// &.btn-big:
+
+		// 	width: 390px
+		// 	max-width: 100%
+		// 	height: 50px
+
+		//
+
+	.centred
+		margin: 0 auto
+
+	.flex
+		display: flex
+		flex-wrap: wrap
+
+	.flex-item
+		width: 50%
+
+	.flex-ai-center
+		align-items: center
+
+	.visual-bg
+		// height: 210px
+		&.hidenav
+			margin-top: 0
+
+	.page-content
+		padding: 63px 0 60px
+
+
+	@media (max-width: 479px)
+		.page-content
+			padding: 20px 0
+		.visual-bg
+			position: relative
+			// margin-top:  57px
+
+	.default-link
+		text-decoration: none
+		border-bottom: 1px solid transparent
+		transition-duration: .25s
+		&:hover
+			transition-duration: .25s
+			border-bottom: 1px solid
+	.relative
+		position: relative
+
+	.back-btn
+		font-weight: 300
+		font-size: 20px
+		letter-spacing: -0.5px
+		display: inline-block
+		position: relative
+		z-index: 1
+		border: 1px solid #44423e !important
+		border-radius: 6px
+		padding: 0 25px
+		width: 100px
+		height: 50px
+		line-height: 49px
+		margin: 0
+		text-align: left
+		outline: none
+		cursor: pointer
+		transition-duration: .25s
+		text-align: right
+		text-decoration: none
+		font-family: $font-roboto
+		&:hover
+			color: #fff
+			border: 1px solid
+			transition-duration: .3s
+		&:active:hover
+			box-shadow: 1px
+			transition-duration: .25s
+		.back-btn-arrow-icon
+			position: absolute
+			left: 10px
+
+	@media (max-width: 839px)
+		.flex-item
+			width: 100%
+		.flex-reverse
+			flex-direction: column-reverse
+
+	.main-divider
+		z-index: 2
+		position: relative
+		min-height: 100%
+		background: 50% 50%/cover no-repeat transparent
+
+	.scroll-to-top
+		display: block
+		width: 40px
+		height: 40px
+		position: fixed
+		right: 10px
+		bottom: 10px
+		border-radius: 6px
+		opacity: 0
+		transition-duration: 0.3s
+		transform: rotate(180deg)
+		cursor: pointer
+		&.visible
+			opacity: 1
+			transition-duration: 0.3s
+
+		span
+			position: relative
+			display: block
+			background: #EEECE7
+			width: 40px
+			height: 40px
+			border-radius: 6px
+			&:before
+				content: ""
+				margin-top: 8px
+				border-bottom: solid 1px #44423E
+				border-left: solid 1px #44423E
+				color: #44423E
+				position: absolute
+				width: 15px
+				height: 15px
+				transform: rotate(-45deg) translate(50% 50%)

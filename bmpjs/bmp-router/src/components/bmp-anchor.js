@@ -1,12 +1,7 @@
 import { replaceLink } from "../utils/replace-link";
 import { BmpRouter } from "./bmp-router";
+import Core from 'bmpjs/core'
 
-const refClick = function(ev) {
-  ev.preventDefault()
-
-  const link = this.querySelector('a')
-  if ( link ) this.closest( BmpRouter.tagname ).go(link.pathname + link.search)
-}
 
 
 /**
@@ -21,31 +16,59 @@ const refClick = function(ev) {
  *  <a href="/about/">About</a>
  * </bmp-anchor>
  */
-class BmpAnchor extends HTMLElement {
+class BmpAnchor extends Core.StatelessWidget {
 
-  static get is() { return 'bmp-anchor' }
+	static get tagname() {
+		return 'bmp-anchor'
+	}
+
+	constructor() {
+		super()
+		this.allowedAttributes = [
+			'href', 'target', 'title', 'download', "charset",
+			'coords', 'hreflang', 'media', 'className', 'ping', 'rel',
+			'rev', 'shape', 'style' // https://www.w3schools.com/tags/tag_a.asp
+		]
+	}
+
+	attrs(raw) {
+		return Object
+			.keys(raw)
+			.filter(key => this.allowedAttributes.includes(key))
+			.reduce( (obj, key) => {
+				obj[key] = raw[key]
+				return obj
+			}, {})
+	}
 
 
-  constructor() {
-    super()
-  }
-
-
-  connectedCallback() {
-
+	beforeAttach() {
 		;[... this.querySelectorAll( 'a' ) ].forEach( el => replaceLink(el) )
 		this.linksObserver = new MutationObserver( mutationRecords => {
 			[...mutationRecords.addedNodes].forEach( el => replaceLink(el) )
 		})
-    this.addEventListener( 'click', refClick, false )
-  }
+	}
 
-  disconnectedCallback() {
+	disconnectedCallback() {
+		super.disconnectedCallback()
 		this.linksObserver.disconnect()
-    this.removeEventListener( 'click', refClick, false )
-  }
+	}
+
+
+	clickHandler(ev) {
+		ev.preventDefault()
+		console.log(BmpRouter.tagname, this.closest( BmpRouter.tagname ))
+		this.closest( BmpRouter.tagname ).go(link.pathname + link.search)
+	}
+
+	content() {
+		// ${isActive(link) && 'active' }
+		return this.html`
+			<a @click="${ ev => this.clickHandler(ev) }" dummy="${ Core.spread(this.attrs(this.context)) }">${ this.context.inner }</a>
+		`
+	}
+
 
 }
 
-customElements.define( BmpAnchor.is, BmpAnchor )
 export { BmpAnchor }

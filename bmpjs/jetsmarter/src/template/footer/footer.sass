@@ -1,0 +1,161 @@
+@import "../../vars.sass"
+
+jetsm-footer
+	-webkit-transition: opacity .3s
+	transition: opacity .3s
+	display: block
+	background-color: $color-dark
+	padding: 50px 0px
+	footer-menu,
+	footer-disclaimer,
+	footer-social
+		display: block
+	.footer-link
+		font-size: 13px
+		line-height: 20px
+		font-weight: 400
+		color: $color-light
+		display: block
+		text-decoration: none
+		font-family: $font-roboto
+		transition-duration: .25s
+		&:hover
+			transition-duration: .25s
+			color: $color-primary
+
+		&.active
+			color: $color-primary
+
+
+
+
+	.footer-top-block
+		padding: 0 0 30px
+
+
+	.site-button-item
+		display: block
+		width: 100%
+		max-width: 200px
+		min-width: 200px
+		outline: none
+		height: 30px
+		padding: 0
+		border: 0
+		border-radius: 6px
+		font-size: 11px
+		cursor: pointer
+		font-family: Roboto
+		line-height: 31px
+		text-decoration: none
+		text-align: center
+		transition-duration: $speed-fast
+		box-shadow: $shadow-default
+		&:hover
+			box-shadow: $shadow-hover
+			transition-duration: $speed-fast
+			// transform: `scale(${FX.scale.hover)`
+
+		&:active:hover
+			box-shadow: $shadow-default
+			transition-duration: $speed-fast
+			// transform: scale(1)
+
+
+
+	.social-icons
+		list-style-type: none
+		display: flex
+		align-items: flex-end
+		float: right
+		li
+			margin-right: 29px
+			&:last-child
+				margin-right: 0
+
+			a path
+				transition-duration: .25s
+
+			a:hover path
+				transition-duration: .25s
+				fill: $color-primary
+
+
+		&.social-icons-mobile
+			display: none
+			float: none
+
+
+
+	.footer-block
+		position: relative
+
+
+	.store-button
+		position: absolute
+		bottom: 0
+		left: 50%
+		display: flex
+		a
+			margin-right: 38px
+			path
+				-webkit-transition: fill .3s
+				transition: fill .3s
+
+			&:hover
+				path
+					fill: $color-primary
+
+
+
+		@media (max-width: 1400px)
+			position: relative
+			left: 0
+			margin-bottom: 40px
+
+
+
+	.site-button
+		position: absolute
+		bottom: 0
+		right: 0
+		@media (max-width: 960px)
+			position: relative
+			left: 0
+			margin-bottom: 40px
+
+		button
+			&:first-child
+				margin-bottom: 10px
+
+
+
+
+	.partners-logo
+		display: flex
+		flex-wrap: wrap
+		align-items: center
+		img
+			margin-right: 40px
+			display: block
+
+
+
+	@media (max-width: 839px)
+		.social-icons
+			display: none
+			&.social-icons-mobile
+				display: flex
+				padding: 34px 0 0
+
+
+		.footer-top-block
+			padding: 0
+
+		.partners-logo
+			img
+				margin-bottom: 20px
+
+
+
+

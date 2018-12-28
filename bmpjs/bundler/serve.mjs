@@ -3,6 +3,7 @@ import { Bundler } from './core/bundler.mjs';
 import { transformBabel } from './task/babel.mjs';
 import { searchFiles } from './utils/fs.mjs';
 import { logger } from './utils/logger.mjs'
+import { transformSassToJs } from './task/sasstojs.mjs';
 
 const { TCP_LISTEN_PORT: port } = process.env
 
@@ -72,6 +73,19 @@ const Serve = {
 				const bundle = await transformBabel(filepath)
 				logger.call( client, `- Completed "babel" ${filepath}` )
 				return bundle
+			}
+		})
+
+		client.bundler.describe({
+			if: { extension: '.sass' },
+			perform: async filepath => {
+				try {
+					const result = await transformSassToJs(filepath)
+					logger.call( client, `- Completed "sass" ${filepath}` )
+					return result
+				} catch (e) {
+					logger.call(client, '- Error "sass"', e)
+				}
 			}
 		})
 		// Compile all

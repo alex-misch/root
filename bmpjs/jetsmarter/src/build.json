@@ -1,0 +1,4 @@
+[
+	{ "entrypoint": "app.js" },
+	{ "entrypoint": "app.config.js" }
+]

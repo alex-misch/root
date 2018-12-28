@@ -1,15 +1,15 @@
 version: '3'
 services:
   component:
-    image: node:10-alpine
+    build:
+      context: .
     environment:
         - TCP_LISTEN_PORT=9375
+        - NODE_PATH=/usr/lib/node_modules
     ports:
       - "9375:9375"
-    command: node --experimental-modules /bundler/serve.mjs
     working_dir: /bmpjs
     volumes:
-      - ./bundler:/bundler
       - ./:/bmpjs
 
   nginx:
@@ -24,6 +24,6 @@ services:
       - ./bmp-router:/usr/share/nginx/html/bmp-router
 
       # PROJECT
-      - ./project/.tmp:/usr/share/nginx/html/project
-      - ./project/bmp_modules:/usr/share/nginx/html/project/bmp_modules
+      - ./jetsmarter/.tmp:/usr/share/nginx/html/jetsmarter
+      - ./jetsmarter/bmp_modules:/usr/share/nginx/html/jetsmarter/bmp_modules
 
