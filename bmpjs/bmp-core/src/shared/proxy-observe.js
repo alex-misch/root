@@ -14,7 +14,7 @@ const observeArray = (arr, callback) => {
 			writable: false,
 			value: function (...elements) {
 				for ( const key in elements ) {
-					this[this.length + parseInt(key, 10)] = elements[key]
+					this[this.length + parseInt(key, 10)] = observe(elements[key], callback)
 				}
 				callback(this)
 				return this
