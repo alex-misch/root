@@ -17,6 +17,10 @@ var (
 // Router is collection of endpoints in priority order
 type Router []Route
 
+// func New(uris steps ...string) Router {
+// 	// TODO TODO TODO
+// }
+
 // Match returns most priority route by pattern (look at ql subpackage)
 func (routes Router) Match(url *url.URL) (*Route, error) {
 	for _, route := range routes {
