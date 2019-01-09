@@ -50,13 +50,6 @@ func (packer *httpPacker) Unpack(ctx context.Context, r io.Reader) (*flow.Reques
 }
 
 func (packer *httpPacker) Pack(r io.Reader, w io.Writer) (int64, error) {
-	// TODO look at this
-	// br := bufio.NewReader(r)
-	// response, err := http.ReadResponse(br, packer.request)
-	// if err != nil {
-	// 	return 0, err
-	// }
-
 	response := &http.Response{
 		Status:     "200 OK",
 		StatusCode: 200,
@@ -66,6 +59,8 @@ func (packer *httpPacker) Pack(r io.Reader, w io.Writer) (int64, error) {
 		Body:       tools.ReadCloser(r),
 		Request:    packer.request,
 	}
+
+	defer response.Body.Close()
 
 	// headers section
 	response.Header = make(http.Header)
