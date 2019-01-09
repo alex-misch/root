@@ -4,47 +4,56 @@
 // in `base` case - pipeline
 package conf
 
-import (
-	"io"
-	"net/http"
-	"os"
-
-	"gopkg.in/yaml.v2"
-)
-
-func loadYAML(r io.Reader) (*Router, error) {
-	// Try to read raw yaml
-	decoder := yaml.NewDecoder(r)
-	decoder.SetStrict(false)
-
-	var router Router
-	if err := decoder.Decode(&router); err != nil {
-		return nil, err
-	}
-
-	return &router, nil
-}
-
-// LoadLocalFile loads YAML config from local file system by name
-func LoadLocalFile(name string) (*Router, error) {
-	// try to open file and get io.Reader
-	f, err := os.Open(name)
-	if err != nil {
-		return nil, err
-	}
-
-	// parse yaml
-	return loadYAML(f)
-}
-
-// LoadExternalFile loads YAML config from http
-func LoadExternalFile(url string) (*Router, error) {
-	// try to open file and get io.Reader
-	r, err := http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-
-	// parse yaml
-	return loadYAML(r.Body)
-}
+// import (
+// 	"fmt"
+// 	"github.com/boomfunc/root/base/pipeline"
+// 	"github.com/boomfunc/root/tools/router"
+// 	"github.com/boomfunc/root/tools/router/ql"
+// )
+//
+// // router is alias type for adding unmarshall method
+// type innerRouter router.Router
+// //
+// func (r *innerRouter) UnmarshalYAML(unmarshal func(interface{}) error) error {
+// 	// inner type of route
+// 	// here we can redeclare keys and some other logic per project
+// 	// here can be more fields to calculate final router.Route
+// 	var inner struct {
+// 		Collection []innerRoute
+// 	}
+//
+// 	if err := unmarshal(&inner); err != nil {
+// 		return err
+// 	}
+//
+// 	// yaml valid, transform it to final router.Router struct
+// 	r = innerRouter([])
+//
+//
+//
+// 	inner.Collection.()
+//
+// 	return nil
+// }
+//
+// type innerRoute router.Route // use alias type for adding unmarshall method
+//
+// func (r *innerRoute) UnmarshalYAML(unmarshal func(interface{}) error) error {
+// 	// inner type of route
+// 	// here we can redeclare keys and some other logic per project
+// 	// here can be more fields to calculate final router.Route
+// 	var inner struct {
+// 		Pattern  string
+// 		Pipeline pipeline.Pipeline
+// 	}
+//
+// 	if err := unmarshal(&inner); err != nil {
+// 		return err
+// 	}
+//
+// 	// yaml valid, transform it to final router.Route struct
+// 	r.Pattern = ql.Regexp(inner.Pattern)
+// 	r.Step = inner.Pipeline
+//
+// 	return nil
+// }

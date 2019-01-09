@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	// "strings"
 
 	"github.com/boomfunc/root/base/conf"
 	"github.com/boomfunc/root/base/server/flow"
@@ -48,6 +49,11 @@ func (app *Application) Handle(fl *flow.Data) {
 	if err != nil {
 		return
 	}
+
+	// if true {
+	// 	_, err = app.packer.Pack(strings.NewReader("foobar"), fl.RWC)
+	// 	return
+	// }
 
 	// Resolve view
 	// TODO conf.ErrRouteNotFound

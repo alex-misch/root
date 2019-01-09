@@ -7,12 +7,12 @@ import (
 	"net/url"
 	"regexp"
 
-	"github.com/boomfunc/root/base/pattql"
 	"github.com/boomfunc/root/base/pipeline"
+	"github.com/boomfunc/root/tools/router/ql"
 )
 
 var (
-	ErrRouteNotFound = errors.New("conf: Route not found")
+	ErrRouteNotFound = errors.New("base/conf: Route not found")
 )
 
 // TODO look at Pipeline.UnmarshalYAML and remake this to type []Route
@@ -32,7 +32,7 @@ func (rc *Router) Match(url *url.URL) (*Route, error) {
 
 type Route struct {
 	regexp   *regexp.Regexp
-	pipeline *pipeline.Pipeline
+	pipeline pipeline.Pipeline
 }
 
 func (r *Route) match(uri string) bool {
@@ -41,14 +41,17 @@ func (r *Route) match(uri string) bool {
 }
 
 func (r *Route) Run(ctx context.Context, input io.Reader, output io.Writer) error {
-	return r.pipeline.Run(ctx, input, output) // TODO: hungs here
+	ctx = context.WithValue(ctx, "input", input)
+	ctx = context.WithValue(ctx, "output", output)
+
+	return r.pipeline.Run(ctx) // TODO: hungs here
 }
 
 func (r *Route) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	// inner struct for accepting strings
 	var route struct {
 		Pattern  string
-		Pipeline *pipeline.Pipeline
+		Pipeline pipeline.Pipeline
 	}
 
 	if err := unmarshal(&route); err != nil {
@@ -56,7 +59,7 @@ func (r *Route) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 
 	// yaml valid, transform it
-	r.regexp = pattql.Regexp(route.Pattern)
+	r.regexp = ql.Regexp(route.Pattern)
 	r.pipeline = route.Pipeline
 
 	return nil
