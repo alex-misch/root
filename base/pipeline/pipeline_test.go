@@ -4,11 +4,38 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/boomfunc/root/base/tools"
 	"github.com/boomfunc/root/tools/flow"
 )
+
+func TestPipeline(t *testing.T) {
+	t.Run("New", func(t *testing.T) {
+		foo := NewProcess("foo")
+		bar := NewProcess("bar")
+		baz := NewProcess("baz")
+
+		tableTests := []struct {
+			layers   []Layer
+			pipeline Pipeline
+		}{
+			{[]Layer{}, nil},
+			{[]Layer{foo}, Pipeline([]Layer{foo})},
+			{[]Layer{foo, bar}, Pipeline([]Layer{foo, bar})},
+			{[]Layer{foo, bar, baz}, Pipeline([]Layer{foo, bar, baz})},
+		}
+
+		for i, tt := range tableTests {
+			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+				if pipeline := New(tt.layers...); !reflect.DeepEqual(pipeline, tt.pipeline) {
+					t.Fatalf("Expected %v, got %v", tt.pipeline, pipeline)
+				}
+			})
+		}
+	})
+}
 
 func TestPipelineRun(t *testing.T) {
 	t.Run("orphan", func(t *testing.T) {

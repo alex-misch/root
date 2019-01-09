@@ -4,14 +4,20 @@ import (
 	"context"
 	"io"
 
+	"github.com/boomfunc/root/base/tools"
 	"github.com/boomfunc/root/tools/flow"
 )
 
 type Pipeline []Layer
 
-func New(layers ...Layer) *Pipeline {
-	p := Pipeline(layers)
-	return &p
+// New creates new pipelines from layers
+// NOTE: implements flow.Step interface
+func New(layers ...Layer) Pipeline {
+	if len(layers) == 0 {
+		return nil
+	}
+
+	return Pipeline(layers)
 }
 
 // Run runs all layers step by step with joining inputs and outputs (by io.Pipes)
@@ -19,14 +25,18 @@ func New(layers ...Layer) *Pipeline {
 func (p Pipeline) Run(ctx context.Context) error {
 	// Phase 1. fetch global input and output (required context information)
 	// otherwise - return error orphan
-	input, ok := ctx.Value("input").(io.ReadCloser)
+	input, ok := ctx.Value("input").(io.Reader)
 	if !ok {
 		return flow.ErrStepOrphan
 	}
-	output, ok := ctx.Value("output").(io.WriteCloser)
+	output, ok := ctx.Value("output").(io.Writer)
 	if !ok {
 		return flow.ErrStepOrphan
 	}
+
+	// MiddlePhase. Convert to Closer interface
+	inputCloser := tools.ReadCloser(input)
+	outputCloser := tools.WriteCloser(output)
 
 	// Phase 2. Piping all pipeline layers
 	ables := make([]Able, len(p))
@@ -39,7 +49,7 @@ func (p Pipeline) Run(ctx context.Context) error {
 		execs[i] = newLayer
 	}
 
-	if err := piping(input, output, ables...); err != nil {
+	if err := piping(inputCloser, outputCloser, ables...); err != nil {
 		return err
 	}
 
