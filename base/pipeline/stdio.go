@@ -5,8 +5,10 @@ import (
 	"io"
 )
 
-var ErrNoStdin = errors.New("pipeline: Able without stdin (Not piped)")
-var ErrNoStdout = errors.New("pipeline: Able without stdout (Not piped)")
+var (
+	ErrNoStdin  = errors.New("pipeline: Able without stdin (Not piped)")
+	ErrNoStdout = errors.New("pipeline: Able without stdout (Not piped)")
+)
 
 // stdio struct is base struct to something that can have input/output
 // automatically implements pipeline.Able interface
