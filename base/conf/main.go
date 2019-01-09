@@ -1,3 +1,7 @@
+// Package conf is a layer between `tools.Router` and based on specific node (project, service)
+// methods of parsing and fetching router. For example: from config files, remote location, etc.
+// Also describes concrete type of `flow.Step` used in `tools.Router`
+// in `base` case - pipeline
 package conf
 
 import (
