@@ -15,8 +15,8 @@ func TestRoute(t *testing.T) {
 	var i int
 
 	route := Route{
-		pattern: regexp.MustCompile("^foobar$"),
-		step: flow.Func(func(ctx context.Context) error {
+		Pattern: regexp.MustCompile("^foobar$"),
+		Step: flow.Func(func(ctx context.Context) error {
 			i = 1
 			return nil
 		}),
