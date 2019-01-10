@@ -5,5 +5,5 @@ collection:
     pipeline:
 
       - type: process
-        cmd: echo 'dddddd'
+        cmd: echo 'dddddd q={{q "ip"}} ip={{meta "ip"}}'
         # cmd: ./ci/github.sh
