@@ -1,0 +1,6 @@
+
+class DOMException {
+
+}
+
+export { DOMException }

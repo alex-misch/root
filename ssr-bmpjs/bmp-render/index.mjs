@@ -1,25 +1,26 @@
-import BmpRemoutScript from '../bmp-remoute-script'
+import BmpRemoteScript from '../bmp-remote-script'
 
-const bmpRemoutScript = new BmpRemoutScript()
+const bmpRemoteScript = new BmpRemoteScript()
 
 class BmpRender {
-  constructor () {}
-  htmlComponent ( object = { url: null }) {
-    return ( async _ => {
-      let script
-      try {
-        script = await bmpRemoutScript.getFile({ url: object.url })
-      } catch ( error ) {
-        throw new Error(`Error wile fetching file ${object.url}: ${error}`)
-      }
+	constructor () {}
 
-      try {
-        return await bmpRemoutScript.runFile({ script: script })
-      } catch ( error ) {
-        throw new Error(`Error wile runing file ${object.url}: ${error}`)
-      }
-      
-    })()
+  async htmlComponent ({ url = null, context = {} }) {
+		let script
+		try {
+			script = await bmpRemoteScript.getFile({ url })
+			// console.log( `Success: fetch ${url}.` )
+		} catch ( error ) {
+			throw new Error(`Error while fetching file ${url}: ${error}`)
+		}
+
+		try {
+			const content = await bmpRemoteScript.runFile({ script, context })
+			// console.log( `Success: run ${url}.` )
+			return content
+		} catch ( error ) {
+			throw new Error(`Error while runing file ${url}: ${error}`)
+		}
   }
 }
 

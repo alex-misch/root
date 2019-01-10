@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+	<url><loc>https://jetsmarter.com/</loc></url>
+	<url><loc>https://jetsmarter.com/faq/</loc></url>
+	<url><loc>https://jetsmarter.com/legal/</loc></url>
+	<url><loc>https://jetsmarter.com/legal/public-charter-agreements/</loc></url>
+	<url><loc>https://jetsmarter.com/legal/public-charter-agreements/:document_number/</loc></url>
+	<url><loc>https://jetsmarter.com/legal/:legal_slug/</loc></url>
+	<url><loc>https://jetsmarter.com/profile/</loc></url>
+	<url><loc>https://jetsmarter.com/profile/promo/</loc></url>
+	<url><loc>https://jetsmarter.com/profile/verify/</loc></url>
+	<url><loc>https://jetsmarter.com/profile/payment-methods/</loc></url>
+	<url><loc>https://jetsmarter.com/login/</loc></url>
+	<url><loc>https://jetsmarter.com/logout/</loc></url>
+	<url><loc>https://jetsmarter.com/signup/</loc></url>
+	<url><loc>https://jetsmarter.com/partnership/</loc></url>
+	<url><loc>https://jetsmarter.com/nbaa17/</loc></url>
+	<url><loc>https://jetsmarter.com/owners/request-form/</loc></url>
+	<url><loc>https://jetsmarter.com/experience/</loc></url>
+	<url><loc>https://jetsmarter.com/about/</loc></url>
+	<url><loc>https://jetsmarter.com/about/:board_member/</loc></url>
+	<url><loc>https://jetsmarter.com/news/</loc></url>
+	<url><loc>https://jetsmarter.com/news/:slug/</loc></url>
+	<url><loc>https://jetsmarter.com/career/</loc></url>
+	<url><loc>https://jetsmarter.com/how-it-works/</loc></url>
+	<url><loc>https://jetsmarter.com/how-it-works/pricing/</loc></url>
+	<url><loc>https://jetsmarter.com/reviews/</loc></url>
+	<url><loc>https://jetsmarter.com/contact-us/</loc></url>
+	<url><loc>https://jetsmarter.com/download/</loc></url>
+	<url><loc>https://jetsmarter.com/safety-security/</loc></url>
+	<url><loc>https://jetsmarter.com/safety-security/:company/</loc></url>
+	<url><loc>https://jetsmarter.com/owners/</loc></url>
+	<url><loc>https://jetsmarter.com/fleet/</loc></url>
+	<url><loc>https://jetsmarter.com/flights/</loc></url>
+	<url><loc>https://jetsmarter.com/flights/:route/</loc></url>
+	<url><loc>https://jetsmarter.com/flights/:route/:shuttleId/</loc></url>
+	<url><loc>https://jetsmarter.com/my-trips/</loc></url>
+	<url><loc>https://jetsmarter.com/my-trips/:slug/</loc></url>
+	
+</urlset>

@@ -1,0 +1,17 @@
+collection:
+
+  # Route
+  # AWS ECS ping
+  - pattern: "render"
+    pipeline:
+
+      - type: process
+        cmd: node --experimental-modules --no-warnings --experimental-vm-modules render.mjs --url={{q "url"}}
+
+  # Route
+  # AWS ECS ping
+  - pattern: "ping"
+    pipeline:
+
+      - type: process
+        cmd: echo pong
