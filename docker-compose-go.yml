@@ -47,7 +47,9 @@ services:
     ports:
       - "8080:8080"
     sysctls:
+      # http://www.lognormal.com/blog/2012/09/27/linux-tcpip-tuning/
       net.core.somaxconn: 100000
+      net.ipv4.ip_local_port_range: "18000 65535"
 
 volumes:
   src-vol:
