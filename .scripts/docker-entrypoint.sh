@@ -1,4 +1,6 @@
 #!/bin/sh
 set -eux
 
-tail -f /dev/null
+# main entrypoint for docker container microsecvice run
+# .scripts/run-go.sh 'ci'
+.scripts/run-node.sh 'ssr-bmpjs'

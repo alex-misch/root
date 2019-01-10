@@ -43,7 +43,7 @@ services:
   # container for running microservices under base
   ms:
     << : *service
-    command: .scripts/run.sh
+    command: .scripts/docker-entrypoint.sh
     ports:
       - "8080:8080"
     sysctls:
