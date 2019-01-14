@@ -19,6 +19,8 @@ var (
 	// or some another information about himself to run
 	// in other words - improperly configured step
 	ErrStepOrphan = errors.New("flow: Step run without required context")
+	// when something failed to cast to Step interface
+	ErrNotAStep = errors.New("flow: Object cannot be used as `Step` interface")
 )
 
 // Step interface describes somethink that can be runned in some flow
