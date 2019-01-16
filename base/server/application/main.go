@@ -23,7 +23,7 @@ type Interface interface {
 
 type Packer interface {
 	Unpack(context.Context, io.Reader) (*flow.Request, error)
-	Pack(io.Reader, io.Writer) (int64, error)
+	Pack(context.Context, io.Reader, io.Writer) error
 }
 
 type Application struct {
@@ -71,8 +71,7 @@ func (app *Application) Handle(fl *flow.Data) {
 			return route.Run(ctx, req.Input, pw) // TODO: hungs here
 		}),
 		executor.Func(func(ctx context.Context) error {
-			_, err := app.packer.Pack(pr, fl.RWC)
-			return err
+			return app.packer.Pack(ctx, pr, fl.RWC)
 		}),
 	).Run(fl.Ctx) // TODO: hungs here
 

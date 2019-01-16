@@ -9,6 +9,7 @@ import (
 	srvctx "github.com/boomfunc/root/base/server/context"
 	"github.com/boomfunc/root/base/server/flow"
 	"github.com/boomfunc/root/base/tools"
+	executor "github.com/boomfunc/root/tools/flow"
 )
 
 // Load test
@@ -49,10 +50,19 @@ func (packer *httpPacker) Unpack(ctx context.Context, r io.Reader) (*flow.Reques
 	)
 }
 
-func (packer *httpPacker) Pack(r io.Reader, w io.Writer) (int64, error) {
+func (packer *httpPacker) Pack(ctx context.Context, r io.Reader, w io.Writer) error {
+	// get status code and string reason from
+	// TODO
+	ctx = context.WithValue(ctx, "status", 404)
+
+	status, ok := ctx.Value("status").(int)
+	if !ok {
+		return executor.ErrStepOrphan
+	}
+
 	response := &http.Response{
-		Status:     "200 OK",
-		StatusCode: 200,
+		Status:     http.StatusText(status),
+		StatusCode: status,
 		Proto:      packer.request.Proto,
 		ProtoMajor: packer.request.ProtoMajor,
 		ProtoMinor: packer.request.ProtoMinor,
@@ -74,5 +84,5 @@ func (packer *httpPacker) Pack(r io.Reader, w io.Writer) (int64, error) {
 		// TODO TODO
 	}
 
-	return 0, response.Write(w)
+	return response.Write(w)
 }

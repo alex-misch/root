@@ -31,6 +31,7 @@ func (packer *jsonPacker) Unpack(ctx context.Context, r io.Reader) (*flow.Reques
 	)
 }
 
-func (packer *jsonPacker) Pack(r io.Reader, w io.Writer) (int64, error) {
-	return io.Copy(w, r)
+func (packer *jsonPacker) Pack(ctx context.Context, r io.Reader, w io.Writer) error {
+	_, err := io.Copy(w, r)
+	return err
 }
