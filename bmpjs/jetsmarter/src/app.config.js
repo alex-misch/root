@@ -5,12 +5,19 @@ import { AboutDetailPage } from './pages/about/detail/about-detail.component.js'
 
 const config = {
 
-	viewdir: './pages',
-	urlconf: {
-		'/': HomePage,
-		'/about/': AboutPage,
-		'/about/:slug/': AboutDetailPage
-	},
+	routes: [
+		{ path: '/', component: HomePage },
+		{
+			path: '/about/',
+			component: AboutPage,
+			routes: [
+				{
+					path: '/about/:slug/',
+					component: AboutDetailPage
+				}
+			]
+		},
+	],
 
 	// components: {
 	// 	"bmp-slider": {

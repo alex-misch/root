@@ -1,5 +1,5 @@
 {
-  "name": "ssr-bmpjs",
+  "name": "serverside-render",
   "version": "0.0.1",
   "description": "run ECMA SCRIPT Modules on server",
   "main": "index.mjs",
@@ -17,8 +17,8 @@
   "bmp": {
     "application": "https://jetsmarter.com/data/website/code/test/app.js",
     "external": {
-      "bmp-core": "https://jetsmarter.com/data/website/code/test/bmp-core.js",
-      "bmp-router": "https://jetsmarter.com/data/website/code/test/bmp-router.js"
+      "bmpjs/core": "https://jetsmarter.com/data/website/code/test/bmp-core.js",
+      "bmpjs/router": "https://jetsmarter.com/data/website/code/test/bmp-router.js"
     }
   }
 }

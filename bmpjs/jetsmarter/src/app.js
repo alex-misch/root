@@ -22,8 +22,7 @@ class JetsmarterApp extends Core.StatelessWidget {
 		this.state = {
 			user: {},
 			router: {
-				viewDir: config.viewdir,
-				urlconf: config.urlconf,
+				urlconf: config.routes,
 				onChange: this.trackView.bind(this)
 			},
 			header: {
@@ -43,7 +42,11 @@ class JetsmarterApp extends Core.StatelessWidget {
 
 	content() {
 		return this.html`
-			${ Header.widget({ ...this.state.header, user: this.state.user }) }
+			${Header.widget({
+					...this.state.header,
+						user: this.state.user
+				})
+			}
 			${ BmpRouter.widget( this.state.router ) }
 			${ Footer.widget( this.state.footer ) }
 		`

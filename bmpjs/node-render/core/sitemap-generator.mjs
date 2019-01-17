@@ -11,7 +11,7 @@ const xmlUrlset = content => `
 `
 const xmlURL = url => `<url><loc>${ url }</loc></url>\n\t`
 
-class BmpSitemap {
+class SitemapGenerator {
 
 	constructor( urlConf, domain ) {
 
@@ -33,4 +33,4 @@ class BmpSitemap {
 
 }
 
-export { BmpSitemap }
+export { SitemapGenerator }

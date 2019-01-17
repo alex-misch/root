@@ -1,6 +1,107 @@
+@import "../../vars"
 
 home-page
 	display: block
 	h1
 		font-size: 1em
 		color: black
+	.phone-hidden
+		@media (max-width: 480px)
+			display: none
+
+	.card
+		width: 100%
+		cursor: pointer
+
+	.section
+		padding-bottom: 103px
+
+	main
+		padding-top: 103px
+		background-color: $color-white
+
+	.popular-routes-title-mobile
+		display: none
+
+	.swish__ui
+		display: none
+
+	@media (max-width: 479px)
+		.popular-routes-title-mobile
+			display: block
+
+		.mv1200 > .mdc-layout-grid > .mdc-layout-grid__inner
+			grid-template-rows: repeat(3, 33.34%)
+			grid-template-columns: repeat(12, 22.5%)
+			overflow: scroll
+			-webkit-overflow-scrolling: touch
+
+		main
+			padding-top: 20px
+			padding-bottom: 40px
+			background-color: $color-light
+
+		.section
+			padding-bottom: 64px
+
+		.swish__ui
+			padding: 0 0 20px
+			display: block
+
+
+	.swish__ui .swish__item
+		.swish__item_inner
+			padding: 0 5px 0 5px
+
+		&:first-child
+			.swish__item_inner
+				padding-left: 10px
+
+
+		&:last-child
+			.swish__item_inner
+				padding-right: 10px
+
+
+		.swish__item_routes
+			position: absolute
+			top: 20px
+			left: 20px
+
+	.swish__ui .swish__item_inner > *
+		padding: 20px 20px 30px 20px
+
+	.route-delimiter
+		text-align: left
+		display: block
+		margin: 5px 0 2px
+
+	.priority-links-item
+		height: 350px
+		display: flex
+		background-size: cover
+		background-position: 50% 50%
+		border-radius: 6px
+		text-decoration: none
+		align-items: center
+		padding: 12px
+		transition-duration: $speed-fast
+		box-shadow: $shadow-default
+		&:hover
+			transition-duration: $speed-fast
+			box-shadow: $shadow-hover
+			transform: scale($scale-hover)
+
+		&:active:hover
+			transition-duration: $speed-fast
+			box-shadow: $shadow-default
+			transform: scale(1)
+
+
+	.homepage-content
+		padding: 0 0 64px
+
+	.route-start-price
+		position: absolute
+		bottom: 20px
+		right: 20px

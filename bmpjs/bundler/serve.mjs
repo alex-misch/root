@@ -70,9 +70,13 @@ const Serve = {
 		client.bundler.describe({
 			if: { extension: '.js' },
 			perform: async filepath => {
-				const bundle = await transformBabel(filepath)
-				logger.call( client, `- Completed "babel" ${filepath}` )
-				return bundle
+				try {
+					const bundle = await transformBabel(filepath)
+					logger.call( client, `- Completed "babel" ${filepath}` )
+					return bundle
+				} catch (e) {
+					logger.call(client, '- Error "javascript"', e)
+				}
 			}
 		})
 

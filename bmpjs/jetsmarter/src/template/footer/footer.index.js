@@ -23,7 +23,7 @@ class Footer extends Core.StatelessWidget {
 					child: Layout.col({
 						mod: { common: 12, className: 'footer-top-block' },
 						child: Layout.grid({
-							child: [
+							child:  [
 								Layout.col({
 									mod: { common: 6, tablet: 12, align: 'bottom' },
 									child: FooterMenu.widget()

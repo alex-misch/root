@@ -18,12 +18,29 @@ services:
       - "3000:80"
     volumes:
       # CORE
-      - ./bmp-core:/usr/share/nginx/html/bmp-core
+      - ./core:/usr/share/nginx/html/core
 
       # ROUTER
-      - ./bmp-router:/usr/share/nginx/html/bmp-router
+      - ./router:/usr/share/nginx/html/router
 
       # PROJECT
       - ./jetsmarter/.tmp:/usr/share/nginx/html/jetsmarter
       - ./jetsmarter/bmp_modules:/usr/share/nginx/html/jetsmarter/bmp_modules
 
+  ssr:
+    image: node:10.9-alpine
+    restart: always
+    volumes:
+      - .:/ssr
+    working_dir: /ssr
+    # entrypoint: node
+    command: tail -f /dev/null
+
+  ms:
+    build:
+      context: ./serverside-render
+    environment:
+      - BMP_DEBUG_MODE=true
+      - BMP_CONFIG=./example.yml
+    ports:
+        - "8081:8080"
