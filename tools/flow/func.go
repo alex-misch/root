@@ -2,6 +2,9 @@ package flow
 
 import (
 	"context"
+	"fmt"
+	"reflect"
+	"runtime"
 )
 
 // Func is basic type of step (executable)
@@ -15,5 +18,5 @@ func (f Func) Run(ctx context.Context) error {
 
 // String implements fmt.Stringer interface
 func (f Func) String() string {
-	return "FUNC(<truncated>)"
+	return fmt.Sprintf("FUNC(%s)", runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name())
 }
