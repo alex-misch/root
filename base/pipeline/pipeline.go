@@ -76,6 +76,9 @@ func (p *Pipeline) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		case "process":
 			*p = append(*p, NewProcess(layer["cmd"].(string)))
 
+		case "plugin":
+			*p = append(*p, NewPlugin(layer["path"].(string), layer["name"].(string)))
+
 		default:
 			return ErrUnknownLayer
 		}
