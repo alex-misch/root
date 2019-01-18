@@ -8,6 +8,7 @@ import (
 	"regexp"
 
 	"github.com/boomfunc/root/base/pipeline"
+	"github.com/boomfunc/root/tools/router"
 	"github.com/boomfunc/root/tools/router/ql"
 )
 
@@ -36,8 +37,13 @@ type Route struct {
 }
 
 func (r *Route) match(uri string) bool {
-	// TODO here extend context for URl values
 	return r.regexp.MatchString(uri)
+}
+
+// Match trying to match incoming string on pattern and return map of captured data and
+// bool meaning this string was matched
+func (r *Route) MatchParams(uri string) (map[string]string, error) {
+	return router.MatchParams(r.regexp, uri)
 }
 
 func (r *Route) Run(ctx context.Context, input io.Reader, output io.Writer) error {

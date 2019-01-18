@@ -21,14 +21,14 @@ var (
 type values struct {
 	meta map[string]interface{}
 	Q    url.Values
-	Url  url.Values
+	Url  map[string]string
 }
 
 func New() context.Context {
 	values := new(values)
 	values.meta = make(map[string]interface{})
 	values.Q = url.Values{}
-	values.Url = url.Values{}
+	values.Url = make(map[string]string)
 
 	return context.WithValue(context.Background(), "values", values)
 }
@@ -71,5 +71,5 @@ func GetUrl(ctx context.Context, key string) (string, error) {
 		return "", err
 	}
 
-	return values.Url.Get(key), nil
+	return values.Url[key], nil
 }

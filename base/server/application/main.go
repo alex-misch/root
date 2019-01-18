@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"io"
-	// "strings"
 
 	"github.com/boomfunc/root/base/conf"
+	srvctx "github.com/boomfunc/root/base/server/context"
 	"github.com/boomfunc/root/base/server/flow"
 	executor "github.com/boomfunc/root/tools/flow"
+	"github.com/boomfunc/root/tools/kvs"
 )
 
 var (
@@ -42,23 +43,32 @@ func (app *Application) Handle(fl *flow.Data) {
 		fl.Stat.Len = written
 	}()
 
+	// TODO: not here, but for now - good
+	ctx := context.WithValue(fl.Ctx, "db", kvs.New())
+	// TODO
+
 	// Parse request
 	// fill context meta part and q part
 	// TODO ErrBadRequest
-	req, err = app.packer.Unpack(fl.Ctx, fl.RWC)
+	req, err = app.packer.Unpack(ctx, fl.RWC)
 	if err != nil {
 		return
 	}
-
-	// if true {
-	// 	_, err = app.packer.Pack(strings.NewReader("foobar"), fl.RWC)
-	// 	return
-	// }
 
 	// Resolve view
 	// TODO conf.ErrRouteNotFound
 	// fill context url
 	route, err := app.router.Match(req.Url)
+	if err != nil {
+		return
+	}
+
+	// Get url query and save to context
+	values, err := srvctx.Values(ctx)
+	if err != nil {
+		return
+	}
+	values.Url, err = route.MatchParams(req.Url.RequestURI())
 	if err != nil {
 		return
 	}
@@ -73,7 +83,7 @@ func (app *Application) Handle(fl *flow.Data) {
 		executor.Func(func(ctx context.Context) error {
 			return app.packer.Pack(ctx, pr, fl.RWC)
 		}),
-	).Run(fl.Ctx) // TODO: hungs here
+	).Run(ctx) // TODO: hungs here
 
 	return
 }

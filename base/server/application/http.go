@@ -10,6 +10,7 @@ import (
 	"github.com/boomfunc/root/base/server/flow"
 	"github.com/boomfunc/root/base/tools"
 	executor "github.com/boomfunc/root/tools/flow"
+	"github.com/boomfunc/root/tools/kvs"
 )
 
 // Load test
@@ -52,17 +53,27 @@ func (packer *httpPacker) Unpack(ctx context.Context, r io.Reader) (*flow.Reques
 
 func (packer *httpPacker) Pack(ctx context.Context, r io.Reader, w io.Writer) error {
 	// get status code and string reason from
-	// TODO
-	ctx = context.WithValue(ctx, "status", 404)
+	storage, ok := ctx.Value("db").(*kvs.DB)
+	if !ok {
+		return executor.ErrStepOrphan
+	}
 
-	status, ok := ctx.Value("status").(int)
+	ch := storage.Wait("http.status") // blocking operation
+	var status interface{}
+	if ch != nil {
+		status = <-ch
+	} else {
+		status = storage.Get("http.status")
+	}
+
+	asInt, ok := status.(int)
 	if !ok {
 		return executor.ErrStepOrphan
 	}
 
 	response := &http.Response{
-		Status:     http.StatusText(status),
-		StatusCode: status,
+		Status:     http.StatusText(asInt),
+		StatusCode: asInt,
 		Proto:      packer.request.Proto,
 		ProtoMajor: packer.request.ProtoMajor,
 		ProtoMinor: packer.request.ProtoMinor,
