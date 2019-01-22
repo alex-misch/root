@@ -5,6 +5,12 @@ import (
 	"sync"
 )
 
+// BUG: take a closer look at sync.mutex blocking:
+// 1. executeStep.defer
+// 2. close.channels
+// 3. Run.loop
+// 4. Run.wait
+
 // Set of tools for concurrent flow running
 // there is some variants:
 // waiting response
@@ -41,6 +47,7 @@ type async struct {
 	workers pool
 	steps   []Step
 
+	mutex  sync.Mutex
 	wg     sync.WaitGroup
 	errCh  chan error    // channel for collecting errors from steps
 	doneCh chan struct{} // channel indicates `async` step completes
@@ -104,6 +111,8 @@ func (group *async) executeStep(ctx context.Context, cancel context.CancelFunc, 
 
 // close closes group channels for r/w ops
 func (group *async) close(cancel context.CancelFunc) {
+	group.mutex.Lock()
+
 	group.closed = true // block channels for read/write operations
 	// NOTE: synchronization channels required ONLY if we want to wait for results
 	// if delay mode - no need to create and close channels
@@ -111,6 +120,9 @@ func (group *async) close(cancel context.CancelFunc) {
 		close(group.errCh)
 		close(group.doneCh)
 	}
+
+	group.mutex.Unlock()
+
 	// NOTE: context cancellation function might be nil - check for it
 	if cancel != nil {
 		cancel()
@@ -165,9 +177,11 @@ func (group *async) Run(ctx context.Context) error {
 	// special goroutine, indicates all done without hang
 	go func() {
 		group.wg.Wait() // wait until all completed
+		group.mutex.Lock()
 		if !group.closed {
 			group.doneCh <- struct{}{} // send complete signal to select below
 		}
+		group.mutex.Unlock()
 	}()
 
 	// waiting for results and return this
