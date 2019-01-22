@@ -42,5 +42,5 @@ func (d *delay) Run(ctx context.Context) error {
 	d.add(cap(d.workers))
 	// run asynchronous with waiting and with resource limits based on worker's channel
 	// NOTE: dispatcher implements `pool` interface itself // TODO: looks not good => move to separate struct
-	return asynchronous(ctx, false, d, d.steps...)
+	return newAsync(false, d, d.steps...).Run(ctx)
 }

@@ -68,7 +68,7 @@ func (d *dispatcher) Run(ctx context.Context) error {
 	d.add(cap(d.workers))
 	// run asynchronous with waiting and with resource limits based on worker's channel
 	// NOTE: dispatcher implements `pool` interface itself // TODO: looks not good => move to separate struct
-	return asynchronous(ctx, true, d, d.steps...)
+	return newAsync(true, d, d.steps...).Run(ctx)
 }
 
 // String implements fmt.Stringer interface
