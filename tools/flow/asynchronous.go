@@ -80,6 +80,8 @@ func newAsync(wait bool, workers pool, steps ...Step) *async {
 // as defer we decrease wait counter
 func (group *async) executeStep(ctx context.Context, cancel context.CancelFunc, step Step) {
 	defer func() {
+		group.mutex.Lock()
+
 		// if we don't need to wait for flow execution - disable sync logic
 		if group.wait {
 			group.wg.Done() // release waiting
@@ -90,6 +92,8 @@ func (group *async) executeStep(ctx context.Context, cancel context.CancelFunc, 
 			group.workers.release() // release working resources. `worker`
 			// TODO: group.workers.Push(worker) // release working resources. `worker`
 		}
+
+		group.mutex.Unlock()
 	}()
 
 	// check for incoming signal of uselessness of this function
