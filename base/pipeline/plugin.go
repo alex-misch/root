@@ -49,8 +49,7 @@ func (p *Plugin) run(ctx context.Context) error {
 		return err
 	}
 
-	// 3. Assert that loaded symbol is of a desired type
-	// step, ok := sym.(flow.Step)
+	// 3. Assert that loaded symbol is of a desired type (flow.Step interface)
 	step, err := flow.ToStep(sym)
 	if err != nil {
 		return err
