@@ -51,16 +51,16 @@ func (p *Plugin) run(ctx context.Context) error {
 
 	// 3. Assert that loaded symbol is of a desired type
 	// step, ok := sym.(flow.Step)
-	step, ok := sym.(func(context.Context) error)
-	if !ok {
-		return flow.ErrNotAStep
+	step, err := flow.ToStep(sym)
+	if err != nil {
+		return err
 	}
 
 	ctx = context.WithValue(ctx, "stdin", p.stdin)
 	ctx = context.WithValue(ctx, "stdout", p.stdout)
 
 	// 4. run
-	return step(ctx)
+	return step.Run(ctx)
 }
 
 func (p *Plugin) close(ctx context.Context) error {
