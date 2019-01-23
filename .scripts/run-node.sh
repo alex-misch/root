@@ -22,21 +22,22 @@ apt-get install -y nodejs
 # build base
 # fix, lint and build source code of base app
 .scripts/fmt.sh 'base'
-.scripts/build.sh 'base'
+.scripts/build-bin.sh 'base'
 
 # build microservice related src
 # this is cli that will be invoked by `base` (for example)
+.scripts/fmt.sh ${NODE}
+.scripts/build.sh ${NODE}
 
-# copy necessary bins from /go/bin to our dir (conf needs it here because related path to node root)
-# TODO
+# copy necessary (bins, libs, etc) from /go/bin to our dir (conf needs it here because related path to node root)
+# TODO: resolve: cp /go/bin/${NODE}-$(uname -s)-$(uname -m) ./${NODE}
 
 # run base with microservice cli onboard
 # set application variables for run base
 # TODO move to special config in future named boomfunc.yaml
 # TODO https://github.com/urfave/cli#values-from-alternate-input-sources-yaml-toml-and-others
 BMP_BASE_DEBUG_MODE=true \
-BMP_BASE_CONFIG='./ssr-bmpjs/example.yml' \
+BMP_BASE_CONFIG="./${NODE}/router.yml" \
 BMP_BASE_APP_LAYER='http' \
 BMP_BASE_WORKER_NUM=1 \
-NODE_PATH=/usr/lib/node_modules \
 	/go/bin/base-$(uname -s)-$(uname -m) run tcp
