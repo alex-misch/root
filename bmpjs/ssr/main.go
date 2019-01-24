@@ -10,7 +10,10 @@ import (
 	"github.com/boomfunc/root/tools/kvs"
 )
 
-func SsrJsonEntrypoint(ctx context.Context) error {
+// JsonEntrypoint is shortcut for `base` which parses output from ssr in json format
+// fill `flow` context with status code and mimetype
+// TODO: make the layer more transparent -> http or not?, etc
+func JsonEntrypoint(ctx context.Context) error {
 	// get required context
 	stdin, ok := ctx.Value("stdin").(io.Reader)
 	if !ok {

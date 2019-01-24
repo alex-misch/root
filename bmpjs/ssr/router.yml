@@ -9,19 +9,19 @@ collection:
       #   path: ./cache.so
       #   name: Get
 
-      # - type: process
-      #   cmd: node --experimental-modules --index=.... --no-warnings --experimental-vm-modules ./ssr-bmpjs/render.mjs --url={{url "url"}}
-
       - type: process
-        cmd: 'echo {"status": {{q "status"}}, "content": "URL: {{url "url"}}, IP: {{meta "ip"}}, UA: {{meta "ua"}}"}'
+        cmd: node --experimental-modules --no-warnings --experimental-vm-modules ./bmpjs/ssr/render.mjs --url=/{{url "url"}}
+
+      # - type: process
+        # cmd: 'echo {"status": {{q "status"}}, "content": "URL: {{url "url"}}, IP: {{meta "ip"}}, UA: {{meta "ua"}}"}'
 
       # - type: plugin
       #   path: ./cache.so
       #   name: Set
 
       - type: plugin
-        path: ./ssr-bmpjs.so
-        name: SsrJsonEntrypoint
+        path: ./ssr.so
+        name: JsonEntrypoint
 
   # - pattern: "set"
   #   pipeline:
