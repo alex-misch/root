@@ -1,6 +1,8 @@
 #!/bin/sh
 set -eux
 
-# main entrypoint for docker container microsecvice run
-# .scripts/run-go.sh 'ci'
-.scripts/run-node.sh 'ssr-bmpjs'
+# main entrypoint for docker container microservice run
+NODE='bmpjs/ssr'
+
+# .scripts/run-go.sh ${NODE}
+.scripts/run-node.sh ${NODE}

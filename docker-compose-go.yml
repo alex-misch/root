@@ -40,7 +40,7 @@ services:
     << : *service
     command: .scripts/fmt.sh
 
-  # container for running microservices under base
+  # container for running microservices under base ( base from source, build from script)
   ms:
     << : *service
     command: .scripts/docker-entrypoint.sh
