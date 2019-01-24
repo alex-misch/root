@@ -8,77 +8,28 @@
 // 6. thread safety (TODO: look at syscall.Flock)
 // 7. ttl
 // 8. max db size
+// 9. Protect namespace from r/w
 package kvs
 
-import (
-	"sync"
-)
-
-type DB struct {
-	mutex   sync.Mutex                  // this mutex guards variables below
-	pending map[string]chan interface{} // pending is keys that somebody is waiting for
-	items   map[string]interface{}      // inner store
-}
+// DB is a set of separate namespaces which is key-value storage
+type DB map[string]*Namespace
 
 // New initialize and returns new key-value database
-func New() *DB {
-	return &DB{
-		pending: make(map[string]chan interface{}, 0),
-		items:   make(map[string]interface{}, 0),
+// if namespaces empty - `default` namespace will be created
+func New(namespaces ...string) DB {
+	db := make(map[string]*Namespace)
+
+	if namespaces == nil { // check namespace slice is nil
+		namespaces = make([]string, 1)
+		namespaces[0] = "default"
+	} else if len(namespaces) == 0 { // check empty namespaces
+		namespaces = append(namespaces, "default")
 	}
-}
 
-func (db *DB) Set(key string, value interface{}) {
-	db.mutex.Lock()
-	defer db.mutex.Unlock()
-
-	// set value for db
-	db.items[key] = value
-	// also check for pending
-	if ch, ok := db.pending[key]; ok {
-		select {
-		case ch <- value:
-		default: // for non blocking - nobody waits - no need
-		}
-		delete(db.pending, key)
+	// create namespaces
+	for _, namespace := range namespaces {
+		db[namespace] = NewNamespace()
 	}
-}
 
-func (db *DB) Get(key string) interface{} {
-	db.mutex.Lock()
-	defer db.mutex.Unlock()
-
-	return db.items[key]
-}
-
-// TODO: good feature!
-func (db *DB) Wait(key string) chan interface{} {
-	db.mutex.Lock()
-	defer db.mutex.Unlock()
-
-	if _, ok := db.items[key]; ok {
-		// value exists, no need to wait
-		return nil
-	} else {
-		// add to pending and create channel
-		ch := make(chan interface{})
-		db.pending[key] = ch
-		return ch
-	}
-}
-
-func (db *DB) Delete(key string) {
-	db.mutex.Lock()
-	defer db.mutex.Unlock()
-
-	delete(db.items, key)
-}
-
-func (db *DB) Flush() {
-	db.mutex.Lock()
-	defer db.mutex.Unlock()
-
-	for key := range db.items {
-		delete(db.items, key)
-	}
+	return db
 }
