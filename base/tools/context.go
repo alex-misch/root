@@ -1,5 +1,7 @@
 package tools
 
+// DEPRECATED!
+
 import (
 	"bytes"
 	"context"
@@ -8,6 +10,7 @@ import (
 	srvctx "github.com/boomfunc/root/base/server/context"
 )
 
+// BUG: errors in template not visible - returns source string - no good
 func render(ctx context.Context, s string) string {
 	q := func(key string) (string, error) { return srvctx.GetQ(ctx, key) }
 	url := func(key string) (string, error) { return srvctx.GetUrl(ctx, key) }
