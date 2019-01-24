@@ -1,0 +1,50 @@
+collection:
+
+  # Route
+  # AWS ECS ping
+  - pattern: "jetsmarter.com/{url:*}"
+    pipeline:
+
+      # - type: plugin
+      #   path: ./cache.so
+      #   name: Get
+
+      # - type: process
+      #   cmd: node --experimental-modules --index=.... --no-warnings --experimental-vm-modules ./ssr-bmpjs/render.mjs --url={{url "url"}}
+
+      - type: process
+        cmd: 'echo {"status": {{q "status"}}, "content": "URL: {{url "url"}}, IP: {{meta "ip"}}, UA: {{meta "ua"}}"}'
+
+      # - type: plugin
+      #   path: ./cache.so
+      #   name: Set
+
+      - type: plugin
+        path: ./ssr-bmpjs.so
+        name: SsrJsonEntrypoint
+
+  # - pattern: "set"
+  #   pipeline:
+  #
+  #     - type: plugin
+  #       path: ./ci.so
+  #       name: Set
+  #
+  # - pattern: "get"
+  #   pipeline:
+  #
+  #     - type: plugin
+  #       path: ./ci.so
+  #       name: Get
+
+  # Route
+  # AWS ECS ping
+  - pattern: "ping"
+    pipeline:
+
+      - type: process
+        cmd: echo pong
+
+      # - type: plugin
+      #   path: ./ci.so
+      #   name: Entrypoint

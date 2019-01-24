@@ -1,31 +1,30 @@
-import Executor from '../executor'
-import FileUtil from '../utils/file'
+import ModuleExecutor from './module-executor'
+import { download } from '../utils/file'
 
-const Executor = new Executor()
+const moduleExecutor = new ModuleExecutor()
 
 class BmpRender {
 	constructor () {}
 
   async htmlComponent ({ url = null, context = {} }) {
-		this.load(url)
-		this.execute({ url, context })
+		await this.load(url)
+		return await this.execute({ url, context })
 	}
 
-	load(url) {
+	async load(url) {
 		try {
-			this.source = await FileUtil.download({ url })
-			// console.log( `Success: fetch ${url}.` )
+			this.source = await download( url )
 		} catch ( error ) {
 			throw new Error(`Error while fetching file ${url}: ${error}`)
 		}
 	}
 
-	execute({ url, context }) {
+	async execute({ url, context }) {
 		try {
-			const content = await Executor.runCode({
+			const content = await moduleExecutor.runCode({
 				code: this.source,
 				context,
-				rootUrl: url
+				rootUrl: url,
 			})
 			return content
 		} catch ( error ) {

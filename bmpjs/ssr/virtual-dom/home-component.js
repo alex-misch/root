@@ -1,6 +1,6 @@
 
 
-/** @jsx BMPVD.createBMPVirtulaDOMElement */
+/** @jsx BMPVD.createBMPVirtualDOMElement */
 import { BmpRouter } from 'bmp-router'
 import { BMPVD, BMPVDWebComponent, bmpCssInstance } from 'bmp-core'
 
@@ -23,12 +23,12 @@ class HomeComponent extends BMPVDWebComponent {
 	}
 
   render() {
-    return BMPVD.createBMPVirtulaDOMElement(
+    return BMPVD.createBMPVirtualDOMElement(
 			"div",
 			{ class: 'component', onclick: function() { alert('hello') } },
-			BMPVD.createBMPVirtulaDOMElement( 'h2', null, "Hello from home component" ),
-			BMPVD.createBMPVirtulaDOMElement(
-				'div', { dynamicprop: testUtil() }, BMPVD.createBMPVirtulaDOMElement('test-component')
+			BMPVD.createBMPVirtualDOMElement( 'h2', null, "Hello from home component" ),
+			BMPVD.createBMPVirtualDOMElement(
+				'div', { dynamicprop: testUtil() }, BMPVD.createBMPVirtualDOMElement('test-component')
 			)
 		)
   }
@@ -53,7 +53,7 @@ class TestComponent extends BMPVDWebComponent {
 
   render() {
     return (
-      BMPVD.createBMPVirtulaDOMElement(
+      BMPVD.createBMPVirtualDOMElement(
         "div",
         { class: 'component', onclick: function() { alert('hello') } },
         'Hello from test component'

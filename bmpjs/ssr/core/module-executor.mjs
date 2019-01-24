@@ -1,10 +1,9 @@
 import vm from 'vm'
 import path from 'path'
 import { URL } from 'url'
-
-import FileUtil from '../utils/file'
-
+import { download } from '../utils/file.mjs'
 import project from '../package.json'
+
 /**
  * Compute absolute destination URL
  * @param { String } root URL
@@ -22,7 +21,7 @@ const genURL = (root, to) => {
 }
 
 
-class Executor {
+class ModuleExecutor {
 
 	/**
 	 * @constant
@@ -39,7 +38,21 @@ class Executor {
   async runCode ({ code = null, context = {}, rootUrl = '' }) {
 
 		// Provide some globals
-		this.sandbox = vm.createContext( context )
+		context.window = context
+		this.sandbox = vm.createContext(
+			new Proxy(context, {
+				get(target, property) {
+					if (!target[property]) {
+						// if (!global[property])
+							//console.log("empty", property)
+						// else
+							return global[property]
+					}
+
+					return target[property]
+				}
+			})
+		)
 		const vmModule = new vm.SourceTextModule( code, { context: this.sandbox })
 
     const linker = async ( dependencePath, referencingModule ) => {
@@ -49,7 +62,7 @@ class Executor {
 			const referencePath = referencingModule.realWorldUrl || rootUrl
 			const moduleText = await this.loadModuleSource(referencePath, dependencePath)
 			const fileModule = new vm.SourceTextModule( moduleText, { context: this.sandbox })
-			fileModule.realWorldUrl = url
+			fileModule.realWorldUrl = referencePath
 			return fileModule
 		}
 
@@ -76,11 +89,11 @@ class Executor {
 		try {
 			// TODO: make it more flexible
 			if ( dependencePath === './config.js' ) {
-				// console.log( 'Skip dependency', dependencePath )
+				console.log( 'Skip dependency', dependencePath )
 				return 'export {};' // config is empty, all config is already here
 			} else {
 				// console.log( 'Load dependency', dependencePath, ' from ', url )
-				this.cache[url] = await FileUtil.download({ url })
+				this.cache[url] = await download( url )
 				return this.cache[url]
 			}
 
@@ -109,11 +122,11 @@ class Executor {
     try {
 			return await vmModule.evaluate()
     } catch ( error ) {
-			// console.log( error )
+			console.log( error )
       throw new Error(`\nUnable to evaluate module: ${ error }\n`)
     }
 	}
 
 }
 
-export default Executor
+export default ModuleExecutor

@@ -31,16 +31,16 @@ services:
     image: node:10.9-alpine
     restart: always
     volumes:
-      - .:/ssr
+      - ./ssr:/ssr
     working_dir: /ssr
     # entrypoint: node
     command: tail -f /dev/null
 
   ms:
     build:
-      context: ./serverside-render
+      context: ./ssr
     environment:
       - BMP_DEBUG_MODE=true
-      - BMP_CONFIG=./example.yml
+      - BMP_CONFIG=./router.yml
     ports:
         - "8081:8080"

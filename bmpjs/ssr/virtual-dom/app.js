@@ -1,4 +1,4 @@
-/** @jsx BMPVD.createBMPVirtulaDOMElement */
+/** @jsx BMPVD.createBMPVirtualDOMElement */
 
 import { BmpApp, BMPVD, BMPVDWebComponent, BmpCss, bmpCssInstance } from 'bmp-core'
 import { BmpRouter } from 'bmp-router'
@@ -38,16 +38,17 @@ class App extends BMPVDWebComponent {
 
 	/** Use render to tell BMP what's your component will look like with JSX syntax */
 	render() {
-		return BMPVD.createBMPVirtulaDOMElement('bmp-router')
+		return BMPVD.createBMPVirtualDOMElement('bmp-router')
 	}
 
 	static compile() {
 		const app = customElements.get( App.is )
 
-		const self = BMPVD.createBMPVirtulaDOMElement( App.is, null, app.BMPVDInstance )
+		window.BMPVDWebComponent = SSR.BMPVDWebComponent
+		const self = SSR.BMPVD.createBMPVirtualDOMElement( App.is, null, app.BMPVDInstance )
 		return {
-			html: BMPVD.stringify( self, BMPCSSJS ),
-			css: BmpCss.stringify( BMPCSSJS )
+			html: await SSR.BMPVD.stringify( self, BMPCSSJS ),
+			css: await SSR.BmpCss.stringify( BMPCSSJS )
 		}
 	}
 

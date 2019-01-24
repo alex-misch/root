@@ -3,6 +3,7 @@ const MetaTags = {
 	prefixes: [ '', 'twitter', 'og' ],
 
 	stringify(objTags) {
+		if (!objTags) return ''
 		return Object.keys( objTags ).map( tag => {
 			return MetaTags.prefixes.map(
 				prefix => `<meta content="${ prefix + tag }" value="${ objTags[tag] }" />`
@@ -12,12 +13,8 @@ const MetaTags = {
 
 }
 
-const inlineStyle = css => {
-	return css ? `<style>${ css }</style>` : ''
-}
+const inlineStyle = css => css ? `<style>${ css }</style>` : ''
 
-const inlineScript = css => {
-	return css ? `<script>${ css }</script>` : ''
-}
+const inlineScript = js => js ? `<script>${ js }</script>` : ''
 
 export { MetaTags, inlineStyle, inlineScript }

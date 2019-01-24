@@ -1,0 +1,25 @@
+{
+  "name": "serverside-render",
+  "version": "0.0.1",
+  "description": "run ECMA SCRIPT Modules on server",
+  "main": "index.mjs",
+  "scripts": {
+    "render": "node --experimental-modules --no-warnings --experimental-vm-modules render.mjs --url=/about/",
+		"sitemap": "node --experimental-modules --experimental-vm-modules sitemap.mjs",
+
+    "dockerstart": "docker-compose exec ssrbmp sh -c 'npm run render'",
+    "test": "test"
+  },
+  "author": "boomfunc",
+  "license": "ISC",
+  "bmp": {
+    "application": "https://d35qz7xn7nfid5.cloudfront.net/ssr/index.es.js",
+    "_external": {
+      "bmp-core": "https://jetsmarter.com/data/website/code/test/bmp-core.js",
+      "bmp-router": "https://jetsmarter.com/data/website/code/test/bmp-router.js"
+    }
+  },
+  "dependencies": {
+    "node-fetch-polyfill": "^2.0.6"
+  }
+}

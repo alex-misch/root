@@ -1,5 +1,5 @@
-import { BmpRender } from "../bmp-render/index.mjs";
-import * as routerConf from "./config.mjs";
+import { BmpRender } from "./render.mjs";
+import { BmpRouter } from "../virtual-dom/bmp-router"
 
 import project from '../package.json'
 import { Mocks } from "../mocks/index.mjs";
@@ -7,8 +7,9 @@ import {
 	MetaTags,
 	inlineStyle,
 	inlineScript
-} from "../../utils/html.mjs";
+} from "../utils/html.mjs";
 
+const routerConf = BmpRouter.requireConfig()
 const bmpRender = new BmpRender()
 
 class ViewCompiler {
@@ -23,17 +24,17 @@ class ViewCompiler {
 
 	}
 
-	runApplication(ctx, dependencies) {
+	async runApplication(context, dependencies) {
 
-		for ( let dependency of dependencies ) {
-			// execute all dependencies files
-			if ( dependency.source.js ) {
-				await bmpRender.htmlComponent({
-					url: dependency.source.js,
-					context: context
-				})
-			}
-		}
+		// for ( let dependency of dependencies ) {
+		// 	// execute all dependencies files
+		// 	if ( dependency.source.js ) {
+		// 		await bmpRender.htmlComponent({
+		// 			url: dependency.source.js,
+		// 			context: context
+		// 		})
+		// 	}
+		// }
 
 		const { application } = project.bmp
 		const { result } = await bmpRender.htmlComponent({
@@ -50,11 +51,12 @@ class ViewCompiler {
 		/** Create enviroment of sandbox (not is like browser) */
 		const context = {
 			request: this.request,
-			location: new URL( routerConf.server_name + this.request.uri ),
+			location: new URL( this.request.origin + this.request.uri ),
 			routerConf: routerConf,
 			...Mocks
 		}
-		const result = await this.runApplication( context, routerConf.urlConf )
+		context.location.replace = () => {}
+		const result = await this.runApplication( context )
 
 		try {
 			/** Project entrypoint from package.json */

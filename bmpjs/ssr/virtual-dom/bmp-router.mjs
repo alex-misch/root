@@ -1,4 +1,5 @@
-import { BMPVD } from 'bmp-core'
+import { BMPVD } from './bmp-core'
+
 // it is function because variable has cursor and bugs sometimes.
 // Function will return new regexp instance every time it need
 const slugRegex = _ => /\/:([\w-]+(?:{.*})?)/g // like /benefit/:slug/ or /benefit/:slug{param1|param2}/
@@ -36,51 +37,35 @@ const isPatternMatchUrl = (pattern, pathname = location.pathname) => {
   } else {
     return pattern === pathname // simply string
   }
-  return false //default
 
 }
 
-// const importExternal = uri => {
-// 	return new Promise( (resolve, reject) => {
-// 		request.get( { uri }, (err, response) => {
-// 			if (err) reject(err)
-
-// 			var m = new Module()
-// 			m._compile(response.body);
-// 			resolve( m.exports )
-// 		})
-// 	})
-// }
-
+let routerConf = null
 class BmpRouter {
 
 	static config( config ) {
+		routerConf = config
+	}
+
+	static requireConfig() {
+		return routerConf
 	}
 
 
-	connectedCallback() {
+	render() {
 		const uri = request.uri
-		const entryPoint = routerConf.urlConf.find( view => isPatternMatchUrl( view.pattern, uri )  )
+		const route = routerConf.routes.find( view => isPatternMatchUrl( view.pattern, uri )  )
 
 		let view = ''
-		if ( !entryPoint ) {
-			view = routerConf.not_found_template
+		if ( !route ) {
+			view = BMPVD.createBMPVirtualDOMElement(routerConf.not_found_tag)
 		} else {
-			view = BMPVD.createBMPVirtulaDOMElement( entryPoint.tagname )
+			view = BMPVD.createBMPVirtualDOMElement( route.tagName, (route.attributes || {}) )
 		}
-		return BMPVD.createBMPVirtulaDOMElement(
+		return BMPVD.createBMPVirtualDOMElement(
 			routerConf.viewTag, { pathname: uri }, view
 		)
-		// return (
-		// 	<ViewTag>
-		// 		<EntryPoint pathname={ this.uri }>
-		// 			${ entrypoint ? < }
-		// 		</EntryPoint>
-		// 	</ViewTag>
-		// )
-
 	}
 }
 
-customElements.define( 'bmp-router', BmpRouter )
 export { BmpRouter }

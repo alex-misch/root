@@ -1,7 +1,6 @@
 
 import https from 'https'
 
-
 /**
  * Fetch file
  * @param { String } url
