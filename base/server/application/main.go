@@ -44,7 +44,7 @@ func (app *Application) Handle(fl *flow.Data) {
 	}()
 
 	// TODO: not here, but for now - good
-	ctx := context.WithValue(fl.Ctx, "db", kvs.New())
+	ctx := context.WithValue(fl.Ctx, "db", kvs.New("http"))
 	// TODO
 
 	// Parse request

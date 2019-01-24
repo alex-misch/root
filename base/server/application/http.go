@@ -55,27 +55,22 @@ func (packer *httpPacker) Unpack(ctx context.Context, r io.Reader) (*flow.Reques
 
 func (packer *httpPacker) Pack(ctx context.Context, r io.Reader, w io.Writer) error {
 	// get status code and string reason from
-	storage, ok := ctx.Value("db").(*kvs.DB)
+	storage, ok := ctx.Value("db").(kvs.DB)
 	if !ok {
 		return executor.ErrStepOrphan
 	}
 
-	ch := storage.Wait("http.status") // blocking operation
-	var status interface{}
-	if ch != nil {
-		status = <-ch
-	} else {
-		status = storage.Get("http.status")
-	}
-
-	asInt, ok := status.(int)
+	// wait for http status code in storage
+	storage.Wait("http", "status")
+	status, ok := storage.Get("http", "status").(int)
 	if !ok {
 		return executor.ErrStepOrphan
 	}
 
+	// generate response
 	response := &http.Response{
-		Status:     http.StatusText(asInt),
-		StatusCode: asInt,
+		Status:     http.StatusText(status),
+		StatusCode: status,
 		Proto:      packer.request.Proto,
 		ProtoMajor: packer.request.ProtoMajor,
 		ProtoMinor: packer.request.ProtoMinor,
