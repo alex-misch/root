@@ -91,7 +91,7 @@ func (p *process) run(ctx context.Context) error {
 
 	// check for case exit code = 0, but stderr got something
 	if len := stderr.Len(); len > 0 {
-		return fmt.Errorf("%s", stderr)
+		return fmt.Errorf("base/pipeline/process: %s", stderr)
 	}
 
 	return nil

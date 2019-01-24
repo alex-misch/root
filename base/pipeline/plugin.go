@@ -55,8 +55,10 @@ func (p *Plugin) run(ctx context.Context) error {
 		return err
 	}
 
+	// TODO: look not elegnt, i want `fake` plugin's stout and stdin and stderr
 	ctx = context.WithValue(ctx, "stdin", p.stdin)
 	ctx = context.WithValue(ctx, "stdout", p.stdout)
+	// ctx = context.WithValue(ctx, "srderr", p.srderr)
 
 	// 4. run
 	return step.Run(ctx)
