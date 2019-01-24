@@ -33,3 +33,35 @@ func New(namespaces ...string) DB {
 
 	return db
 }
+
+func (db DB) namespace(key string) *Namespace {
+	if key == "" {
+		key = "default"
+	}
+
+	return db[key]
+}
+
+func (db DB) Wait(namespace, key string) {
+	if ns := db.namespace(namespace); ns != nil {
+		ns.Wait(key)
+	}
+
+	return
+}
+
+func (db DB) Get(namespace, key string) interface{} {
+	if ns := db.namespace(namespace); ns != nil {
+		return ns.Get(key)
+	}
+
+	return nil
+}
+
+func (db DB) Set(namespace, key string, value interface{}) {
+	if ns := db.namespace(namespace); ns != nil {
+		ns.Set(key, value)
+	}
+
+	return
+}
