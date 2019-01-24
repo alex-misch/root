@@ -36,6 +36,8 @@ func (packer *httpPacker) Unpack(ctx context.Context, r io.Reader) (*flow.Reques
 			httpRequest.Header.Get("X-Real-IP"),
 		),
 	)
+	// get user agent and save to context
+	srvctx.SetMeta(ctx, "ua", httpRequest.UserAgent())
 	// Get http query and save to context
 	values, err := srvctx.Values(ctx)
 	if err != nil {
