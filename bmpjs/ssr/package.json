@@ -5,8 +5,7 @@
   "main": "index.mjs",
   "scripts": {
     "render": "node --experimental-modules --no-warnings --experimental-vm-modules render.mjs --url=/about/",
-		"sitemap": "node --experimental-modules --experimental-vm-modules sitemap.mjs",
-
+    "sitemap": "node --experimental-modules --experimental-vm-modules sitemap.mjs",
     "dockerstart": "docker-compose exec ssrbmp sh -c 'npm run render'",
     "test": "test"
   },
