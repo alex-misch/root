@@ -39,5 +39,5 @@ apt-get install -y nodejs
 BMP_BASE_DEBUG_MODE=true \
 BMP_BASE_CONFIG="./${NODE}/router.yml" \
 BMP_BASE_APP_LAYER='http' \
-BMP_BASE_WORKER_NUM=1 \
+BMP_BASE_WORKER_NUM=2 \
 	/go/bin/base-$(uname -s)-$(uname -m) run tcp
