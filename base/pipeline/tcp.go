@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	ErrTCPWithoutAddress = errors.New("pipeline/tcp: TCP socket without address")
+	ErrTCPWithoutAddress = errors.New("base/pipeline: TCP socket without address")
 )
 
 type tcp struct {

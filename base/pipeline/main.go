@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	ErrUnknownLayer = errors.New("pipeline: Unknown layer type")
+	ErrUnknownLayer = errors.New("base/pipeline: Unknown layer type")
 )
 
 // TODO rename LayerCopier

@@ -6,8 +6,8 @@ import (
 )
 
 var (
-	ErrNoStdin  = errors.New("pipeline: Able without stdin (Not piped)")
-	ErrNoStdout = errors.New("pipeline: Able without stdout (Not piped)")
+	ErrNoStdin  = errors.New("base/pipeline: Able without stdin (Not piped)")
+	ErrNoStdout = errors.New("base/pipeline: Able without stdout (Not piped)")
 )
 
 // stdio struct is base struct to something that can have input/output

@@ -87,9 +87,16 @@ func (packer *httpPacker) Pack(ctx context.Context, r io.Reader, w io.Writer) er
 	if packer.request.Header.Get("Origin") != "" {
 		// TODO TODO
 		response.Header.Set("Access-Control-Allow-Origin", "*")
-		response.Header.Set("Access-Control-Allow-Headers", "")
+		response.Header.Set("Access-Control-Allow-Headers", "Authorization")
 		response.Header.Set("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
 		// TODO TODO
+	}
+	// get some additional runtime headers (if exists)
+	more, ok := storage.Get("http", "headers").(http.Header)
+	if ok { // additional headrs exists
+		for k := range more {
+			response.Header.Set(k, more.Get(k))
+		}
 	}
 
 	return response.Write(w)
