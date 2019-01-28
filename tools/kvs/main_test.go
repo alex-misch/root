@@ -14,6 +14,7 @@ func TestDBPublic(t *testing.T) {
 			{nil, []string{"default"}},
 			{[]string{}, []string{"default"}},
 			{[]string{"foo"}, []string{"foo"}},
+			{[]string{"foo", ""}, []string{"foo", "default"}}, // TODO
 			{[]string{"foo", "bar"}, []string{"foo", "bar"}},
 		}
 
@@ -25,7 +26,7 @@ func TestDBPublic(t *testing.T) {
 					t.Fatalf("len(db): Expected %q, got %q", len(tt.out), len(db))
 				}
 
-				// check aech namespace in base
+				// check each namespace in database
 				for _, key := range tt.out {
 					ns, ok := db[key]
 					if !ok {
