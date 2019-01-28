@@ -38,7 +38,7 @@ func JsonEntrypoint(ctx context.Context) error {
 
 	decoder := json.NewDecoder(stdin)
 	if err := decoder.Decode(&intermediate); err != nil {
-		return err
+		return fmt.Errorf("bmpjs/ssr: %s", err)
 	}
 
 	// translate headers
