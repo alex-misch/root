@@ -4,11 +4,9 @@ import { HTMLDocument } from "./html-document.mjs";
 import { DOMException } from './dom-exception.mjs';
 import { CustomElements, customElements } from "./custom-elements.mjs";
 import { Navigator } from "./navigator"
-import { BMPVD } from "../virtual-dom/bmp-core.mjs";
-import { BmpCss } from "../virtual-dom/bmp-css.mjs";
 import fetch from 'node-fetch-polyfill'
 
-const Mocks = {
+const HTML5Api = ({ url, userAgent }) => ({
 	/** HTML5 Api */
 	HTMLElement,
 	MutationObserver: class {
@@ -16,7 +14,7 @@ const Mocks = {
 	},
 	Element,
 	self: { DOMException },
-	navigator: Navigator(),
+	navigator: Navigator(userAgent),
 	document: new HTMLDocument(),
 	getComputedStyle: element => { return {} },
 	addEventListener: () => {},
@@ -31,7 +29,6 @@ const Mocks = {
 
 	/** BMP Mocks */
 	BMPCSSJS: { },
-	SSR: { BMPVD, BmpCss },
 	mdc: {},
 
 	/** Contants */
@@ -39,6 +36,8 @@ const Mocks = {
 	SERVER_NAME: 'https://jetsmarter.com',
 	apiGateway: 'https://api.jetsmarter.com',
 	IS_SSR: true,
-}
+	location: new URL(url),
+	window: HTML5Api
+})
 
-export { Mocks }
+export { HTML5Api }

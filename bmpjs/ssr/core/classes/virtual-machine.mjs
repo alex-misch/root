@@ -1,8 +1,8 @@
 import vm from 'vm'
 import path from 'path'
 import { URL } from 'url'
-import { download } from '../utils/file.mjs'
-import project from '../package.json'
+import { download } from '../../utils/file.mjs'
+import project from '../../package.json'
 
 /**
  * Compute absolute destination URL
@@ -21,13 +21,30 @@ const genURL = (root, to) => {
 }
 
 
-class ModuleExecutor {
+class VirtualMachine {
 
 	/**
 	 * @constant
 	 */
-  constructor () {
+  constructor (context) {
 		this.cache = {}
+
+		const domContext = {
+			...context,
+			window: context
+		}
+		const contextProxy = new Proxy(domContext, {
+			get(target, property) {
+				if (!target[property]) {
+					if (!global[property])
+						console.error("empty", property)
+					else
+						return global[property]
+				}
+				return target[property]
+			}
+		})
+		this.context = vm.createContext(contextProxy)
 	}
 
 	/**
@@ -35,25 +52,10 @@ class ModuleExecutor {
 	 * @param {Object} { code, context, selfurl } of module
 	 * @return { String } last return of script
 	 */
-  async runCode ({ code = null, context = {}, rootUrl = '' }) {
+  async run({ code = null, rootUrl = '' }) {
 
 		// Provide some globals
-		context.window = context
-		this.sandbox = vm.createContext(
-			new Proxy(context, {
-				get(target, property) {
-					if (!target[property]) {
-						// if (!global[property])
-							//console.log("empty", property)
-						// else
-							return global[property]
-					}
-
-					return target[property]
-				}
-			})
-		)
-		const vmModule = new vm.SourceTextModule( code, { context: this.sandbox })
+		const vmModule = new vm.SourceTextModule( code, { context: this.context })
 
     const linker = async ( dependencePath, referencingModule ) => {
 			if ( !dependencePath )
@@ -61,7 +63,7 @@ class ModuleExecutor {
 
 			const referencePath = referencingModule.realWorldUrl || rootUrl
 			const moduleText = await this.loadModuleSource(referencePath, dependencePath)
-			const fileModule = new vm.SourceTextModule( moduleText, { context: this.sandbox })
+			const fileModule = new vm.SourceTextModule( moduleText, { context: this.context })
 			fileModule.realWorldUrl = referencePath
 			return fileModule
 		}
@@ -120,7 +122,8 @@ class ModuleExecutor {
 
 	async evaluate(vmModule) {
     try {
-			return await vmModule.evaluate()
+			const result = await vmModule.evaluate()
+			return result
     } catch ( error ) {
 			console.log( error )
       throw new Error(`\nUnable to evaluate module: ${ error }\n`)
@@ -129,4 +132,4 @@ class ModuleExecutor {
 
 }
 
-export default ModuleExecutor
+export default VirtualMachine

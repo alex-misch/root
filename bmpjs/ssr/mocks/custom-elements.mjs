@@ -1,6 +1,6 @@
 
 
-import { BmpRouter } from '../virtual-dom/bmp-router.mjs'
+import { BmpRouter } from './bmp-router.mjs'
 
 
 /** Server-side CustomElements mock */

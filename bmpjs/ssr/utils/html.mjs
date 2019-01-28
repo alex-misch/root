@@ -1,20 +1,36 @@
 
-const MetaTags = {
-	prefixes: [ '', 'twitter', 'og' ],
-
-	stringify(objTags) {
-		if (!objTags) return ''
-		return Object.keys( objTags ).map( tag => {
-			return MetaTags.prefixes.map(
-				prefix => `<meta content="${ prefix + tag }" value="${ objTags[tag] }" />`
-			).join('')
-		}).join('')
-	}
-
+/**
+ * Escape (encode) &, <, >, ", ' symbols via HTML specification
+ * @param { String } text
+ */
+const escapeHtml = text => {
+  return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+			.replace(/'/g, "&#039;");
 }
 
-const inlineStyle = css => css ? `<style>${ css }</style>` : ''
+const selfClosedTags = [
+	'area',
+	'base',
+	'br',
+	'col',
+	'embed',
+	'hr',
+	'img',
+	'input',
+	'keygen',
+	'link',
+	'meta',
+	'param',
+	'source',
+	'track',
+	'wbr'
+]
 
-const inlineScript = js => js ? `<script>${ js }</script>` : ''
-
-export { MetaTags, inlineStyle, inlineScript }
+export {
+	escapeHtml,
+	selfClosedTags,
+}

@@ -36,11 +36,3 @@ services:
     # entrypoint: node
     command: tail -f /dev/null
 
-  ms:
-    build:
-      context: ./ssr
-    environment:
-      - BMP_DEBUG_MODE=true
-      - BMP_CONFIG=./router.yml
-    ports:
-        - "8081:8080"

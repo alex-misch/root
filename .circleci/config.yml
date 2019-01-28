@@ -8,7 +8,7 @@ jobs:
       - checkout
       - run:
           name: Build core
-          working_directory: ./bmpjs/bmp-core
+          working_directory: ./bmpjs/core
           command: |
             npm install
             node --experimental-modules ./install.mjs
@@ -26,7 +26,7 @@ jobs:
       - checkout
       - run:
           name: Build router
-          working_directory: ./bmpjs/bmp-router
+          working_directory: ./bmpjs/router
           command: |
             npm install
             node --experimental-modules ./install.mjs
@@ -47,11 +47,11 @@ jobs:
           at: ./bmpjs
 
       - run:
-          working_directory: ./bmpjs/bmp-router
-          command: tar -zcv . | aws s3 cp - "s3://io-boomfunc-root/bmpjs/bmp-router.tar.gz" --acl private --cache-control 'public, max-age=0, s-maxage=31536000, must-revalidate'
+          working_directory: ./bmpjs/router
+          command: tar -zcv . | aws s3 cp - "s3://io-boomfunc-root/bmpjs/router.tar.gz" --acl private --cache-control 'public, max-age=0, s-maxage=31536000, must-revalidate'
       - run:
-          working_directory: ./bmpjs/bmp-core
-          command: tar -zcv . | aws s3 cp - "s3://io-boomfunc-root/bmpjs/bmp-core.tar.gz" --acl private --cache-control 'public, max-age=0, s-maxage=31536000, must-revalidate'
+          working_directory: ./bmpjs/core
+          command: tar -zcv . | aws s3 cp - "s3://io-boomfunc-root/bmpjs/core.tar.gz" --acl private --cache-control 'public, max-age=0, s-maxage=31536000, must-revalidate'
       - run:
           working_directory: ./bmpjs/bundler
           command: tar -zcv . | aws s3 cp - "s3://io-boomfunc-root/bmpjs/bundler.tar.gz" --acl private --cache-control 'public, max-age=0, s-maxage=31536000, must-revalidate'

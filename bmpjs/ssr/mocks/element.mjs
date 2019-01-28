@@ -2,6 +2,7 @@ class Element {
 
 	constructor() {
 		this._attributes = {}
+		this.className = ''
 	}
 
 	/** Element mocks */
@@ -17,6 +18,13 @@ class Element {
 		this._attributes[key] = val
 	}
 
+	get attributes() {
+		return {
+			...this._attributes,
+			className: this.className
+		}
+	}
+
 	set attributes(props) {
 		this._attributes = props
 	}
@@ -29,10 +37,13 @@ class Element {
 
 	get classList() {
 		return {
-			add() {},
-			remove() {},
-			toggle() {},
-			contains() { return false; }
+			add: (...classNames) => {
+				if (!classNames.length) throw new Error(`Can'nt add class ${className}`)
+				this.className += (this.className ? ' ' : '') + classNames.join(' ')
+			},
+			remove: () => {},
+			toggle: () => {},
+			contains: () => { return false; }
 		}
 	}
 

@@ -1,4 +1,6 @@
-import { BMPVD } from './bmp-core'
+import VirtualDomAdapter from "../adapters/html/virtual-dom.mjs";
+
+// import { BMPVD } from './bmp-core'
 
 // it is function because variable has cursor and bugs sometimes.
 // Function will return new regexp instance every time it need
@@ -58,11 +60,11 @@ class BmpRouter {
 
 		let view = ''
 		if ( !route ) {
-			view = BMPVD.createBMPVirtualDOMElement(routerConf.not_found_tag)
+			view = VirtualDomAdapter.createElement(routerConf.not_found_tag)
 		} else {
-			view = BMPVD.createBMPVirtualDOMElement( route.tagName, (route.attributes || {}) )
+			view = VirtualDomAdapter.createElement( route.tagName, (route.attributes || {}) )
 		}
-		return BMPVD.createBMPVirtualDOMElement(
+		return VirtualDomAdapter.createElement(
 			routerConf.viewTag, { pathname: uri }, view
 		)
 	}
