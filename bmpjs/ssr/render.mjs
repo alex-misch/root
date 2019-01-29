@@ -1,23 +1,20 @@
 
-import { getProcessArguments } from './utils/arguments.mjs'
+import { getProcessArguments, requiredArgs } from './utils/arguments.mjs'
 
 import BmpRemoteApp from './core/classes/remote-app'
 import VirtualDOMAdapter from './adapters/html/virtual-dom'
 import pack from "./package.json"
 
-const args = getProcessArguments('url', 'headers', 'user-agent', 'ip')
-if ( !args.url ) {
-	throw new Error( 'Please specify request url as cli-argument' )
-}
+requiredArgs( 'url', 'src' )
+const args = getProcessArguments('url', 'headers', 'user-agent', 'ip', 'src', 'static')
 
 global.request = {
 	headers: (args.headers || {}),
-	origin: args.origin || "https://jetsmarter.com",
 	uri: args.url,
 	ip: args.ip,
+	static: args.static,
 	userAgent: args['user-agent'] || 'Google Chrome'
 }
-
 
 const render = async (clientRequest, entrypoint) => {
 	try {
@@ -42,7 +39,7 @@ const render = async (clientRequest, entrypoint) => {
 	}
 }
 
-render(global.request, pack.bmp.application)
+render(global.request, args.src)
 
 
 process.on('unhandledRejection', function(reason, p) {

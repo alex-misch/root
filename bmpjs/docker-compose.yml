@@ -2,7 +2,7 @@ version: '3'
 services:
   component:
     build:
-      context: .
+      context: ./bundler
     environment:
         - TCP_LISTEN_PORT=9375
         - NODE_PATH=/usr/lib/node_modules

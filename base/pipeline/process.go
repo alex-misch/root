@@ -46,6 +46,7 @@ func (p *process) run(ctx context.Context) error {
 	parts := tools.CLISplit(
 		tools.StringFromCtx(ctx, p.cmd),
 	)
+	fmt.Println("JKIJKL", parts)
 
 	// create command with cancel functinality
 	cmd := exec.CommandContext(ctx, parts[0], parts[1:]...)

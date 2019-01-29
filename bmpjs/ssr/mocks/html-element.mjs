@@ -16,12 +16,16 @@ class HTMLElement extends Element {
 	click() {}
 
 	querySelector() {
-		return new HTMLElement()
+		return new HTMLElement('div')
 	}
 
 	querySelectorAll() {
 		return []
 	}
+
+	// set innerHTML(content) {
+	// 	this.rawInnerHTML = content
+	// }
 
 	get hidden() { return false }
 	get title() { return '' }

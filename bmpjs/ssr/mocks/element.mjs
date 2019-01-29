@@ -1,12 +1,14 @@
+import { stringifyProps } from "../utils/html.mjs";
+
 class Element {
 
-	constructor(tagname, attributes) {
+	constructor(tagName, attributes) {
 		this._attributes = attributes || {}
-		this.tagName = tagname
-		this.className = ''
+		if (tagName) this.tagName = tagName
 		this.childNodes = []
+		this.children = this.childNodes
 
-		this.id = undefined
+		this.id = ''
 	}
 
 	/** Work with content */
@@ -16,13 +18,16 @@ class Element {
 	insertBefore() {}
 	insertAdjacentElement() {}
 	insertAdjacentHTML() {}
+
+
 	get innerHTML() {
 		return this.childNodes.map( child => {
-			return child instanceof Element ? child.outerHTML : child
+			return child instanceof Element ? child.outerHTML : child.toString()
 		}).join('')
 	}
+
 	get outerHTML() {
-		return `<${this.tagName}>${ this.innerHTML }</${this.tagName}>`
+		return `<${this.tagName}${ stringifyProps(this.attributes) } ssr>${ this.innerHTML }</${this.tagName}>`
 	}
 
 	/** Web Components api */
@@ -31,7 +36,7 @@ class Element {
 	get createShadowRoot() {}
 	get slot() { return '' }
 
-	/** Work with properties */
+	/** Working with attributes */
 	hasAttribute(key) { return this._attributes.hasOwnProperty(key) }
 	getAttributeNames() {}
 	getAttributeNS() {}
@@ -45,10 +50,7 @@ class Element {
 	}
 
 	get attributes() {
-		return {
-			...this._attributes,
-			className: this.className
-		}
+		return this._attributes
 	}
 
 	set attributes(props) {
@@ -59,10 +61,10 @@ class Element {
 		return {
 			add: (...classNames) => {
 				if (!classNames.length) throw new Error(`Element.classList.add can'nt called without arguments`)
-				this.className += (this.className ? ' ' : '') + classNames.join(' ')
+				this.attributes.class = (this.attributes.class ? `${this.attributes.class} ` : '') + classNames.join(' ')
 			},
 			remove: className => {
-				this.className = this.className.replace(className, '')
+				this.attributes.class = this.attributes.class.replace(className, '')
 			},
 			toggle: () => {},
 			contains: () => { return false; }

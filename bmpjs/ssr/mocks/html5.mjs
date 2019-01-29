@@ -6,7 +6,10 @@ import { CustomElements, customElements } from "./custom-elements.mjs";
 import { Navigator } from "./navigator"
 import fetch from 'node-fetch-polyfill'
 
-const HTML5Api = ({ url, userAgent }) => ({
+/** NOTE: it is hardcode of */
+URL.prototype.replace = () => {}
+
+const HTML5Api = ({ url, userAgent, baseURI }) => ({
 	/** HTML5 Api */
 	HTMLElement,
 	MutationObserver: class {
@@ -15,10 +18,11 @@ const HTML5Api = ({ url, userAgent }) => ({
 	Element,
 	self: { DOMException },
 	navigator: Navigator(userAgent),
-	document: new HTMLDocument(),
+	document: new HTMLDocument(baseURI),
 	getComputedStyle: element => { return {} },
 	addEventListener: () => {},
 	removeEventListener: () => {},
+	requestAnimationFrame: () => {},
 
 	/** Polyfills */
 	require: () => {},
@@ -26,6 +30,10 @@ const HTML5Api = ({ url, userAgent }) => ({
 	customElements,
 	CustomEvent: class {},
 	fetch,
+	// : (...args) => {
+	// 	console.log(args[0])
+	// 	return fetch(...args)
+	// },
 
 	/** BMP Mocks */
 	BMPCSSJS: { },
@@ -36,8 +44,9 @@ const HTML5Api = ({ url, userAgent }) => ({
 	SERVER_NAME: 'https://jetsmarter.com',
 	apiGateway: 'https://api.jetsmarter.com',
 	IS_SSR: true,
-	location: new URL(url),
+	location: new URL(`https://${url}`),
 	window: HTML5Api
 })
+
 
 export { HTML5Api }

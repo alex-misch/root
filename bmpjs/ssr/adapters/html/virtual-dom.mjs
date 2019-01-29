@@ -1,6 +1,7 @@
 import HTMLAdapter from '../../core/interfaces/html-adapter'
 import { selfClosedTags } from '../../utils/html.mjs';
 import { customElements } from '../../mocks/custom-elements'
+import { stringifyProps } from '../../utils/html.mjs';
 
 /**
  * Server-size Virtual Dom objects stringifier
@@ -10,7 +11,6 @@ class VirtualDomAdapter extends HTMLAdapter {
 
 	constructor() {
 		super()
-		this.skipProps = ['safeHTML']
 	}
 
 	/**
@@ -37,8 +37,8 @@ class VirtualDomAdapter extends HTMLAdapter {
 	 * @param {Array} instances list of instances
 	 * @param cssjs css of this instances
 	 */
-	async stringifyArr(instances, cssjs) {
-		const strigifiers = instances.map( async inst => await this.stringify(inst, cssjs) )
+	async stringifyArr(instances) {
+		const strigifiers = instances.map( async inst => await this.stringify(inst) )
 		return (await Promise.all(strigifiers)).join('')
 	}
 
@@ -47,34 +47,27 @@ class VirtualDomAdapter extends HTMLAdapter {
 	 * @param {Object} instance {type, props, children} virtual-dom objject
 	 * @param cssjs css of instance, will be attached on render fn
 	 */
-	async stringifyVD(instance, cssjs) {
+	async stringifyVD(instance) {
 
 		let { type: tagName, props, children } = instance
-		if ( typeof cssjs[tagName] == 'object' ) {
-			if ( typeof props == 'object' && props.hasOwnProperty('class') )
-				props.class += cssjs[tagName].selector
-			else
-				props = { class: cssjs[tagName].selector }
-		}
 
 		if ( selfClosedTags.includes(tagName) ) {
-			return `<${ tagName }${ this.stringifyProps(props) } ssr />`
+			return `<${ tagName }${ stringifyProps(props) } ssr />`
 		} else {
 			let insideContent = ''
 			let component = await this.createInstance(tagName, props)
 			if ( component ) {
-				let innerVirtualDOM = await this.render(component)
-				if (innerVirtualDOM)
-					insideContent += await this.stringify(innerVirtualDOM, cssjs)
+				let template = await this.render(component)
+				if (template) insideContent += await this.stringify(template)
 			}
 			if (children && children.length) {
-				insideContent += await this.stringify(children, cssjs)
+				insideContent += await this.stringify(children)
 			}
 			if (props.safeHTML) {
 				insideContent += props.safeHTML
 			}
 
-			return `<${ tagName }${ this.stringifyProps( component ? component.attributes : props ) } ssr>${ insideContent }</${ tagName }>`
+			return `<${ tagName }${ stringifyProps( component ? component.attributes : props ) } ssr>${ insideContent }</${ tagName }>`
 		}
 	}
 
@@ -83,35 +76,44 @@ class VirtualDomAdapter extends HTMLAdapter {
 	 * @param {*} instance any javascript variable that will be converted to string
 	 * @param @optional cssjs css of this instance (optional)
 	 */
-	async stringify( instance, cssjs = {} ) {
-		if ( Array.isArray(instance) )
-			return await this.stringifyArr(instance, cssjs)
-
+	async stringify( instance ) {
 		if ( ['string','number','boolean'].includes(typeof instance) )
-			return instance
+			return instance.toString()
 
-		if ( instance === null || typeof instance === 'undefined' )
+		if ( !instance )
 			return ''
 
-		return this.stringifyVD(instance, cssjs)
+		if ( Array.isArray(instance) )
+			return await this.stringifyArr(instance)
+
+		return await this.stringifyVD(instance)
 	}
 
 
 	/**
 	 * Call specific functions of component that need to be called and render it
 	 * @param { BMPVDWebComponent } component instance of WebComponent
-	 * @return { Object<VirtualDOM> } component render result
+	 * @return { Object<VirtualDOM>|String } component render result
 	 */
 	async render(component) {
-		if ( typeof component.ready == 'function' )
-			await component.ready()
-		if ( typeof component.onAttached == 'function' )
-			await component.onAttached()
+		if ( typeof component.render == 'function' ) {
+			// like a virtualDOM component
+			if ( typeof component.ready == 'function' )
+				await component.ready()
+			if ( typeof component.onAttached == 'function' )
+				await component.onAttached()
 
-		if ( typeof component.render == 'function' )
 			return component.render()
-
-		return null
+		} else {
+			// customElement
+			await component.connectedCallback()
+			const childRenderers = component.childNodes.map( async child => {
+				const result = await this.render(child)
+				return await this.stringify(result)
+			})
+			component.childNodes = await Promise.all( childRenderers )
+			return component.outerHTML
+		}
 	}
 
 	/**
@@ -125,6 +127,7 @@ class VirtualDomAdapter extends HTMLAdapter {
 		if (componentClass) {
 			const componentInstance = new componentClass.constructor()
 			componentInstance.attributes = attrs
+			componentInstance.tagName = tagName
 			return componentInstance
 		}
 		return null

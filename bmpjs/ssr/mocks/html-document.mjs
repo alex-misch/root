@@ -1,11 +1,14 @@
 
-import { HTMLElement } from './html-element.mjs'
+import { HTMLElement } from './html-element'
+import { customElements } from './custom-elements'
+
 class HTMLDocument extends HTMLElement {
 
-	constructor() {
+	constructor(baseURI) {
 		super()
 		this.body = new HTMLElement('body')
 		this.head = new HTMLElement('head')
+		this.baseURI = baseURI
 	}
 
 	createTextNode(content) {
@@ -17,7 +20,14 @@ class HTMLDocument extends HTMLElement {
 	}
 
 	createElement(tag) {
-		return new HTMLElement(tag)
+		const CustomElement = customElements.get(tag)
+		if (CustomElement) {
+			const instance = new CustomElement.constructor(tag)
+			instance.tagName = tag
+			return instance
+		} else {
+			return new HTMLElement(tag)
+		}
 	}
 
 	get implementation() {

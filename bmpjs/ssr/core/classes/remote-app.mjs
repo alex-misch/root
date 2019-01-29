@@ -21,6 +21,7 @@ class BmpRemoteApp {
 
 		/** Create enviroment of vitrual machine and start it */
 		const vmContext = HTML5Api({
+			baseURI: clientRequest.static,
 			url: clientRequest.origin + clientRequest.uri,
 			userAgent: clientRequest.userAgent
 		})
@@ -73,15 +74,13 @@ class BmpRemoteApp {
 			arrCss = Object.keys( CssJS.componentsRegistry ).map( name => {
 				return CssJS.componentsRegistry[name].stringify()
 			})
-			// console.log(arrCss)
 		}
 		try {
 			const shell = Application.constructor.generateDocument({
 				html,
 				head: this.vm.getContext().document.head.innerHTML,
 				lang: 'en',
-				css: arrCss.join(''),
-				js: 'window.config = {}'
+				css: arrCss.join('')
 			})
 			return { html: shell, statusCode: 200 }
 		} catch (err) {
