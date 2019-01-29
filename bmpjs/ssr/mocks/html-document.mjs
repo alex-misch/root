@@ -8,8 +8,8 @@ class HTMLDocument extends HTMLElement {
 		this.head = new HTMLElement('head')
 	}
 
-	createTextNode() {
-		return ''
+	createTextNode(content) {
+		return content
 	}
 
 	getElementById() {

@@ -1,13 +1,22 @@
 import VirtualMachine from './virtual-machine'
 import { download } from '../../utils/file.mjs'
 import { HTML5Api } from "../../mocks/html5.mjs";
+import HTMLAdapter from '../interfaces/html-adapter.mjs';
 
 class BmpRemoteApp {
 
+	/**
+	 * Configurating app and start virtual machine to run code
+	 * @constructor
+	 * @param { Object } { clientRequest, htmlAdapter, entrypoint }
+	 *
+	 */
 	constructor({ clientRequest, htmlAdapter, entrypoint }) {
-		/** Implementation */
+		/** @param { HTMLAdapter } htmlAdapter adapter of html5 stringifier */
 		this.htmlAdapter = htmlAdapter
+		/** @param {String} entrypoint script URL  */
 		this.entrypoint = entrypoint
+		/** @param {Object} clientRequest key-value pair object with client request */
 		this.clientRequest = clientRequest
 
 		/** Create enviroment of vitrual machine and start it */
@@ -18,8 +27,13 @@ class BmpRemoteApp {
 		this.vm = new VirtualMachine(vmContext)
 	}
 
+	/**
+	 * Returns file content by it URL
+	 * @param url file to fetch
+	 * @return {String} source of fetched file
+	 */
 	async fetch(url) {
-		console.log('fetch', url)
+		// console.log('fetch', url)
 		try {
 			return await download( url )
 		} catch ( error ) {
@@ -28,6 +42,10 @@ class BmpRemoteApp {
 	}
 
 
+	/**
+	 * Generate html by configured app
+	 * @return { Object } { html, statusCode }
+	 */
 	async render() {
 		/** Run main application file  */
 		const sourceCode = await this.fetch( this.entrypoint )
@@ -50,19 +68,24 @@ class BmpRemoteApp {
 		const html = await this.htmlAdapter.stringify( appInstance, CssJS )
 
 		// generate styles of document
-		const arrCss = Object.keys( CssJS.componentsRegistry ).map( name => {
-			return CssJS.componentsRegistry[name].stringify()
-		})
+		let arrCss = []
+		if (CssJS) {
+			arrCss = Object.keys( CssJS.componentsRegistry ).map( name => {
+				return CssJS.componentsRegistry[name].stringify()
+			})
+			// console.log(arrCss)
+		}
 		try {
 			const shell = Application.constructor.generateDocument({
 				html,
+				head: this.vm.getContext().document.head.innerHTML,
 				lang: 'en',
-				css: arrCss.join(),
+				css: arrCss.join(''),
 				js: 'window.config = {}'
 			})
 			return { html: shell, statusCode: 200 }
 		} catch (err) {
-			console.log('Fail to render', err)
+			console.error('Fail to render', err)
 			process.exit( 1 )
 		}
 

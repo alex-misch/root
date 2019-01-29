@@ -5,7 +5,7 @@ import BmpRemoteApp from './core/classes/remote-app'
 import VirtualDOMAdapter from './adapters/html/virtual-dom'
 import pack from "./package.json"
 
-const args = getProcessArguments('url', 'headers')
+const args = getProcessArguments('url', 'headers', 'user-agent', 'ip')
 if ( !args.url ) {
 	throw new Error( 'Please specify request url as cli-argument' )
 }
@@ -15,7 +15,7 @@ global.request = {
 	origin: args.origin || "https://jetsmarter.com",
 	uri: args.url,
 	ip: args.ip,
-	userAgent: args.userAgent || 'Google Chrome'
+	userAgent: args['user-agent'] || 'Google Chrome'
 }
 
 
@@ -35,7 +35,7 @@ const render = async (clientRequest, entrypoint) => {
 			mime: 'text/html'
 		}
 		process.stdout.write( JSON.stringify(output) )
-		process.exit(0)
+		// process.exit(0)
 	} catch ( err ) {
 		console.error( 'Fail to render:', err )
 		process.exit(1)

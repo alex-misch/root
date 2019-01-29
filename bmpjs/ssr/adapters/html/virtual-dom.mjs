@@ -65,14 +65,16 @@ class VirtualDomAdapter extends HTMLAdapter {
 			if ( component ) {
 				let innerVirtualDOM = await this.render(component)
 				if (innerVirtualDOM)
-					insideContent = await this.stringify(innerVirtualDOM, cssjs)
-			} else if (children && children.length) {
-				insideContent = await this.stringify(children, cssjs)
-			} else {
-				insideContent = props.safeHTML || ''
+					insideContent += await this.stringify(innerVirtualDOM, cssjs)
+			}
+			if (children && children.length) {
+				insideContent += await this.stringify(children, cssjs)
+			}
+			if (props.safeHTML) {
+				insideContent += props.safeHTML
 			}
 
-			return `<${ tagName }${ component && this.stringifyProps( component.attributes ) } ssr>${ insideContent }</${ tagName }>`
+			return `<${ tagName }${ this.stringifyProps( component ? component.attributes : props ) } ssr>${ insideContent }</${ tagName }>`
 		}
 	}
 

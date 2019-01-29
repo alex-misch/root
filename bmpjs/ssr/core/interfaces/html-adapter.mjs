@@ -19,8 +19,8 @@ class HTMLAdapter {
 	 * Skip all except string, boolean and numbers in props
 	 * @param { Object } props
 	 * @example
-	 * stringifyProps({ class: 'hello', rel: 'link', onclick: function() {} })
-	 * // -> String( 'class="hello" rel="link"' )
+	 * const f = stringifyProps({ class: 'hello', rel: 'link', onclick: function() {} })
+	 * f === `class="hello" rel="link"` // true
 	 *
 	 */
 	stringifyProps(props) {

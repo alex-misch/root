@@ -4,7 +4,7 @@
   "description": "run ECMA SCRIPT Modules on server",
   "main": "index.mjs",
   "scripts": {
-    "render": "node --experimental-modules --no-warnings --experimental-vm-modules render.mjs --url=/about/",
+    "render": "node --experimental-modules --no-warnings --experimental-vm-modules render.mjs --url=/",
     "sitemap": "node --experimental-modules --experimental-vm-modules sitemap.mjs",
     "dockerstart": "docker-compose exec ssrbmp sh -c 'npm run render'",
     "test": "test"

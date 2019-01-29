@@ -10,7 +10,15 @@ collection:
       #   name: Get
 
       - type: process
-        cmd: node --experimental-modules --no-warnings --experimental-vm-modules ./bmpjs/ssr/render.mjs --url=/{{url "url"}}
+        cmd: >
+          node
+          --experimental-modules
+          --no-warnings
+          --experimental-vm-modules
+          ./bmpjs/ssr/render.mjs
+          --url=/{{url "url"}}
+          --user-agent='{{meta "ua"}}'
+          --ip={{meta "ip"}}
 
       # - type: process
         # cmd: 'echo {"status": {{q "status"}}, "content": "URL: {{url "url"}}, IP: {{meta "ip"}}, UA: {{meta "ua"}}"}'

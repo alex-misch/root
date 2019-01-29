@@ -32,6 +32,7 @@ services:
     restart: always
     volumes:
       - ./ssr:/ssr
+      - ../../../jetsmarter/bmp/js.com.v5/dist:/ssr/source
     working_dir: /ssr
     # entrypoint: node
     command: tail -f /dev/null

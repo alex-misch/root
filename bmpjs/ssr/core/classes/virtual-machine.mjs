@@ -24,7 +24,9 @@ const genURL = (root, to) => {
 class VirtualMachine {
 
 	/**
-	 * @constant
+	 * Starts virtual machine with passed context
+	 * @constructor
+	 * @param {Object} context of virtual machine
 	 */
   constructor (context) {
 		this.cache = {}
@@ -33,6 +35,7 @@ class VirtualMachine {
 			...context,
 			window: context
 		}
+		// Add observe to context to catch errors
 		const contextProxy = new Proxy(domContext, {
 			get(target, property) {
 				if (!target[property]) {
@@ -47,10 +50,14 @@ class VirtualMachine {
 		this.context = vm.createContext(contextProxy)
 	}
 
+	getContext() {
+		return this.context
+	}
+
 	/**
 	 * Load all dependencies of ECMAScript code and execute it in sandbox with passed context
 	 * @param {Object} { code, context, selfurl } of module
-	 * @return { String } last return of script
+	 * @return {String} last return of script
 	 */
   async run({ code = null, rootUrl = '' }) {
 
@@ -87,23 +94,26 @@ class VirtualMachine {
 		if ( this.cache[url] )
 			return this.cache[url]
 
+		this.cache[url] = await download( url )
+		return this.cache[url]
 		// load file from remote
-		try {
-			// TODO: make it more flexible
-			if ( dependencePath === './config.js' ) {
-				console.log( 'Skip dependency', dependencePath )
-				return 'export {};' // config is empty, all config is already here
-			} else {
-				// console.log( 'Load dependency', dependencePath, ' from ', url )
-				this.cache[url] = await download( url )
-				return this.cache[url]
-			}
+		// try {
+		// 	// TODO: make it more flexible
+		// 	if ( dependencePath === './config.js' ) {
+		// 		console.log( 'Skip dependency', dependencePath )
+		// 		return 'export {};' // config is empty, all config is already here
+		// 	} else {
+		// 		// console.log( 'Load dependency', dependencePath, ' from ', url )
+		// 		this.cache[url] = await download( url )
+		// 		return this.cache[url]
+		// 	}
 
-		} catch ( error ) {
-			throw new Error(`\nUnable to get file content: ${error}\n`)
-		}
+		// } catch ( error ) {
+		// 	throw new Error(`\nUnable to get file content: ${error}\n`)
+		// }
 	}
 
+	/** Link module of throw error */
 	async link(vmModule, linker) {
     try {
       await vmModule.link( linker )
@@ -112,6 +122,7 @@ class VirtualMachine {
     }
 	}
 
+	/** Instantiate module of throw error */
 	instantiate(vmModule) {
     try {
       vmModule.instantiate()
@@ -120,12 +131,16 @@ class VirtualMachine {
     }
 	}
 
+	/**
+	 * Compute module
+	 * @param {vm.SourceTextModule} vmModule module to evaluate
+	 * @return {*} result of module evaluator
+	 */
 	async evaluate(vmModule) {
     try {
 			const result = await vmModule.evaluate()
 			return result
     } catch ( error ) {
-			console.log( error )
       throw new Error(`\nUnable to evaluate module: ${ error }\n`)
     }
 	}
