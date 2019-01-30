@@ -30,10 +30,10 @@ const selfClosedTags = [
 	'source',
 	'track',
 	'wbr'
-
 ]
 const skipProps = ['safeHTML']
 const transformPropKey = key => key == 'className' ? 'class' : key
+
 
 /**
  * Stringify props from object to HTML tag view
@@ -49,6 +49,7 @@ const stringifyProps = props => {
 	return " " + Object.keys(props)
 			.filter( key => ['string', 'boolean', 'number'].includes( typeof props[key] ) )
 			.filter( key => !skipProps.includes(key) && (typeof key != 'boolean' || key !== false) )
+			.filter( key => !(transformPropKey(key) == 'class' && !props[key]) )
 			.map( key => `${ transformPropKey(key) }="${ escapeHtml(props[key]) }"` )
 			.join(' ')
 }

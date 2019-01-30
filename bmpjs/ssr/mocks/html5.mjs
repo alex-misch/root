@@ -5,11 +5,22 @@ import { DOMException } from './dom-exception.mjs';
 import { CustomElements, customElements } from "./custom-elements.mjs";
 import { Navigator } from "./navigator"
 import fetch from 'node-fetch-polyfill'
+import { Console } from 'console'
+import { Writable } from 'stream'
 
-/** NOTE: it is hardcode of */
 URL.prototype.replace = () => {}
 
+const appLogger = {
+	warn: (...args) => console.warn('[APP CONSOLE]',...args),
+	stdout: new Writable(),
+	stderr: new Writable()
+}
+
+appLogger.stdout.on('pipe', appLogger.warn)
+appLogger.stderr.on('pipe', appLogger.warn)
+
 const HTML5Api = ({ url, userAgent, baseURI }) => ({
+	console: new Console(appLogger),
 	/** HTML5 Api */
 	HTMLElement,
 	MutationObserver: class {
@@ -45,7 +56,7 @@ const HTML5Api = ({ url, userAgent, baseURI }) => ({
 	apiGateway: 'https://api.jetsmarter.com',
 	IS_SSR: true,
 	location: new URL(`https://${url}`),
-	window: HTML5Api
+	window: {}
 })
 
 

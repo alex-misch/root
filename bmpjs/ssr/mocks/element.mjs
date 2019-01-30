@@ -1,4 +1,5 @@
 import { stringifyProps } from "../utils/html.mjs";
+import { selfClosedTags } from "../utils/html.mjs";
 
 class Element {
 
@@ -19,7 +20,6 @@ class Element {
 	insertAdjacentElement() {}
 	insertAdjacentHTML() {}
 
-
 	get innerHTML() {
 		return this.childNodes.map( child => {
 			return child instanceof Element ? child.outerHTML : child.toString()
@@ -27,7 +27,11 @@ class Element {
 	}
 
 	get outerHTML() {
-		return `<${this.tagName}${ stringifyProps(this.attributes) } ssr>${ this.innerHTML }</${this.tagName}>`
+		const props = stringifyProps(this.attributes)
+		if ( selfClosedTags.includes(this.tagName) )
+			return `<${this.tagName}${ props } ssr />`
+		else
+			return `<${this.tagName}${ props } ssr>${ this.innerHTML }</${this.tagName}>`
 	}
 
 	/** Web Components api */
@@ -37,7 +41,9 @@ class Element {
 	get slot() { return '' }
 
 	/** Working with attributes */
-	hasAttribute(key) { return this._attributes.hasOwnProperty(key) }
+	hasAttribute(key) {
+		return this._attributes.hasOwnProperty(key)
+	}
 	getAttributeNames() {}
 	getAttributeNS() {}
 
@@ -54,7 +60,7 @@ class Element {
 	}
 
 	set attributes(props) {
-		this._attributes = props
+		this._attributes = props || {}
 	}
 
 	get classList() {

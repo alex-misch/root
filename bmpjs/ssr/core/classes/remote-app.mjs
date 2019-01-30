@@ -66,7 +66,8 @@ class BmpRemoteApp {
 		// so we must call this method from constructor
 		const appInstance = this.htmlAdapter.constructor.createElement( Application.tagName )
 		// render html string with attached css selectors
-		const html = await this.htmlAdapter.stringify( appInstance, CssJS )
+		/** @var {HTMLElement} appElement */
+		const appElement = await this.htmlAdapter.convertToHTML( appInstance )
 
 		// generate styles of document
 		let arrCss = []
@@ -77,7 +78,7 @@ class BmpRemoteApp {
 		}
 		try {
 			const shell = Application.constructor.generateDocument({
-				html,
+				html: appElement.outerHTML,
 				head: this.vm.getContext().document.head.innerHTML,
 				lang: 'en',
 				css: arrCss.join('')
