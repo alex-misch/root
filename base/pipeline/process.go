@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"os/exec"
-	"strings"
 
 	"github.com/boomfunc/root/base/tools"
 )
@@ -44,8 +43,8 @@ func (p *process) run(ctx context.Context) error {
 	stderr := new(bytes.Buffer)
 
 	// fill templates from ctx
-	parts := strings.Split(
-		tools.StringFromCtx(ctx, p.cmd), " ",
+	parts := tools.ShellSplit(
+		tools.StringFromCtx(ctx, p.cmd),
 	)
 
 	// create command with cancel functinality
