@@ -25,6 +25,7 @@ func TestCLISplit(t *testing.T) {
 			-opt5 "foo's bar"
 			-opt6 "foo\"s bar"
 			  --opt7='foo= bar "baz"'
+			--opt8='HEAD / HTTP/1.1\\r\\n\\r\\n'
 			cmd  `,
 			[]string{
 				"bin",           // multiline (not trimmed)
@@ -35,13 +36,17 @@ func TestCLISplit(t *testing.T) {
 				"--opt4=foo bar",     // escaped group by quote (weak) with space
 				"-opt5", "foo's bar", // quote in quoted group (another)
 				"-opt6", "foo\"s bar", // quote in quoted group (same)
-				"--opt7=foo= bar \"baz\"", // quote in quoted group (another) (not trimmed)
-				"cmd",                     // (not trimmed)
+				"--opt7=foo= bar \"baz\"",            // quote in quoted group (another) (not trimmed)
+				"--opt8=HEAD / HTTP/1.1\\r\\n\\r\\n", // special symbols in argument (\r or \n or \t) (additional escaping - look at `special symbols` section below)
+				"cmd",                                // (not trimmed)
 			},
 		},
 		// extra cases
 		{"bin --opt=\\'foo bar", []string{"bin", "--opt='foo", "bar"}}, // escape quote at beginning
 		{"bin --opt='foo bar", []string{"bin", "--opt='foo bar"}},      // non closing quote
+		// special symbols
+		{"bin --opt='HEAD / HTTP/1.1\r\n\r\n'", []string{"bin", "--opt=HEAD / HTTP/1.1\r\n\r\n"}},         // special symbols through quoting
+		{`bin --opt='HEAD / HTTP/1.1\\r\\n\\r\\n'`, []string{"bin", "--opt=HEAD / HTTP/1.1\\r\\n\\r\\n"}}, // special symbols through backticks
 	}
 
 	for i, tt := range tableTests {

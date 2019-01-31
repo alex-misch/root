@@ -10,18 +10,23 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// NOTE:
+// configs for yaml source wrapped in backticks (for multiline string)
+// therefore \r and \n must be escaped additionally.
+// For example: \r becomes \\r, etc
+
 const YAMLROUTE = `# Route
 pattern: "/data/{*}.jpg"
 pipeline:
 
   - type: process
-    cmd: "echo 'HEAD / HTTP/1.1\r\n\r\n'"
+    cmd: echo 'HEAD / HTTP/1.1\\r\\n\\r\\n'
 
   - type: tcp
     address: golang.org:80
 
   - type: process
-    cmd: "cat /dev/stdin"`
+    cmd: cat /dev/stdin`
 
 const YAML = `collection:
 
@@ -37,20 +42,17 @@ const YAML = `collection:
   pipeline:
 
     - type: process
-      cmd: "echo 'HEAD / HTTP/1.1\r\n\r\n'"
-
-    - type: tcp
-      address: golang.org:80
+      cmd: echo 'HEAD / HTTP/1.1\\r\\n\\r\\n'
 
     - type: process
-      cmd: "cat /dev/stdin"
+      cmd: cat /dev/stdin
 
 # Route
 - pattern: "{*}"
   pipeline:
 
     - type: process
-      cmd: "echo 'nobody home...'"`
+      cmd: echo -n 'nobody home...'`
 
 // func TestUnmarshalYAML(t *testing.T) {
 // 	t.Run("route", func(t *testing.T) {
@@ -137,8 +139,8 @@ func TestRouteUnmarshalYAML(t *testing.T) {
 		}
 
 		// check result
-		if outputString := fmt.Sprint(ctx.Value("output")); outputString != "'nobody home...'\n" {
-			t.Fatalf("Expected %q, got %q", "'nobody home...'\n", outputString)
+		if outputString := fmt.Sprint(ctx.Value("output")); outputString != "nobody home..." {
+			t.Fatalf("Expected %q, got %q", "nobody home...", outputString)
 		}
 	})
 }
