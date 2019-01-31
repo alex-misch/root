@@ -43,7 +43,7 @@ func (p *process) run(ctx context.Context) error {
 	stderr := new(bytes.Buffer)
 
 	// fill templates from ctx
-	parts := tools.ShellSplit(
+	parts := tools.CLISplit(
 		tools.StringFromCtx(ctx, p.cmd),
 	)
 

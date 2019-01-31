@@ -6,35 +6,47 @@ import (
 	"testing"
 )
 
-func TestShellSplit(t *testing.T) {
+func TestCLISplit(t *testing.T) {
 	tableTests := []struct {
 		input  string
 		output []string
 	}{
-		// common cases
+		// nil cases
 		{"", nil},
-		{"bin", []string{"bin"}},
-		{"bin cmd", []string{"bin", "cmd"}},
-		{"bin -opt cmd", []string{"bin", "-opt", "cmd"}},
-		{"bin -opt arg cmd", []string{"bin", "-opt", "arg", "cmd"}},
-		{"bin -opt arg --option=arg cmd", []string{"bin", "-opt", "arg", "--option=arg", "cmd"}},
-		{"bin -opt1 arg1 --opt2=arg2 -opt3=arg3 cmd", []string{"bin", "-opt1", "arg1", "--opt2=arg2", "-opt3=arg3", "cmd"}},
-		// escaping and quoting cases
-		{`bin 'foo bar'`, []string{"bin", "foo bar"}},
-		{`bin "foo bar"`, []string{"bin", "foo bar"}},
-		{`bin --option="foo bar"`, []string{"bin", "--option=foo bar"}},
-		{`bin --option="foo's bar"`, []string{"bin", "--option=foo's bar"}},
-		{"bin --option=`foo\"s 'baz' bar`", []string{"bin", "--option=foo\"s 'baz' bar"}},
-		{"bin --option='foo's bar'", []string{"bin", "--option=foo's bar"}}, // escaped inside argument
-		// space trimmed cases
-		{" ", nil},
-		{` bin --option="foo bar"  `, []string{"bin", "--option=foo bar"}},
-		{` bin   --option="foo bar"  `, []string{"bin", "--option=foo bar"}}, // multiple spaces in the middle
+		{" ", nil}, // space trimmed cases
+		// complex case
+		{
+			`  bin
+			-opt1 arg1
+			--opt2=arg2
+			--opt2.5 foo\ bar
+			--opt3 'foo bar'
+			--opt4="foo bar"
+			-opt5 "foo's bar"
+			-opt6 "foo\"s bar"
+			  --opt7='foo= bar "baz"'
+			cmd  `,
+			[]string{
+				"bin",           // multiline (not trimmed)
+				"-opt1", "arg1", // simple
+				"--opt2=arg2",         // another simple
+				"--opt2.5", "foo bar", // escaped single space
+				"--opt3", "foo bar", // escaped group by quote (string) with space
+				"--opt4=foo bar",     // escaped group by quote (weak) with space
+				"-opt5", "foo's bar", // quote in quoted group (another)
+				"-opt6", "foo\"s bar", // quote in quoted group (same)
+				"--opt7=foo= bar \"baz\"", // quote in quoted group (another) (not trimmed)
+				"cmd",                     // (not trimmed)
+			},
+		},
+		// extra cases
+		{"bin --opt=\\'foo bar", []string{"bin", "--opt='foo", "bar"}}, // escape quote at beginning
+		{"bin --opt='foo bar", []string{"bin", "--opt='foo bar"}},      // non closing quote
 	}
 
 	for i, tt := range tableTests {
 		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-			if output := ShellSplit(tt.input); !reflect.DeepEqual(output, tt.output) {
+			if output := CLISplit(tt.input); !reflect.DeepEqual(output, tt.output) {
 				t.Fatalf("Expected %q, got %q", tt.output, output)
 			}
 		})
