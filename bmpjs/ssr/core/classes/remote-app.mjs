@@ -1,6 +1,6 @@
 import VirtualMachine from './virtual-machine'
 import { download } from '../../utils/file.mjs'
-import { HTML5Api } from "../../mocks/html5.mjs";
+import { HTML5Api } from "../../dom/html5.mjs";
 import HTMLAdapter from '../interfaces/html-adapter.mjs';
 
 class BmpRemoteApp {
@@ -68,7 +68,6 @@ class BmpRemoteApp {
 		// render html string with attached css selectors
 		/** @var {HTMLElement} appElement */
 		const appElement = await this.htmlAdapter.convertToHTML( appInstance )
-
 		// generate styles of document
 		let arrCss = []
 		if (CssJS) {
@@ -78,6 +77,7 @@ class BmpRemoteApp {
 		}
 		try {
 			const shell = Application.constructor.generateDocument({
+				baseURI: this.clientRequest.static,
 				html: appElement.outerHTML,
 				head: this.vm.getContext().document.head.innerHTML,
 				lang: 'en',

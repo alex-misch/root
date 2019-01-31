@@ -1,4 +1,3 @@
-
 /**
  * Escape (encode) &, <, >, ", ' symbols via HTML specification
  * @param { String } text

@@ -1,6 +1,7 @@
 import HTMLAdapter from '../../core/interfaces/html-adapter'
-import { customElements } from '../../mocks/custom-elements'
-import { HTMLElement } from '../../mocks/html-element.mjs';
+import { customElements } from '../../dom/custom-elements'
+import { HTMLElement } from '../../dom/html-element.mjs';
+import { HTMLDocument } from '../../dom/html-document.mjs';
 
 /**
  * Server-size Virtual Dom objects converter to HTML DOM instances
@@ -36,8 +37,8 @@ class VirtualDomAdapter extends HTMLAdapter {
 	 * @param cssjs css of this instances
 	 */
 	async arrayToHTML(instances) {
-		const strigifiers = instances.map( async inst => await this.convertToHTML(inst) )
-		return await Promise.all(strigifiers)
+		const converters = instances.map( async inst => await this.convertToHTML(inst) )
+		return await Promise.all(converters)
 	}
 
 	/**
@@ -48,7 +49,8 @@ class VirtualDomAdapter extends HTMLAdapter {
 	async virtualDOMtoHTML(instance) {
 
 		let { type: tagName, props, children = [] } = instance
-		const element = await this.createHTMLInstance( tagName, props )
+		let element = HTMLDocument.createElement(tagName)
+		element.attributes = props
 		await this.render(element, children)
 		return element
 	}
@@ -88,7 +90,7 @@ class VirtualDomAdapter extends HTMLAdapter {
 			arrChilds.push(component.getAttribute('safeHTML'))
 
 		if ( typeof component.render == 'function' ) {
-			// like a virtualDOM component
+			//  most likely a virtualDOM component
 			if ( typeof component.ready == 'function' )
 				await component.ready()
 			if ( typeof component.onAttached == 'function' )
@@ -96,31 +98,13 @@ class VirtualDomAdapter extends HTMLAdapter {
 
 			arrChilds.push( await component.render() )
 		} else if ( typeof component.connectedCallback == 'function' ) {
-			// customElement
+			// most likely a customElement
 			await component.connectedCallback()
 			arrChilds.push( ...component.childNodes )
 		}
 		component.childNodes = await this.convertToHTML(arrChilds)
 	}
 
-	/**
-	 * Creates instnace of customElement or HTMLElement
-	 * @param tagName tag of element
-	 * @param attrs attributes of element
-	 * @return { HTMLElement|BMPVDWebComponent } component
-	 */
-	async createHTMLInstance(tagName, attrs) {
-		const componentClass = customElements.get(tagName)
-		let componentInstance = null
-		if (componentClass) {
-			componentInstance = new componentClass.constructor()
-		} else {
-			componentInstance = new HTMLElement(tagName)
-		}
-		componentInstance.attributes = attrs
-		componentInstance.tagName = tagName
-		return componentInstance
-	}
 
 }
 

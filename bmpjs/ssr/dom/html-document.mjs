@@ -19,7 +19,21 @@ class HTMLDocument extends HTMLElement {
 		return new HTMLElement('div')
 	}
 
+	/**
+	 * calls static createElement method
+	 * @param tag
+	 */
 	createElement(tag) {
+		return HTMLDocument.createElement(tag)
+	}
+
+	/**
+	 * Creates instnace of customElement or HTMLElement
+	 * @param tagName tag of element
+	 * @param attrs attributes of element
+	 * @return { HTMLElement|BMPVDWebComponent } component
+	 */
+	static createElement(tag) {
 		const CustomElement = customElements.get(tag)
 		if (CustomElement) {
 			const instance = new CustomElement.constructor(tag)

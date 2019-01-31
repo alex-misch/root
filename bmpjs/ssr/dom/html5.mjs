@@ -46,9 +46,7 @@ const HTML5Api = ({ url, userAgent, baseURI }) => ({
 	// 	return fetch(...args)
 	// },
 
-	/** BMP Mocks */
-	BMPCSSJS: { },
-	mdc: {},
+	/** BMP api */
 
 	/** Contants */
 	/** TODO: move it to dynamic variables (m.b. from CLI ) */
