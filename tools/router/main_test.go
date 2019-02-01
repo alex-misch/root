@@ -54,6 +54,7 @@ func TestRoute(t *testing.T) {
 			{"{url:*}", "/foobar", map[string]string{"url": "/foobar"}},
 			{"{url:*}", "foobar", map[string]string{"url": "foobar"}},
 			{"{url:*}", "/foobar/", map[string]string{"url": "/foobar/"}},
+			{"/{url:*}", "/foobar/", map[string]string{"url": "/foobar/"}}, // if pattern bigins with slash - ignore
 			// leading `/` optional
 			{"foo/{url:*}", "/foo/bar", map[string]string{"url": "bar"}},
 			{"foo/{url:*}", "foo/bar", map[string]string{"url": "bar"}},
