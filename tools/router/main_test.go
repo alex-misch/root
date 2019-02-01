@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/boomfunc/root/tools/flow"
+	"github.com/boomfunc/root/tools/router/ql"
 )
 
 func TestRoute(t *testing.T) {
@@ -37,6 +38,32 @@ func TestRoute(t *testing.T) {
 			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
 				if out := route.Match(tt.uri); out != tt.out {
 					t.Fatalf("Expected '%t', got '%t'", tt.out, out)
+				}
+			})
+		}
+	})
+
+	t.Run("MatchParams", func(t *testing.T) {
+		tableTests := []struct {
+			pattern string // pattern from config
+			uri     string // incoming uri
+			params  map[string]string
+		}{
+			// group - first, including leading `/
+			{"{url:*}", "/", map[string]string{"url": "/"}},
+			{"{url:*}", "/foobar", map[string]string{"url": "/foobar"}},
+			{"{url:*}", "foobar", map[string]string{"url": "foobar"}},
+			{"{url:*}", "/foobar/", map[string]string{"url": "/foobar/"}},
+			// leading `/` optional
+			{"foo/{url:*}", "/foo/bar", map[string]string{"url": "bar"}},
+			{"foo/{url:*}", "foo/bar", map[string]string{"url": "bar"}},
+		}
+
+		for i, tt := range tableTests {
+			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+				route := Route{Pattern: ql.Regexp(tt.pattern)}
+				if params, _ := route.MatchParams(tt.uri); !reflect.DeepEqual(params, tt.params) {
+					t.Fatalf("Expected '%v', got '%v'", tt.params, params)
 				}
 			})
 		}

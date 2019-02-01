@@ -17,7 +17,9 @@ func Regexp(source string) *regexp.Regexp {
 	})
 
 	expr = strings.TrimLeft(expr, "/^") // trim from left all special regex chars
-	expr = fmt.Sprintf("^/?%s", expr)   // string begin with non required leading /
+	// string begin with non required leading `/`
+	// NOTE: leading `/` must be lazy because if URL begins with capturing group therefore slash must be included
+	expr = fmt.Sprintf("^/??%s", expr)
 
 	return regexp.MustCompile(expr)
 }
