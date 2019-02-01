@@ -79,13 +79,17 @@ func (app *Application) Handle(fl *flow.Data) {
 	// NOTE: if we suddenly want to run through flow.Group - with pipe this idea will fail
 	// because pw without reader will hang
 	err = executor.Concurrent(
+
+		// First part is writing to pipe `pipeline`'s output
 		executor.Func(func(ctx context.Context) error {
-			return route.Run(ctx, req.Input, pw) // TODO: hungs here
+			return route.Run(ctx, req.Input, pw)
 		}),
+
+		// Another part is reading chunks from pipe and writes to response
 		executor.Func(func(ctx context.Context) error {
 			return app.packer.Pack(ctx, pr, fl.RWC)
 		}),
-	).Run(ctx) // TODO: hungs here
+	).Run(ctx)
 
 	return
 }
