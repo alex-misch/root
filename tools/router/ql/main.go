@@ -16,10 +16,11 @@ func Regexp(source string) *regexp.Regexp {
 		return NewBracket(source).String()
 	})
 
-	expr = strings.TrimLeft(expr, "/^") // trim from left all special regex chars
-	// string begin with non required leading `/`
-	// NOTE: leading `/` must be lazy because if URL begins with capturing group therefore slash must be included
-	expr = fmt.Sprintf("^/??%s", expr)
+	expr = strings.TrimLeft(expr, "^")  // trim from left all special regex chars
+	expr = strings.TrimRight(expr, "$") // trim from right all special regex chars
+	// DEPRECATED: string begin with non required leading `/`
+	// DEPRECATED: NOTE: leading `/` must be lazy because if URL begins with capturing group therefore slash must be included
+	expr = fmt.Sprintf("^%s$", expr)
 
 	return regexp.MustCompile(expr)
 }

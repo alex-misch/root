@@ -49,14 +49,11 @@ func TestRoute(t *testing.T) {
 			uri     string // incoming uri
 			params  map[string]string
 		}{
-			// group - first, including leading `/
+			{"/{url:*}", "/", map[string]string{"url": ""}},
 			{"{url:*}", "/", map[string]string{"url": "/"}},
-			{"{url:*}", "/foobar", map[string]string{"url": "/foobar"}},
-			{"{url:*}", "foobar", map[string]string{"url": "foobar"}},
+			{"/{url:*}", "/foobar/", map[string]string{"url": "foobar/"}},
 			{"{url:*}", "/foobar/", map[string]string{"url": "/foobar/"}},
-			{"/{url:*}", "/foobar/", map[string]string{"url": "/foobar/"}}, // if pattern bigins with slash - ignore
-			// leading `/` optional
-			{"foo/{url:*}", "/foo/bar", map[string]string{"url": "bar"}},
+			{"/foo/{url:*}", "/foo/bar", map[string]string{"url": "bar"}},
 			{"foo/{url:*}", "foo/bar", map[string]string{"url": "bar"}},
 		}
 
