@@ -68,7 +68,7 @@ func (packer *httpPacker) Pack(ctx context.Context, r io.Reader, w io.Writer) er
 	}
 
 	// generate response
-	response := &http.Response{
+	response := http.Response{
 		Status:     http.StatusText(status),
 		StatusCode: status,
 		Proto:      packer.request.Proto,
@@ -76,13 +76,14 @@ func (packer *httpPacker) Pack(ctx context.Context, r io.Reader, w io.Writer) er
 		ProtoMinor: packer.request.ProtoMinor,
 		Body:       tools.ReadCloser(r),
 		Request:    packer.request,
+		Header:     make(http.Header, 0),
 	}
 
 	defer response.Body.Close()
+	// BUG with HEAD Method:
+	// https://play.golang.org/p/B84EotwMb2J
 
-	// headers section
-	response.Header = make(http.Header)
-
+	// HEADERS SECTION
 	// CORS ISSUE while not structured application layer
 	if packer.request.Header.Get("Origin") != "" {
 		// TODO TODO
@@ -91,7 +92,8 @@ func (packer *httpPacker) Pack(ctx context.Context, r io.Reader, w io.Writer) er
 		response.Header.Set("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
 		// TODO TODO
 	}
-	// get some additional runtime headers (if exists)
+
+	// Custom headers. Get some additional runtime headers (if exists)
 	more, ok := storage.Get("http", "headers").(http.Header)
 	if ok { // additional headrs exists
 		for k := range more {

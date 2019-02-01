@@ -76,6 +76,8 @@ func (app *Application) Handle(fl *flow.Data) {
 	// Run pipeline (under app layer)
 	pr, pw := io.Pipe()
 	// we will run view through executor
+	// NOTE: if we suddenly want to run through flow.Group - with pipe this idea will fail
+	// because pw without reader will hang
 	err = executor.Concurrent(
 		executor.Func(func(ctx context.Context) error {
 			return route.Run(ctx, req.Input, pw) // TODO: hungs here

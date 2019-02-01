@@ -56,7 +56,7 @@ func run(ctx context.Context, objs ...Exec) error {
 		close[i] = flow.Func(obj.close)
 	}
 
-	return flow.Group( // TODO hungs here
+	return flow.Group(
 		// First step, prepare all layers (prepare, down only if error occured)
 		flow.Transaction(flow.Concurrent(prerun...), flow.Concurrent(close...), false),
 		// Second step, execute all layers concurrently (run, close anyway)
