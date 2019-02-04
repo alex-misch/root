@@ -3,16 +3,21 @@
 FROM boomfunc/base:latest as base
 
 # compile plugin
-RUN go build \
+FROM golang as plugin
+
+RUN mkdir -p /boomfunc/app \
+	\
+	&& go build \
 	-v \
 	-buildmode=plugin \
-	-o /boomfunc/base/ssr.so \
+	-o /boomfunc/app/ssr.so \
 	./
 
 # Prepare app code (some compiling and other)
 FROM node:10.9-alpine
 
 COPY --from=base /boomfunc/base /boomfunc/base
+COPY --from=plugin /boomfunc/app /boomfunc/app
 
 ADD . /boomfunc/app
 
