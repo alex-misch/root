@@ -3,11 +3,9 @@ import { getProcessArguments, requiredArgs } from './utils/arguments.mjs'
 
 import BmpRemoteApp from './core/classes/remote-app'
 import VirtualDOMAdapter from './adapters/html/virtual-dom'
-import pack from "./package.json"
 
 requiredArgs( 'url', 'src' )
 const args = getProcessArguments('url', 'headers', 'user-agent', 'ip', 'src', 'static')
-
 global.request = {
 	headers: (args.headers || {}),
 	uri: args.url,

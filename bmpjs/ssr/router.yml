@@ -2,7 +2,8 @@ collection:
 
   # Route
   # AWS ECS ping
-  - pattern: "{url:jetsmarter.com/*}"
+
+  - pattern: "/ssr/{url:*}"
     pipeline:
 
       # - type: plugin
@@ -16,11 +17,11 @@ collection:
           --no-warnings
           --experimental-vm-modules
           ./bmpjs/ssr/render.mjs
-          --url={{url "url"}}
+          --url=/{{url "url"}}
           --ip={{meta "ip"}}
           --src=/ssr/source/index.es.js
           --static=https://d35qz7xn7nfid5.cloudfront.net/ssr/ ./assets/img.jpg
-      # --user-agent='{{meta "ua"}}'
+          --user-agent='{{meta "ua"}}'
       # --src=https://d35qz7xn7nfid5.cloudfront.net/ssr/index.es.js
 
       # - type: process

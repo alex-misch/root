@@ -7,7 +7,10 @@ import { Navigator } from "./navigator"
 import fetch from 'node-fetch-polyfill'
 import { Console } from 'console'
 import { Writable } from 'stream'
-
+/**
+ * NodeJS doesn't support rewriting URL, but we are creating browser ENV
+ * so add replace support
+ */
 URL.prototype.replace = () => {}
 
 const appLogger = {
@@ -54,7 +57,10 @@ const HTML5Api = ({ url, userAgent, baseURI }) => ({
 	apiGateway: 'https://api.jetsmarter.com',
 	IS_SSR: true,
 	location: new URL(`https://${url}`),
-	window: {}
+	window: {
+		innerWidth: 0,
+		innerHeight: 0
+	},
 })
 
 

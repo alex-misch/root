@@ -17,7 +17,7 @@ jobs:
       - persist_to_workspace:
           root: ./bmpjs
           paths:
-            - bmp-core/*
+            - core/*
 
   build-router:
     docker:
@@ -35,7 +35,7 @@ jobs:
       - persist_to_workspace:
           root: ./bmpjs
           paths:
-            - bmp-router/*
+            - router/*
 
   deploy:
     docker:

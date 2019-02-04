@@ -17,9 +17,8 @@ class HTMLElement extends Element {
 	blur() {}
 	click() {}
 
-	querySelector() {
-		return new HTMLElement('div')
-	}
+	querySelector() { return new HTMLElement('div') }
+
 
 	querySelectorAll() {
 		return []

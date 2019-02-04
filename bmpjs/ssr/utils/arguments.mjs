@@ -15,7 +15,8 @@ const getProcessArguments = (...expectedNames) => {
 const requiredArgs = (...argNames) => {
 	const args = getProcessArguments(...argNames)
 	argNames.find( name => {
-		if (!args[name])
+		// TODO: strict mode
+		if (!args.hasOwnProperty(name))
 			throw new Error( `Please specify "${name}" cli-argument` )
 
 		return false
