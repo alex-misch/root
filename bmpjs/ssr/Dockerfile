@@ -11,6 +11,8 @@ WORKDIR /go/src/github.com/boomfunc/root/bmpjs/ssr
 
 RUN mkdir -p /boomfunc/app \
 	\
+	&& go get -d ./... \
+	\
 	&& go build \
 	-v \
 	-buildmode=plugin \
