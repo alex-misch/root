@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"strings"
 
 	"github.com/boomfunc/root/base/conf"
 	srvctx "github.com/boomfunc/root/base/server/context"
@@ -44,7 +45,8 @@ func (app *Application) Handle(fl *flow.Data) {
 	}()
 
 	// TODO: not here, but for now - good
-	ctx := context.WithValue(fl.Ctx, "db", kvs.New("http"))
+	db := kvs.New("http")
+	ctx := context.WithValue(fl.Ctx, "db", db)
 	// TODO
 
 	// Parse request
@@ -63,6 +65,15 @@ func (app *Application) Handle(fl *flow.Data) {
 		return
 	}
 
+	// TODO OH my god
+	// TODO: bad, very bad
+	if strings.HasPrefix(req.Url.RequestURI(), "/ssr") {
+		// workaround: set waiting for status
+		db.Set("http", "wait", true)
+	}
+	// TODO: bad, very bad
+	// TODO OH my god
+
 	// Get url query and save to context
 	values, err := srvctx.Values(ctx)
 	if err != nil {
@@ -75,6 +86,7 @@ func (app *Application) Handle(fl *flow.Data) {
 
 	// Run pipeline (under app layer)
 	pr, pw := io.Pipe()
+
 	// we will run view through executor
 	// NOTE: if we suddenly want to run through flow.Group - with pipe this idea will fail
 	// because pw without reader will hang

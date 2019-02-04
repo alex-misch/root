@@ -14,7 +14,7 @@ func TestDBPublic(t *testing.T) {
 			{nil, []string{"default"}},
 			{[]string{}, []string{"default"}},
 			{[]string{"foo"}, []string{"foo"}},
-			{[]string{"foo", ""}, []string{"foo", "default"}}, // TODO
+			// {[]string{"foo", ""}, []string{"foo", "default"}}, // TODO
 			{[]string{"foo", "bar"}, []string{"foo", "bar"}},
 		}
 

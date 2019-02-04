@@ -60,11 +60,16 @@ func (packer *httpPacker) Pack(ctx context.Context, r io.Reader, w io.Writer) er
 		return executor.ErrStepOrphan
 	}
 
+	var status int
 	// wait for http status code in storage
-	storage.Wait("http", "status")
-	status, ok := storage.Get("http", "status").(int)
-	if !ok {
-		return executor.ErrStepOrphan
+	if b, _ := storage.Get("http", "wait").(bool); b {
+		storage.Wait("http", "status")
+		status, ok = storage.Get("http", "status").(int)
+		if !ok {
+			return executor.ErrStepOrphan
+		}
+	} else {
+		status = 200
 	}
 
 	// generate response
