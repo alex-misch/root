@@ -3,7 +3,7 @@
 FROM boomfunc/base:latest as base
 
 # compile plugin
-FROM golang as plugin
+FROM circleci/golang:1.10 as plugin
 
 ADD . /go/src/github.com/ssr
 
