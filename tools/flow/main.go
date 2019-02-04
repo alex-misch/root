@@ -37,6 +37,7 @@ type pool interface {
 
 // Execute is universal runnner for all objects implements Step interface
 // Main idea is creating shared context with timeout and cancel functionality
+// NOTE: context cancellation support parent closing therefore nested .WithCancel() - normal
 func Execute(step Step) error {
 	// Pre Phase. NOTE: step might be nil -> we need to check if it makes sense at all
 	if step == nil {

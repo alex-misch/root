@@ -134,7 +134,9 @@ func (group *async) close(cancel context.CancelFunc) {
 }
 
 func (group *async) Run(ctx context.Context) error {
-	ctx, cancel := context.WithCancel(ctx) // TODO: Is this a duplication of functionality in flow.Execute() ?
+	// create cancellation for current group
+	// NOTE: for parent groups, there is a parent context, the cancellation of which here will also be tracked
+	ctx, cancel := context.WithCancel(ctx)
 
 	// Make sure it's called to release resources even if no errors
 	defer group.close(cancel)
