@@ -16,7 +16,7 @@ collection:
           --experimental-modules
           --no-warnings
           --experimental-vm-modules
-          ./bmpjs/ssr/render.mjs
+          ./render.mjs
           --url=/{{url "url"}}
           --ip={{meta "ip"}}
           --static=https://d35qz7xn7nfid5.cloudfront.net/ssr/ ./assets/img.jpg
