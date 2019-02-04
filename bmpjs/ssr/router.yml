@@ -51,7 +51,7 @@ collection:
 
   # Route
   # AWS ECS ping
-  - pattern: "ping"
+  - pattern: "/ping"
     pipeline:
 
       - type: process
