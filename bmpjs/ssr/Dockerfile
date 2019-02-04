@@ -2,6 +2,13 @@
 # Get pre-compiled base
 FROM boomfunc/base:latest as base
 
+# compile plugin
+go build \
+	-v \
+	-buildmode=plugin \
+	-o /boomfunc/base/ssr.so \
+	./
+
 # Prepare app code (some compiling and other)
 FROM node:10.9-alpine
 
