@@ -51,6 +51,7 @@ class VirtualDomAdapter extends HTMLAdapter {
 		let { type: tagName, props, children = [] } = instance
 		let element = HTMLDocument.createElement(tagName)
 		element.attributes = props
+		if ( typeof props.ref == 'function' ) props.ref(element)
 		await this.render(element, children)
 		return element
 	}
@@ -95,8 +96,6 @@ class VirtualDomAdapter extends HTMLAdapter {
 				await component.ready()
 			if ( typeof component.onAttached == 'function' )
 				await component.onAttached()
-			if (typeof component.ref == 'function')
-				await component.ref(component)
 
 			arrChilds.push( await component.render() )
 		} else if ( typeof component.connectedCallback == 'function' ) {
