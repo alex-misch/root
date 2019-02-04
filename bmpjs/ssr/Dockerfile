@@ -5,6 +5,10 @@ FROM boomfunc/base:latest as base
 # compile plugin
 FROM golang as plugin
 
+ADD . /go/src/github.com/boomfunc/root/bmpjs/ssr
+
+WORKDIR /go/src/github.com/boomfunc/root/bmpjs/ssr
+
 RUN mkdir -p /boomfunc/app \
 	\
 	&& go build \
