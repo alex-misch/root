@@ -3,7 +3,7 @@
 FROM boomfunc/base:latest as base
 
 # compile plugin
-go build \
+RUN go build \
 	-v \
 	-buildmode=plugin \
 	-o /boomfunc/base/ssr.so \
