@@ -5,6 +5,8 @@ FROM boomfunc/base:latest as base
 # compile plugin
 FROM circleci/golang:1.10 as plugin
 
+USER root
+
 ADD . /go/src/github.com/ssr
 
 WORKDIR /go/src/github.com/ssr
