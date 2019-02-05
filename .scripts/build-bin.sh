@@ -32,15 +32,21 @@ ldflags="-X 'main.VERSION=${VERSION}' -X 'main.TIMESTAMP=${TIMESTAMP}'"
 # compile and build
 # linux 64 bit
 # - alpine, ubuntu
+CGO_ENABLED=0 \
 GOOS=linux GOARCH=amd64 go build \
+	-a -tags netgo \
 	-v \
+	-ldflags '-w -extldflags "-static"' \
 	-ldflags "${ldflags}" \
 	-o /go/bin/${BASE}-Linux-x86_64 \
 	./${NODE} # otherwise -> go build: cannot use -o with multiple packages
 
 # - macos
+CGO_ENABLED=0 \
 GOOS=darwin GOARCH=amd64 go build \
+	-a -tags netgo \
 	-v \
+	-ldflags '-w -extldflags "-static"' \
 	-ldflags "${ldflags}" \
 	-o /go/bin/${BASE}-Darwin-x86_64 \
 	./${NODE} # otherwise -> go build: cannot use -o with multiple packages
