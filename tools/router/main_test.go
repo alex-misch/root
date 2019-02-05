@@ -55,6 +55,10 @@ func TestRoute(t *testing.T) {
 			{"{url:*}", "/foobar/", map[string]string{"url": "/foobar/"}},
 			{"/foo/{url:*}", "/foo/bar", map[string]string{"url": "bar"}},
 			{"foo/{url:*}", "foo/bar", map[string]string{"url": "bar"}},
+			// regular cases
+			{"/foo?{q:*}", "/foo", nil},                         // no match
+			{"/foo?{q:*}", "/foo?", map[string]string{"q": ""}}, // empty
+			{"/foo?{q:*}", "/foo?a=b&c=d", map[string]string{"q": "a=b&c=d"}},
 		}
 
 		for i, tt := range tableTests {

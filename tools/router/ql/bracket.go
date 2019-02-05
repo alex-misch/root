@@ -1,12 +1,7 @@
 package ql
 
 import (
-	"regexp"
 	"strings"
-)
-
-var (
-	bracketsRegexp = regexp.MustCompile("{.*?}") // lazy for catch only to the nearest closing tag!!
 )
 
 // Bracket is some dynamic object in our pattern

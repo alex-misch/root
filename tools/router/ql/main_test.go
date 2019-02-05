@@ -11,12 +11,19 @@ func TestRegexp(t *testing.T) {
 		out     string // expected value of String() method
 	}{
 		{"", "^$"},
-		{"^/{data|static}/{*}.{jpg|png|jpeg}$", "^/(?:data|static)/(?:.*).(?:jpg|png|jpeg)$"},
-		{"/{data|static}/{*}.{jpg|png|jpeg}", "^/(?:data|static)/(?:.*).(?:jpg|png|jpeg)$"},
-		{"^{data|static}/{*}.{jpg|png|jpeg}$", "^(?:data|static)/(?:.*).(?:jpg|png|jpeg)$"},
-		{"{data|static}/{*}.{jpg|png|jpeg}", "^(?:data|static)/(?:.*).(?:jpg|png|jpeg)$"},
+		// cases with excaping
+		{"{*}/geo/m.y", "^(?:.*)/geo/m\\.y$"},
+		{"/geo?{*}", "^/geo\\?(?:.*)$"},
+		{"/geo/{*}/foo/bar", "^/geo/(?:.*)/foo/bar$"},
+		{"/geo/my", "^/geo/my$"},
+		{"/foo/.+*?()|[]{}^$/bar", "^/foo/\\.\\+\\*\\?\\(\\)\\|\\[\\]\\^\\$/bar$"}, // all special chars (NOTE: without `{}` because it is out reserved chars)
+		// regular cases
+		{"^/{data|static}/{*}.{jpg|png|jpeg}$", "^/(?:data|static)/(?:.*)\\.(?:jpg|png|jpeg)$"},
+		{"/{data|static}/{*}.{jpg|png|jpeg}", "^/(?:data|static)/(?:.*)\\.(?:jpg|png|jpeg)$"},
+		{"^{data|static}/{*}.{jpg|png|jpeg}$", "^(?:data|static)/(?:.*)\\.(?:jpg|png|jpeg)$"},
+		{"{data|static}/{*}.{jpg|png|jpeg}", "^(?:data|static)/(?:.*)\\.(?:jpg|png|jpeg)$"},
 		// with naming
-		{"/{store:data|static}/{*}.{expr:jpg|png|jpeg}", "^/(?P<store>data|static)/(?:.*).(?P<expr>jpg|png|jpeg)$"},
+		{"/{store:data|static}/{*}.{expr:jpg|png|jpeg}", "^/(?P<store>data|static)/(?:.*)\\.(?P<expr>jpg|png|jpeg)$"},
 	}
 
 	for i, tt := range tableTests {
