@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"context"
+	"fmt"
 	"plugin"
 
 	"github.com/boomfunc/root/tools/flow"
@@ -40,19 +41,19 @@ func (p *Plugin) run(ctx context.Context) error {
 	// 1. open the so file to load the symbols
 	pl, err := plugin.Open(p.path)
 	if err != nil {
-		return err
+		return fmt.Errorf("base/pipeline/plugin: %s", err)
 	}
 
 	// 2. look up a symbol (an exported function or variable)
 	sym, err := pl.Lookup(p.name)
 	if err != nil {
-		return err
+		return fmt.Errorf("base/pipeline/plugin: %s", err)
 	}
 
 	// 3. Assert that loaded symbol is of a desired type (flow.Step interface)
 	step, err := flow.ToStep(sym)
 	if err != nil {
-		return err
+		return fmt.Errorf("base/pipeline/plugin: %s", err)
 	}
 
 	// TODO: look not elegnt, i want `fake` plugin's stout and stdin and stderr
