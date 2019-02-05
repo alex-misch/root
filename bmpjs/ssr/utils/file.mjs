@@ -12,7 +12,6 @@ const cache = {
 	},
 	set: (key, content) => {
 		const keyBase64 = cache.toBase64(key)
-		console.error('put', keyBase64)
 		return fs.writeFileSync( path.join(cache.dir, keyBase64), Buffer.from(content) )
 	}
 }

@@ -39,10 +39,10 @@ class VirtualMachine {
 		const contextProxy = new Proxy(domContext, {
 			get(target, property) {
 				if (!target[property]) {
-					if (!global[property])
-						console.error("empty", property)
-					else
-						return global[property]
+					// if (!global[property])
+					// 	console.error("empty", property)
+					// else
+					return global[property] || null
 				}
 				return target[property]
 			}

@@ -19,10 +19,10 @@ collection:
           ./render.mjs
           --url=/{{url "url"}}
           --ip={{meta "ip"}}
-          --static=https://d35qz7xn7nfid5.cloudfront.net/ssr/ ./assets/img.jpg
+          --static=https://d35qz7xn7nfid5.cloudfront.net/ssr/
           --user-agent='{{meta "ua"}}'
-          --src=https://d35qz7xn7nfid5.cloudfront.net/ssr/index.es.js
-      # --src=/ssr/source/index.es.js
+          --src=/ssr/source/index.es.js
+      #--src=https://d35qz7xn7nfid5.cloudfront.net/ssr/index.es.js
 
       # - type: process
         # cmd: 'echo {"status": {{q "status"}}, "content": "URL: {{url "url"}}, IP: {{meta "ip"}}, UA: {{meta "ua"}}"}'

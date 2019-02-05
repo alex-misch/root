@@ -45,6 +45,10 @@ class Element {
 		return this._attributes[key]
 	}
 
+	removeAttribute(key) {
+		delete this._attributes[key]
+	}
+
 	setAttribute(key, val) {
 		this._attributes[key] = val
 	}

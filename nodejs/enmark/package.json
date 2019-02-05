@@ -1,7 +1,7 @@
 {
-  "name": "serverside-render",
+  "name": "enmark",
   "version": "0.0.1",
-  "description": "run ECMA SCRIPT Modules on server",
+  "description": "HTML Template Engine based on comments",
   "main": "index.mjs",
   "scripts": {
     "render": "node --experimental-modules --no-warnings --experimental-vm-modules render.mjs --url=/asdfasdf --src=/ssr/source/index.es.js --static=https://d35qz7xn7nfid5.cloudfront.net/ssr/",
@@ -12,12 +12,6 @@
   },
   "author": "boomfunc",
   "license": "ISC",
-  "bmp": {
-    "_external": {
-      "bmp-core": "https://jetsmarter.com/data/website/code/test/bmp-core.js",
-      "bmp-router": "https://jetsmarter.com/data/website/code/test/bmp-router.js"
-    }
-  },
   "babel": {
     "presets": [
       "@babel/env"
@@ -40,13 +34,13 @@
     }
   },
   "dependencies": {
-    "node-fetch-polyfill": "^2.0.6",
-    "elementtree": "^0.1.7"
+    "node-fetch-polyfill": "^2.0.6"
   },
   "devDependencies": {
     "@babel/core": "^7.2.2",
     "@babel/preset-env": "^7.3.1",
     "babel-jest": "^24.0.0",
+    "elementtree": "^0.1.7",
     "jest": "^24.0.0"
   }
 }

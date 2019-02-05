@@ -12,7 +12,7 @@ class HTMLDocument extends HTMLElement {
 	}
 
 	createTextNode(content) {
-		return content
+		return String(content)
 	}
 
 	getElementById() {
