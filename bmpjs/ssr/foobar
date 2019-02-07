@@ -1,0 +1,34 @@
+jobs:
+
+  test:
+    docker: docker://alpine
+    entrypoint: |
+      echo 'TESTED' > /tmp/art/test
+      cat /tmp/art/test
+
+    mount:
+      artifact: /tmp/art
+
+  build:
+    docker: docker://alpine
+    entrypoint: |
+      echo "`cat /tmp/art/test` BUILDED" > /tmp/art/build
+      cat /tmp/art/build
+
+    mount:
+      artifact: /tmp/art
+
+  deploy:
+    docker: docker://alpine
+    entrypoint: |
+      echo "`cat /tmp/art/build` DEPLOYED" > /tmp/art/deploy
+      cat /tmp/art/deploy
+
+    mount:
+      artifact: /tmp/art
+
+# deps:
+  # - base
+
+direct: [test, build, deploy]
+indirect: [test]

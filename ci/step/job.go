@@ -2,7 +2,6 @@ package step
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -14,11 +13,6 @@ import (
 	"github.com/boomfunc/root/tools/flow"
 	"github.com/boomfunc/root/tools/log"
 	"github.com/google/uuid"
-)
-
-var (
-	// describes situation when step haven't got required context information about himself to run
-	ErrStepOrphan = errors.New("step: Step run without required context")
 )
 
 // JobEnvironment describes the environment in which the job is running
@@ -45,7 +39,7 @@ func (env *JobEnvironment) LogPath() string {
 }
 
 // SrcPath returns the full path to the directory that will be passed to the container as a `src`
-// if necessary (if JobMount have `SrcPath` non empty)
+// if necessary (if JobMount have `SrcPath` nonempty)
 func (env *JobEnvironment) SrcPath() string {
 	return tools.AbsWorkdir(
 		tools.RepoPath(env.origin),
@@ -54,8 +48,18 @@ func (env *JobEnvironment) SrcPath() string {
 	)
 }
 
+// ScriptPath returns the full path to the directory contains special tools/scripts `script`
+// if necessary (if JobMount have `SrcPath` nonempty)
+func (env *JobEnvironment) ScriptPath() string {
+	return tools.AbsWorkdir(
+		tools.RepoPath(env.origin),
+		env.pack,
+		"$.scripts",
+	)
+}
+
 // ArtifactPath returns the full path to the directory that will be passed to the container as a `artifact`
-// if necessary (if JobMount have `ArtifactPath` non empty)
+// if necessary (if JobMount have `ArtifactPath` nonempty)
 func (env *JobEnvironment) ArtifactPath() string {
 	return tools.ArtifactPath(
 		env.session,
@@ -65,7 +69,7 @@ func (env *JobEnvironment) ArtifactPath() string {
 }
 
 // CachePath returns the full path to the directory that will be passed to the container as a `cache`
-// if necessary (if JobMount have `CachePath` non empty)
+// if necessary (if JobMount have `CachePath` nonempty)
 func (env *JobEnvironment) CachePath() string {
 	return tools.CachePath(
 		env.origin,
@@ -77,6 +81,7 @@ func (env *JobEnvironment) CachePath() string {
 // JobMount is special struct describes which dirs we will mount to docker image
 // if value empty - omit mounting
 type JobMount struct {
+	ScriptPath   string `yaml:"script,omitempty"`
 	SrcPath      string `yaml:"src,omitempty"`
 	ArtifactPath string `yaml:"artifact,omitempty"`
 	CachePath    string `yaml:"cache,omitempty"`
@@ -90,6 +95,11 @@ func (m JobMount) Entries(env *JobEnvironment) [][]string {
 	// does we need to mount source code?
 	if m.SrcPath != "" {
 		entries = append(entries, []string{env.SrcPath(), m.SrcPath})
+	}
+
+	// does we need to mount scrips?
+	if m.ScriptPath != "" {
+		entries = append(entries, []string{env.ScriptPath(), m.ScriptPath})
 	}
 
 	// does we need to mount artifacts?
@@ -197,7 +207,7 @@ func (step *Job) run(ctx context.Context) error {
 	name = ctx.Value("name").(string)
 	// if check failed - not enough context information provided -> step is orphan
 	if session == "" || origin == "" || pack == "" || name == "" {
-		return ErrStepOrphan
+		return flow.ErrStepOrphan
 	}
 
 	// get image id for container

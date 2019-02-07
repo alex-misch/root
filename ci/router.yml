@@ -1,9 +1,16 @@
 collection:
 
   # Route
-  - pattern: "github"
+  - pattern: "/github"
     pipeline:
 
       - type: process
-        cmd: echo 'dddddd q={{q "ip"}} ip={{meta "ip"}}'
-        # cmd: ./ci/github.sh
+        cmd: ./ci/github.sh
+
+  # Route
+  # AWS ECS ping
+  - pattern: "/ping"
+    pipeline:
+
+      - type: process
+        cmd: echo pong

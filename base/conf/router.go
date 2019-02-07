@@ -50,7 +50,7 @@ func (r *Route) Run(ctx context.Context, input io.Reader, output io.Writer) erro
 	ctx = context.WithValue(ctx, "input", input)
 	ctx = context.WithValue(ctx, "output", output)
 
-	return r.pipeline.Run(ctx) // TODO: hungs here
+	return r.pipeline.Run(ctx)
 }
 
 func (r *Route) UnmarshalYAML(unmarshal func(interface{}) error) error {

@@ -1,21 +1,39 @@
 jobs:
 
   test:
-    docker: docker://atlassian/pipelines-awscli
+    docker: docker://golang:1.11
     entrypoint: |
-      echo "KEY: ${AWS_ACCESS_KEY_ID}"
-      echo "SECRET: ${AWS_SECRET_ACCESS_KEY}"
-      aws s3 ls s3://io-boomfunc-root --recursive
+      #.scripts/test.sh
+      cat cli/log.go
+
+    mount:
+      script: /go/src/package/.scripts
+      src: /go/src/package
+
 
   build:
-    docker: docker://golang:alpine
+    docker: docker://golang:1.11
     entrypoint: |
-      echo 'BUILDED'
+      pwd
+      ls -lah .scripts
+      ls -lah
+      cat cli/log.go
+      #.scripts/build-bin.sh
+
+    mount:
+      script: /go/src/package/.scripts
+      artifact: /go/bin
+      src: /go/src/package
+
 
   deploy:
-    docker: docker://golang:alpine
+    docker: docker://atlassian/pipelines-awscli
     entrypoint: |
-      echo 'DEPLOYED'
+      pwd
+      ls -lah /go/bin
+
+    mount:
+      artifact: /go/bin
 
 direct: [test, build, deploy]
 indirect: [test]
