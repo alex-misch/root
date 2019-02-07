@@ -7,6 +7,7 @@ import (
 	"os/exec"
 
 	"github.com/boomfunc/root/base/tools"
+	"github.com/boomfunc/root/tools/log"
 )
 
 type process struct {
@@ -59,15 +60,15 @@ func (p *process) run(ctx context.Context) error {
 		}
 	}
 
-	// exit status resolves here
+	// exit code resolves here
 	// additionally fetch some information from stderr
 	if err := cmd.Wait(); err != nil {
 		return fmt.Errorf("base/pipeline/process: %s\n%s", err, stderr)
 	}
 
-	// check for case exit code = 0, but stderr got something
-	if len := stderr.Len(); len > 0 {
-		return fmt.Errorf("base/pipeline/process: %s", stderr)
+	// exit code = 0 and stderr nonempty - we have debug information, translate this
+	if stderr.Len() > 0 {
+		log.Debugf("base/pipeline/process: %s", stderr)
 	}
 
 	return nil
