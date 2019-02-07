@@ -8,6 +8,7 @@
 *.dylib
 *-Darwin-x86_64
 *-Linux-x86_64
+*-Linux-arm
 
 # Test binary, build with `go test -c`
 *.test
