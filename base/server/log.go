@@ -35,7 +35,7 @@ func StartupLog(transportName, applicationName, addr, config string, srv *Server
 
 func PerformanceLog(numWorkers int) {
 	// TODO https://insights.sei.cmu.edu/sei_blog/2017/08/multicore-and-virtualization-an-introduction.html
-	log.Debugf("server:\tSpawned %d initial goroutines", runtime.NumGoroutine())
+	log.Debugf("server:\tSpawned %s initial goroutines", log.Wrap(runtime.NumGoroutine(), log.Bold))
 	if runtime.NumGoroutine() != numWorkers+3 {
 		log.Warnf(
 			"server:\tUnexpected number of initial goroutines, possibly an issue. Expected: %d, Got: %d",
@@ -43,7 +43,7 @@ func PerformanceLog(numWorkers int) {
 			runtime.NumGoroutine(),
 		)
 	}
-	log.Debugf("server:\tDetected %d CPU cores", runtime.NumCPU())
+	log.Debugf("server:\tDetected %s CPU cores", log.Wrap(runtime.NumCPU(), log.Bold))
 	if runtime.NumCPU() < numWorkers {
 		log.Warnf(
 			"server:\tPossible overloading of CPU cores. Detected: %[1]d CPU. Recommended worker number: %[1]d (Current: %[2]d)",
