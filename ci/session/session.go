@@ -17,9 +17,9 @@ type Session struct {
 }
 
 // repo: github.com/boomfunc/root - what we clonning what is
-func New(origin string) (*Session, error) {
+func New(origin, ref string) (*Session, error) {
 	// clone repository to `path`
-	repo, err := git.GetRepo(origin, tools.RepoPath(origin))
+	repo, err := git.GetRepo(origin, tools.RepoPath(origin), ref)
 	if err != nil {
 		return nil, err
 	}

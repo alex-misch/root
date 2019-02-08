@@ -30,7 +30,7 @@ func runCommandAction(c *cli.Context) {
 	log.Debugf("ORIGIN: %s, REF: %s", origin, ref)
 
 	// Create and run session
-	session, err := session.New(origin)
+	session, err := session.New(origin, ref)
 	if err != nil {
 		tools.FatalLog(err)
 	}
