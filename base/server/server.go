@@ -72,12 +72,12 @@ func (srv *Server) listen() {
 			// log ANY kind of result
 			AccessLog(flow)
 			// and errors
-			if err := flow.Stat.Error; err != nil {
+			if !flow.Successful() {
 				// TODO think about it
 				// TODO https://play.golang.org/p/dNV2qI90EKQ
 				// TODO https://blog.quickmediasolutions.com/2015/09/13/non-blocking-channels-in-go.html
 				go func() {
-					srv.errCh <- err
+					srv.errCh <- flow
 				}()
 			}
 		}

@@ -36,12 +36,10 @@ type Application struct {
 func (app *Application) Handle(fl *flow.Data) {
 	var req *flow.Request
 	var err error
-	var written int64
 
 	defer func() {
-		fl.Stat.Request = req
-		fl.Stat.Error = err
-		fl.Stat.Len = written
+		fl.Stat.Req = req
+		fl.Stat.Err = err
 	}()
 
 	// TODO: not here, but for now - good

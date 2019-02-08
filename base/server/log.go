@@ -60,15 +60,15 @@ func PerformanceLog(numWorkers int) {
 func AccessLog(flow *flow.Data) {
 	var status, url string
 
-	if flow.Stat.Successful() {
+	if flow.Successful() {
 		status = "SUCCESS"
 	} else {
 		status = "ERROR"
 	}
 
 	// Request might be nil if err while parsing incoming message
-	if flow.Stat.Request != nil {
-		url = flow.Stat.Request.Url.RequestURI()
+	if flow.Stat.Req != nil {
+		url = flow.Stat.Req.Url.RequestURI()
 	} else {
 		url = "/XXX/XXX/XXX"
 	}
