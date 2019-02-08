@@ -50,7 +50,7 @@ type RunContainerOptions struct {
 	Log        io.Writer  // where to save logs
 }
 
-// RunContainer is a complex of the following tasksЖ
+// RunContainer is a complex of the following tasks
 // - create container
 // - run container
 // - save logs

@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	tcli "github.com/boomfunc/root/tools/cli"
 	"github.com/urfave/cli"
 )
 
@@ -26,16 +27,7 @@ func Run(VERSION, TIMESTAMP string) {
 	app.Name = NAME
 	app.Version = VERSION
 	app.Compiled = time.Unix(ts, 0)
-	app.Authors = []cli.Author{
-		{
-			Name:  "Alexander Gurinov",
-			Email: "alexander.gurinov@gmail.com",
-		},
-		{
-			Name:  "Alexey Yollov",
-			Email: "yollov@me.com",
-		},
-	}
+	app.Authors = tcli.Authors
 	app.Usage = USAGE
 	app.Flags = []cli.Flag{
 		cli.BoolFlag{

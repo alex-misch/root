@@ -7,6 +7,7 @@ import (
 
 	"github.com/boomfunc/root/base/server"
 	"github.com/boomfunc/root/base/tools"
+	tcli "github.com/boomfunc/root/tools/cli"
 	"github.com/boomfunc/root/tools/log"
 	"github.com/urfave/cli"
 )
@@ -27,7 +28,7 @@ var (
 func runCommandAction(c *cli.Context) {
 	log.SetDebug(c.GlobalBool("debug"))
 
-	StartupLog("base", c.App.Version, c.App.Compiled)
+	tcli.StartupLog("base", c.App.Version, c.App.Compiled)
 
 	// Exctract params
 	transport := c.Command.Name

@@ -3,6 +3,7 @@ package cli
 import (
 	"github.com/boomfunc/root/base/tools"
 	"github.com/boomfunc/root/ci/session"
+	tcli "github.com/boomfunc/root/tools/cli"
 	"github.com/boomfunc/root/tools/flow"
 	"github.com/boomfunc/root/tools/log"
 	"github.com/urfave/cli"
@@ -21,21 +22,20 @@ var (
 func runCommandAction(c *cli.Context) {
 	log.SetDebug(c.GlobalBool("debug"))
 
-	StartupLog("ci", c.App.Version, c.App.Compiled)
+	tcli.StartupLog("ci", c.App.Version, c.App.Compiled)
 
 	// Extract params
 	origin := c.GlobalString("origin")
 	ref := c.GlobalString("ref")
+	log.Debugf("Repo origin: %s, reference: %s", origin, ref)
 
-	log.Debugf("ORIGIN: %s, REF: %s", origin, ref)
-
-	// Create and run session
+	// Create session (clone repo)
 	session, err := session.New(origin, ref)
 	if err != nil {
 		tools.FatalLog(err)
 	}
 
-	// logging
+	// run session
 	log.Debugf("Session `%s` is runnning", session.UUID)
 	if err := flow.Execute(session); err != nil {
 		tools.FatalLog(err)
