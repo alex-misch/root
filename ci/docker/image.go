@@ -3,13 +3,14 @@ package docker
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/docker/docker/api/types"
 )
 
 var (
-	ErrUnsupportedDocker = errors.New("Unsupported type of docker image")
+	ErrUnsupportedDocker = errors.New("ci/docker: Unsupported type of docker image")
 )
 
 // getImage pulls or builds image and return resulting id
@@ -19,11 +20,20 @@ func GetImage(ctx context.Context, docker string) (string, error) {
 	// detect what kind of fetch we need (pull or build)
 	// TODO from pattql create virtual url-view struct
 	if strings.HasPrefix(docker, "docker://") {
-		// pull case
+		// get or pull case
 		name = strings.TrimPrefix(docker, "docker://")
-		// TODO: check returned io.ReadCloser is closed if `_`
-		if _, err := Client.ImagePull(ctx, name, types.ImagePullOptions{}); err != nil {
-			return "", err
+
+		if reader, err := Client.ImagePull(ctx, name, types.ImagePullOptions{}); err != nil {
+			return "", fmt.Errorf("ci/docker: %s", err)
+		} else {
+			// here we need to close reader and wait for end of stream
+			// NOTE: otherwise bug with `no such image`
+
+			// TODO: read to /dev/null
+
+			if err := reader.Close(); err != nil {
+				return "", fmt.Errorf("ci/docker: %s", err)
+			}
 		}
 	} else {
 		return "", ErrUnsupportedDocker
@@ -42,14 +52,13 @@ func GetImage(ctx context.Context, docker string) (string, error) {
 		// }
 	}
 
-	// TODO fill options to name that used below to get id
 	// get id from pulled/builded image
 	info, _, err := Client.ImageInspectWithRaw(ctx, name)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("ci/docker: %s", err)
 	}
 
-	// successful result
+	// success case - return id
 	return info.ID, nil
 }
 

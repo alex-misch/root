@@ -244,6 +244,11 @@ func (step *Job) run(ctx context.Context) error {
 					step.Context,
 				),
 			),
+			// Env: []string{
+			// 	"LC_ALL=en_US.UTF-8",
+			// 	"LC_ALL=en_US.UTF-8",
+			// 	"LC_ALL=en_US.UTF-8",
+			// },
 			Log: logger,
 		},
 	)

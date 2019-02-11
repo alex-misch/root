@@ -2,7 +2,6 @@ package docker
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 
@@ -29,13 +28,15 @@ func LogContainer(ctx context.Context, id string, w io.Writer) error {
 	// get logs (success case)
 	r, err := Client.ContainerLogs(ctx, id, types.ContainerLogsOptions{ShowStdout: true, ShowStderr: true})
 	if err != nil {
-		return err
+		return fmt.Errorf("ci/docker: %s", err)
 	}
 	// logs reader available - close it after reading
 	defer r.Close()
 
 	// save logs to writer
-	io.Copy(w, r)
+	if _, err := io.Copy(w, r); err != nil {
+		return fmt.Errorf("ci/docker: %s", err)
+	}
 
 	return nil
 }
@@ -60,7 +61,7 @@ func RunContainer(ctx context.Context, opts RunContainerOptions) error {
 	mounts := Mounts(opts.MountPaths...)
 	// create dirs for mounting
 	if err := CreateMountDirs(mounts); err != nil {
-		return err
+		return fmt.Errorf("ci/docker: %s", err)
 	}
 
 	// now we can start container
@@ -81,7 +82,7 @@ func RunContainer(ctx context.Context, opts RunContainerOptions) error {
 		"",
 	)
 	if err != nil {
-		return err
+		return fmt.Errorf("ci/docker: %s", err)
 	}
 
 	// clear docker host anyway
@@ -92,7 +93,7 @@ func RunContainer(ctx context.Context, opts RunContainerOptions) error {
 
 	// Start container
 	if err := Client.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
-		return err
+		return fmt.Errorf("ci/docker: %s", err)
 	}
 
 	// Wait for container finish
@@ -100,13 +101,13 @@ func RunContainer(ctx context.Context, opts RunContainerOptions) error {
 	select {
 	case err := <-errCh:
 		if err != nil {
-			return err
+			return fmt.Errorf("ci/docker: %s", err)
 		}
 	case resp := <-statusCh:
 		if resp.Error != nil {
-			return errors.New(resp.Error.Message)
+			return fmt.Errorf("ci/docker: %s", resp.Error.Message)
 		} else if resp.StatusCode != 0 {
-			return fmt.Errorf("Exit code: %d. Look at container logs for more information", resp.StatusCode)
+			return fmt.Errorf("ci/docker: Exit code: %d. Look at container logs for more information", resp.StatusCode)
 		}
 	}
 
