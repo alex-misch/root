@@ -44,7 +44,6 @@ func JsonEntrypoint(ctx context.Context) error {
 	// translate headers
 	headers := make(http.Header)
 	headers.Set("Content-Type", intermediate.Mime)
-	headers.Set("X-Content-Type-Options", "nosniff")
 	storage.Set("http", "headers", headers)
 	// translate status code
 	storage.Set("http", "status", intermediate.Status)

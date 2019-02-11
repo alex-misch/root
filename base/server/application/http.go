@@ -5,6 +5,7 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"time"
 
 	srvctx "github.com/boomfunc/root/base/server/context"
 	"github.com/boomfunc/root/base/server/flow"
@@ -89,6 +90,11 @@ func (packer *httpPacker) Pack(ctx context.Context, r io.Reader, w io.Writer) er
 	// https://play.golang.org/p/B84EotwMb2J
 
 	// HEADERS SECTION
+	// default headers values
+	response.Header.Set("Content-Type", "text/plain; charset=utf-8")
+	response.Header.Set("X-Content-Type-Options", "nosniff")
+	response.Header.Set("Date", time.Now().Format(time.RFC1123))
+
 	// CORS ISSUE while not structured application layer
 	if packer.request.Header.Get("Origin") != "" {
 		// TODO TODO
@@ -105,6 +111,9 @@ func (packer *httpPacker) Pack(ctx context.Context, r io.Reader, w io.Writer) er
 			response.Header.Set(k, more.Get(k))
 		}
 	}
+
+	// TODO: immutable headers
+	// response.Header.Set("Server", "text/plain; charset=utf-8")
 
 	return response.Write(w)
 }

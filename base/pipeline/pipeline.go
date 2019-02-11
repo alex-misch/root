@@ -2,10 +2,16 @@ package pipeline
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"io"
 
 	"github.com/boomfunc/root/base/tools"
 	"github.com/boomfunc/root/tools/flow"
+)
+
+var (
+	ErrUnknownLayer = errors.New("base/pipeline: Unknown layer type")
 )
 
 type Pipeline []Layer
@@ -50,20 +56,20 @@ func (p Pipeline) Run(ctx context.Context) error {
 	}
 
 	if err := piping(inputCloser, outputCloser, ables...); err != nil {
-		return err
+		return fmt.Errorf("base/pipeline: %s", err)
 	}
 
 	// Phase 3. Generate and run total `flow.Step`
 	return run(ctx, execs...)
 }
 
-// TODO: why pointer? Pipeline is slice (itself pointer)
+// UnmarshalYAML implements yaml Unmarshaller interface
 func (p *Pipeline) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	// inner struct for accepting strings
+	// inner struct for accepting map of strings
 	var pipeline []map[string]interface{}
 
 	if err := unmarshal(&pipeline); err != nil {
-		return err
+		return fmt.Errorf("base/pipeline: %s", err)
 	}
 
 	// sequece successfully translated, create layers from data
