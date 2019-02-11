@@ -55,8 +55,9 @@ func (repo *Repository) Destroy() error {
 	return os.RemoveAll(repo.Path)
 }
 
+// Diff returns a list of filenames changed (added, modified, deleted) by a reference apply
 func (repo *Repository) Diff() ([]string, error) {
-	// get current commit
+	// get current commit of cloned reference
 	ref, err := repo.Head()
 	if err != nil {
 		return nil, fmt.Errorf("ci/git: %s", err)
