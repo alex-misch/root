@@ -3,7 +3,7 @@ set -eux
 
 # JSON=`cat /dev/stdin`
 # REF=$(echo $JSON | jq '.ref')
-# URL=$(echo $JSON | jq '.repository.url')
+# URL=$(echo $JSON | jq '.repository.clone_url')
 #
 # echo ${REF}
 # echo ${URL}

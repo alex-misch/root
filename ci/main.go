@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/boomfunc/root/base/cli"
+	"github.com/boomfunc/root/ci/cli"
 )
 
 var (

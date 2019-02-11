@@ -8,6 +8,13 @@ collection:
         cmd: ./ci/github.sh
 
   # Route
+  - pattern: "/logs/{container:*}"
+    pipeline:
+
+      - type: process
+        cmd: cat /bmpci/log/{{url "container"}}.log
+
+  # Route
   # AWS ECS ping
   - pattern: "/ping"
     pipeline:
