@@ -12,11 +12,10 @@ import (
 )
 
 const (
-	NAME  = "base"
 	USAGE = "Boompack service application"
 )
 
-func Run(VERSION, TIMESTAMP string) {
+func Run(NODE, VERSION, TIMESTAMP string) {
 	// prepare build variables passed through -ldflags
 	ts, err := strconv.ParseInt(TIMESTAMP, 10, 64)
 	if err != nil {
@@ -25,7 +24,7 @@ func Run(VERSION, TIMESTAMP string) {
 	// Phase 1. Get cli options, some validation checks and configure working env
 	// errors from this phase must be paniced with traceback and os.exit(1)
 	app := cli.NewApp()
-	app.Name = NAME
+	app.Name = NODE
 	app.Version = VERSION
 	app.Compiled = time.Unix(ts, 0)
 	app.Authors = tcli.Authors
@@ -58,7 +57,7 @@ func Run(VERSION, TIMESTAMP string) {
 					Name:   "config",
 					Usage:  configFlagUsage,
 					EnvVar: "BMP_BASE_CONFIG",
-					Value:  "/boomfunc/app/conf.yml",
+					Value:  "/boomfunc/app/router.yml",
 				},
 				cli.StringFlag{
 					Name:   "app",
@@ -68,11 +67,6 @@ func Run(VERSION, TIMESTAMP string) {
 				},
 			},
 			Subcommands: []cli.Command{
-				// {
-				// 	Name:   "udp",
-				// 	Usage:  runUDPCommandUsage,
-				// 	Action: runCommandAction,
-				// },
 				{
 					Name:   "rpc",
 					Usage:  runTCPCommandUsage,

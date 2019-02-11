@@ -21,6 +21,9 @@ var (
 	}
 )
 
+// TODO: look at rfc for more useful logging
+// https://tools.ietf.org/html/rfc7231#section-7.4.2
+// https://tools.ietf.org/html/rfc7231#section-5.5.3
 func StartupLog(node, version string, compiled time.Time) {
 	log.Infof("************************************************************")
 	log.Infof("Boomfunc `%s` version:\t%s", log.Wrap(node, log.Bold), log.Wrap(version, log.Bold))

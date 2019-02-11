@@ -27,7 +27,7 @@ TIMESTAMP=`date +%s`
 VERSION="${CIRCLE_TAG:=LOCAL}"
 
 # calculate build/compile specific variables
-ldflags="-X 'main.VERSION=${VERSION}' -X 'main.TIMESTAMP=${TIMESTAMP}'"
+ldflags="-X 'main.NODE=${BASE}' -X 'main.VERSION=${VERSION}' -X 'main.TIMESTAMP=${TIMESTAMP}'"
 ### COMPILE
 
 # linux 64 bit (alpine, ubuntu)

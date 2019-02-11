@@ -28,6 +28,8 @@ var (
 func runCommandAction(c *cli.Context) {
 	log.SetDebug(c.GlobalBool("debug"))
 
+	// TODO: via c.App.Name
+	// https://github.com/urfave/cli/issues/783
 	tcli.StartupLog("base", c.App.Version, c.App.Compiled)
 
 	// Exctract params

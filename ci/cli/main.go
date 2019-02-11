@@ -11,11 +11,10 @@ import (
 )
 
 const (
-	NAME  = "ci"
 	USAGE = "Boomfunc Continuous Integration service"
 )
 
-func Run(VERSION, TIMESTAMP string) {
+func Run(NODE, VERSION, TIMESTAMP string) {
 	// prepare build variables passed through -ldflags
 	ts, err := strconv.ParseInt(TIMESTAMP, 10, 64)
 	if err != nil {
@@ -24,7 +23,7 @@ func Run(VERSION, TIMESTAMP string) {
 	// Phase 1. Get cli options, some validation checks and configure working env
 	// errors from this phase must be paniced with traceback and os.exit(1)
 	app := cli.NewApp()
-	app.Name = NAME
+	app.Name = NODE
 	app.Version = VERSION
 	app.Compiled = time.Unix(ts, 0)
 	app.Authors = tcli.Authors

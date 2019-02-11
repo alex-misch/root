@@ -113,7 +113,7 @@ func (packer *httpPacker) Pack(ctx context.Context, r io.Reader, w io.Writer) er
 	}
 
 	// TODO: immutable headers
-	// response.Header.Set("Server", "text/plain; charset=utf-8")
+	response.Header.Set("Server", "base/3.0.0-rc6") // TODO: not dynamic https://tools.ietf.org/html/rfc7231#section-7.4.2
 
 	return response.Write(w)
 }
