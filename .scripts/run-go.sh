@@ -33,7 +33,7 @@ cd ${NODE}
 # TODO https://github.com/urfave/cli#values-from-alternate-input-sources-yaml-toml-and-others
 BMP_BASE_DEBUG_MODE=true \
 BMP_BASE_CONFIG="./router.yml" \
-BMP_BASE_APP_LAYER='http'
+BMP_BASE_APP_LAYER='http' \
 	/go/bin/base-$(uname -s)-$(uname -m) run tcp
 
 # move back to monorepo root
