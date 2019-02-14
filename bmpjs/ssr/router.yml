@@ -33,7 +33,7 @@ collection:
       #   name: Set
 
       - type: plugin
-        path: ./ssr.so
+        path: ./ssr-Linux-x86_64.so
         name: JsonEntrypoint
 
   # - pattern: "set"
