@@ -16,10 +16,10 @@ RUN set -eux \
 	\
 	&& go get -d ./... \
 	\
-	&& go build \
+	&& GOOS=linux GOARCH=amd64 go build \
 		-v \
 		-buildmode=plugin \
-		-o /boomfunc/app/ssr.so \
+		-o /boomfunc/app/ssr-Linux-x86_64.so \
 		./
 
 # Prepare app code (some compiling and other)
