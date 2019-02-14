@@ -1,18 +1,4 @@
 #!/bin/sh
-
-<< ////
-
-TODO:
-use cross-compiling
-$go get github.com/mitchellh/gox
-$gox \
-	-verbose \
-	-osarch="linux/amd64 darwin/amd64" \
-	-ldflags="-X main.VERSION=$CIRCLE_TAG -X main.TIMESTAMP=`date +%s`" \
-	-output="/go/bin/{{.Dir}}-{{.OS}}-{{.Arch}}"
-
-////
-
 set -eux
 
 # if first arg is node in monorepo graph - apply commands to this node (package),
@@ -28,6 +14,7 @@ VERSION="${CIRCLE_TAG:=LOCAL}"
 
 # calculate build/compile specific variables
 ldflags="-X 'main.NODE=${BASE}' -X 'main.VERSION=${VERSION}' -X 'main.TIMESTAMP=${TIMESTAMP}'"
+
 ### COMPILE
 
 # linux 64 bit (alpine, ubuntu)
@@ -73,8 +60,3 @@ GOOS=linux GOARCH=arm GOARM=7 go build \
 	-ldflags "${ldflags}" \
 	-o /go/bin/${BASE}-Linux-arm \
 	./${NODE} # otherwise -> go build: cannot use -o with multiple packages
-
-# chmod binaries to executable
-chmod +x /go/bin/${BASE}-Linux-x86_64
-chmod +x /go/bin/${BASE}-Linux-arm
-chmod +x /go/bin/${BASE}-Darwin-x86_64
