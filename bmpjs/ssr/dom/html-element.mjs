@@ -4,8 +4,8 @@ import { customElements } from './custom-elements.mjs';
 
 class HTMLElement extends Element {
 
-	constructor(tagname, attributes) {
-		super(tagname, attributes)
+	constructor(tagname, attributes, parent) {
+		super(tagname, attributes, parent)
 	}
 
 	/** Events api */

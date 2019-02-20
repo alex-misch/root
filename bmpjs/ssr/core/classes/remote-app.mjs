@@ -83,7 +83,10 @@ class BmpRemoteApp {
 				lang: 'en',
 				css: arrCss.join('')
 			})
-			return { html: shell, statusCode: 200 }
+			return {
+				html: shell,
+				statusCode: appElement.statusCode( this.clientRequest.uri )
+			}
 		} catch (err) {
 			console.error('Fail to render', err)
 			process.exit( 1 )

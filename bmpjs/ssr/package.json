@@ -6,7 +6,7 @@
   "scripts": {
     "render": "node --experimental-modules --no-warnings --experimental-vm-modules render.mjs --url=/asdfasdf --src=/ssr/source/index.es.js --static=https://d35qz7xn7nfid5.cloudfront.net/ssr/",
     "_render": "node --experimental-modules --no-warnings --experimental-vm-modules render.mjs --url=/ --src=https://d35qz7xn7nfid5.cloudfront.net/ssr/index.es.js",
-    "sitemap": "node --experimental-modules --experimental-vm-modules sitemap.mjs",
+    "sitemap": "node --experimental-modules --experimental-vm-modules sitemap.mjs --output=stdout",
     "dockerstart": "docker-compose exec ssrbmp sh -c 'npm run render'",
     "test": "node ./node_modules/.bin/jest"
   },

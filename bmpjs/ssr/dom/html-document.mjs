@@ -6,13 +6,19 @@ class HTMLDocument extends HTMLElement {
 
 	constructor(baseURI) {
 		super()
-		this.body = new HTMLElement('body')
-		this.head = new HTMLElement('head')
+		this.body = new HTMLElement('body', {}, this)
+		this.head = new HTMLElement('head', {}, this)
 		this.baseURI = baseURI
 	}
 
 	createTextNode(content) {
 		return String(content)
+	}
+
+	getElementsByTagName(tagname) {
+		if (tagname == 'script')
+			return this.head.childNodes
+		return []
 	}
 
 	getElementById() {

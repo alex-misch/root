@@ -2,19 +2,27 @@ import { stringifyProps, selfClosedTags } from "../utils/html.mjs";
 
 class Element {
 
-	constructor(tagName, attributes) {
+	constructor(tagName, attributes, parent) {
 		this._attributes = attributes || {}
 		if (tagName) this.tagName = tagName
 		this.childNodes = []
 		this.children = this.childNodes
 
 		this.id = ''
+		this.parent = parent
 	}
+
+
 
 	/** Work with content */
 	animate() {}
+	get parentNode() { return this.parent }
+	appendChild(node) {
+		if (node instanceof Element)
+			node.parent = this
+		this.childNodes.push(node)
+	}
 	closest() { return null }
-	appendChild(node) { this.childNodes.push(node) }
 	insertBefore() {}
 	insertAdjacentElement() {}
 	insertAdjacentHTML() {}
