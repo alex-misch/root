@@ -51,13 +51,16 @@ collection:
   #       name: Get
 
   # Route
+  - pattern: "/cleanthisbitch"
+    pipeline:
+
+      - type: process
+        cmd: rm -rf ./cache
+
+  # Route
   # AWS ECS ping
   - pattern: "/ping"
     pipeline:
 
       - type: process
         cmd: echo pong
-
-      # - type: plugin
-      #   path: ./ci.so
-      #   name: Entrypoint
