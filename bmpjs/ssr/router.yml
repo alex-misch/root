@@ -15,7 +15,7 @@ collection:
           --src=https://jetsmarter.com/data/jscomv5/index.js
 
       - type: plugin
-        path: ./ssr.so
+        path: ./ssr-Linux-x86_64.so
         name: JsonEntrypoint
 
 
