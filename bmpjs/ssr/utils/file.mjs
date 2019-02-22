@@ -31,9 +31,7 @@ const download = async url => {
 	try {
 		return new Promise( (resolve, reject) => {
 			if (!url.startsWith('http')) {
-				const fileContent = fs.readFileSync(url).toString('UTF-8')
-				cache.set(url, fileContent)
-				resolve( fileContent )
+				resolve( fs.readFileSync(url).toString('UTF-8') )
 			} else {
 				import( url.startsWith('https') ? 'https' : 'http' )
 					.then( ({ default: http }) => {

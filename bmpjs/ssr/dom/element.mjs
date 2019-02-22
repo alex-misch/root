@@ -1,9 +1,11 @@
-import { stringifyProps, selfClosedTags } from "../utils/html.mjs";
+
+import { stringifyProps, selfClosedTags } from '../utils/html'
+
 
 class Element {
 
-	constructor(tagName, attributes, parent) {
-		this._attributes = attributes || {}
+	constructor(tagName, attributes = [], parent) {
+		this.attributes = attributes || []
 		if (tagName) this.tagName = tagName
 		this.childNodes = []
 		this.children = this.childNodes
@@ -11,8 +13,6 @@ class Element {
 		this.id = ''
 		this.parent = parent
 	}
-
-
 
 	/** Work with content */
 	animate() {}
@@ -22,19 +22,10 @@ class Element {
 			node.parent = this
 		this.childNodes.push(node)
 	}
-	closest() { return null }
+
 	insertBefore() {}
 	insertAdjacentElement() {}
 	insertAdjacentHTML() {}
-
-	get outerHTML() {
-		const props = stringifyProps(this.attributes)
-		if ( selfClosedTags.includes(this.tagName) )
-			return `<${this.tagName}${ props } ssr />`
-		else
-			return `<${this.tagName}${ props } ssr>${ this.innerHTML }</${this.tagName}>`
-	}
-
 
 	/** Web Components api */
 	get shadowRoot() { return null }
@@ -44,13 +35,20 @@ class Element {
 
 	/** Working with attributes */
 	hasAttribute(key) {
-		return this._attributes.hasOwnProperty(key)
+		return Boolean( this.getAttribute(key) )
 	}
-	getAttributeNames() {}
+	getAttributeNames() {
+		return this._attributes.map( attr => attr.name )
+	}
 	getAttributeNS() {}
 
 	getAttribute(key) {
-		return this._attributes[key]
+		const prop = this._attributes.find( ({ name }) => name == key )
+		return prop ? prop.value : ''
+	}
+
+	getRawAttribute(key) {
+		return this._attributes.find( ({ name }) => name == key )
 	}
 
 	removeAttribute(key) {
@@ -58,25 +56,38 @@ class Element {
 	}
 
 	setAttribute(key, val) {
-		this._attributes[key] = val
+		const attr = this.getAttribute(key)
+		if ( attr )
+			this.getRawAttribute(key).value = val
+		else
+			this._attributes.push({ name: key, value: val })
 	}
 
 	get attributes() {
 		return this._attributes
 	}
+	set attributes(attrs) {
+		return this._attributes = Array.isArray(attrs) ? attrs : []
+	}
 
-	set attributes(props) {
-		this._attributes = props || {}
+	get outerHTML() {
+		const props = stringifyProps(this._attributes)
+		if ( selfClosedTags.includes(this.tagName) )
+			return `<${this.tagName}${ props } ssr />`
+		else
+			return `<${this.tagName}${ props } ssr>${ this.innerHTML }</${this.tagName}>`
 	}
 
 	get classList() {
 		return {
 			add: (...classNames) => {
 				if (!classNames.length) throw new Error(`Element.classList.add can'nt called without arguments`)
-				this.attributes.class = (this.attributes.class ? `${this.attributes.class} ` : '') + classNames.join(' ')
+				const classAttr = this.getAttribute('class')
+				this.setAttribute('class', (classAttr ? `${classAttr} ` : '') + classNames.join(' ') )
 			},
 			remove: className => {
-				this.attributes.class = this.attributes.class.replace(className, '')
+				const current = this.getAttribute('class')
+				this.setAttribute('class', current ? current.replace(className, '') : '' )
 			},
 			toggle: () => {},
 			contains: () => { return false; }

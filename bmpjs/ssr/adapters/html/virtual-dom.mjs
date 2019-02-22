@@ -37,7 +37,7 @@ class VirtualDomAdapter extends HTMLAdapter {
 	 * @param cssjs css of this instances
 	 */
 	async arrayToHTML(instances) {
-		const converters = instances.map( async inst => await this.convertToHTML(inst) )
+		const converters = instances.map( async inst => await this.deepRender(inst) )
 		return await Promise.all(converters)
 	}
 
@@ -50,8 +50,11 @@ class VirtualDomAdapter extends HTMLAdapter {
 
 		let { type: tagName, props, children = [] } = instance
 		let element = HTMLDocument.createElement(tagName)
-		element.attributes = props
-		if ( typeof props.ref == 'function' ) props.ref(element)
+		if ( props )  {
+			element.attributes = props && Object.keys(props).map( key => ({ name: key, value: props[key] }) )
+			const ref = element.getAttribute('ref')
+			if (typeof ref == 'function ') ref(element)
+		}
 		await this.render(element, children)
 		return element
 	}
@@ -61,7 +64,7 @@ class VirtualDomAdapter extends HTMLAdapter {
 	 * @param {*} instance any javascript variable that will be converted to string
 	 * @param @optional cssjs css of this instance (optional)
 	 */
-	async convertToHTML( content ) {
+	async deepRender( content ) {
 		if ( content instanceof HTMLElement ) {
 			await this.render(content)
 			return content
@@ -103,7 +106,7 @@ class VirtualDomAdapter extends HTMLAdapter {
 			await component.connectedCallback()
 			arrChilds.push( ...component.childNodes )
 		}
-		component.childNodes = await this.convertToHTML(arrChilds)
+		component.childNodes = await this.deepRender(arrChilds)
 	}
 
 

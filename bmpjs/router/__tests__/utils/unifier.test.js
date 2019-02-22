@@ -3,7 +3,7 @@ import { unifyPathname } from "../../src/utils/path-unifier.js"
 
 
 describe( "Unify pathname", () => {
-  
+
   test( "url without segments", () => {
     expect( unifyPathname( '' ) ).toBe( '/' )
     expect( unifyPathname( '/' ) ).toBe( '/' )
@@ -29,7 +29,7 @@ describe( "Unify pathname", () => {
     expect( unifyPathname( `/foo/bar//baz#foo=bar` ) ).toBe( '/foo/bar/baz/#foo=bar' )
     expect( unifyPathname( `/foo/bar//baz/?bar=baz#foo=bar` ) ).toBe( '/foo/bar/baz/?bar=baz#foo=bar' )
     expect( unifyPathname( `/foo/bar/baz/?foo=bar&bar=baz` ) ).toBe( '/foo/bar/baz/?foo=bar&bar=baz' )
-    
+
   })
 
 

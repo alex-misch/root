@@ -61,6 +61,7 @@ const HTML5Api = ({ url, userAgent, baseURI }) => ({
 		innerWidth: 0,
 		innerHeight: 0
 	},
+	scrollTo: () => {}
 })
 
 

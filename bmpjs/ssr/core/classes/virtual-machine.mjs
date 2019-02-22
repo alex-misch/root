@@ -38,13 +38,7 @@ class VirtualMachine {
 		// Add observe to context to catch errors
 		const contextProxy = new Proxy(domContext, {
 			get(target, property) {
-				if (!target[property]) {
-					// if (!global[property])
-					// 	console.error("empty", property)
-					// else
-					return global[property] || null
-				}
-				return target[property]
+				return target[property] || global[property] || null
 			}
 		})
 		this.context = vm.createContext(contextProxy)

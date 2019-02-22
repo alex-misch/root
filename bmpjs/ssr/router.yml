@@ -2,6 +2,22 @@ collection:
 
   # Route
   # AWS ECS ping
+  - pattern: "/ssr/sitemap.xml"
+    pipeline:
+      - type: process
+        cmd: >
+          node
+          --experimental-modules
+          --no-warnings
+          --experimental-vm-modules
+          ./bmpjs/ssr/sitemap.mjs
+          --output=stdout
+          --src=https://d35qz7xn7nfid5.cloudfront.net/ssr/index.es.js
+
+      - type: plugin
+        path: ./ssr.so
+        name: JsonEntrypoint
+
 
   - pattern: "/ssr/{url:*}"
     pipeline:
@@ -21,8 +37,7 @@ collection:
           --ip={{meta "ip"}}
           --static=https://d35qz7xn7nfid5.cloudfront.net/ssr/
           --user-agent='{{meta "ua"}}'
-          --src=/ssr/source/index.es.js
-        #--src=https://d35qz7xn7nfid5.cloudfront.net/ssr/index.es.js
+          --src=https://d35qz7xn7nfid5.cloudfront.net/ssr/index.es.js
       # - type: process
         # cmd: 'echo {"status": {{q "status"}}, "content": "URL: {{url "url"}}, IP: {{meta "ip"}}, UA: {{meta "ua"}}"}'
 

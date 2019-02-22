@@ -39,17 +39,20 @@ const transformPropKey = key => key == 'className' ? 'class' : key
  * Skip all except string, boolean and numbers in props
  * @param { Object } props
  * @example
- * const f = stringifyProps({ class: 'hello', rel: 'link', onclick: function() {} })
- * f === `class="hello" rel="link"` // true
+ * const f = stringifyProps([
+ * 		{name: "class", value: "hello"},
+ * 		{name: "onclick", value: function() {} }
+ * ])
+ * f === `class="hello"` // true
  *
  */
 const stringifyProps = props => {
-	if ( !props || typeof props != 'object' || !Object.keys(props).length ) return ''
-	return " " + Object.keys(props)
-			.filter( key => ['string', 'boolean', 'number'].includes( typeof props[key] ) )
-			.filter( key => !skipProps.includes(key) && (typeof key != 'boolean' || key !== false) )
-			.filter( key => !(transformPropKey(key) == 'class' && !props[key]) )
-			.map( key => `${ transformPropKey(key) }="${ escapeHtml(props[key]) }"` )
+	if ( !props || !Array.isArray(props) || !props.length ) return ''
+	return " "+props
+			.filter( prop => ['string', 'boolean', 'number'].includes( typeof prop.value ) )
+			.filter( ({ name, value }) => !skipProps.includes(name) && (typeof value != 'boolean' || value !== false) )
+			.filter( ({ name, value }) => !(transformPropKey(name) == 'class' && !value) )
+			.map( ({ name, value }) => `${ transformPropKey(name) }="${ escapeHtml(value) }"` )
 			.join(' ')
 }
 

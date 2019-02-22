@@ -1,20 +1,31 @@
 
 import fs from 'fs'
-import { SitemapGenerator } from './core/sitemap-generator.mjs'
-import { routes } from './cache/config.js-com-v5.mjs';
 import { getProcessArguments } from './utils/arguments.mjs'
 
+import BmpRemoteApp from './core/classes/remote-app.mjs'
 
-const server_name = 'https://jetsmarter.com'
-const sitemap = new SitemapGenerator( routes, server_name )
+const args = getProcessArguments('output', 'src')
+const remoteApp = new BmpRemoteApp({
+	entrypoint: args.src,
+	clientRequest: {
+		origin: 'https://jetsmarter.com'
+	}
+})
 
-const args = getProcessArguments('output')
-const xmlResult = sitemap.toXML()
-if (args.output === 'stdout') {
-	process.stdout.write()
-} else {
-	fs.writeFile( './sitemap.xml', xmlResult, (err) => {
-		if (err) throw err;
-		console.log('Sitemap was saved to "sitemap.xml"!');
-	})
+const generate = async (remoteApp) => {
+	const sitemap = await remoteApp.sitemap()
+	if (args.output === 'stdout') {
+		process.stdout.write( JSON.stringify({
+			status: 200,
+			content: sitemap.toXML(),
+			mime: 'text/xml'
+		}) )
+	} else {
+		fs.writeFile( './sitemap.xml', sitemap.toXML(), (err) => {
+			if (err) throw err;
+			console.log('Sitemap was saved to "sitemap.xml"!');
+		})
+	}
 }
+
+generate(remoteApp)
