@@ -88,7 +88,7 @@ class BmpRemoteApp {
 	async render() {
 
 		const result = {
-			baseURI: 'http://bmp.lo:8080/ssr/',
+			// baseURI: 'http://bmp.lo:8080/ssr/',
 			css: '',
 			html: '',
 			head: null,

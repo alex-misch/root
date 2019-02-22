@@ -12,7 +12,7 @@ collection:
           --experimental-vm-modules
           ./bmpjs/ssr/sitemap.mjs
           --output=stdout
-          --src=https://d35qz7xn7nfid5.cloudfront.net/ssr/index.es.js
+          --src=https://jetsmarter.com/data/jscomv5/index.js
 
       - type: plugin
         path: ./ssr.so
@@ -35,9 +35,8 @@ collection:
           ./bmpjs/ssr/render.mjs
           --url=/{{url "url"}}
           --ip={{meta "ip"}}
-          --static=https://d35qz7xn7nfid5.cloudfront.net/ssr/
           --user-agent='{{meta "ua"}}'
-          --src=https://d35qz7xn7nfid5.cloudfront.net/ssr/index.es.js
+          --src=https://jetsmarter.com/data/jscomv5/index.js
       # - type: process
         # cmd: 'echo {"status": {{q "status"}}, "content": "URL: {{url "url"}}, IP: {{meta "ip"}}, UA: {{meta "ua"}}"}'
 
