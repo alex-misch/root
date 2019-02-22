@@ -5,5 +5,5 @@ set -eux
 # otherwise - to root (all repo nodes)
 NODE=${1:-.}
 
-# .scripts/build-bin.sh ${NODE}
-.scripts/build-plugin.sh ${NODE}
+.scripts/build-bin.sh ${NODE}
+# .scripts/build-plugin.sh ${NODE}
