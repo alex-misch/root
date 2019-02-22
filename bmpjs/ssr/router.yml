@@ -10,7 +10,7 @@ collection:
           --experimental-modules
           --no-warnings
           --experimental-vm-modules
-          ./bmpjs/ssr/sitemap.mjs
+          ./sitemap.mjs
           --output=stdout
           --src=https://jetsmarter.com/data/jscomv5/index.js
 
@@ -32,7 +32,7 @@ collection:
           --experimental-modules
           --no-warnings
           --experimental-vm-modules
-          ./bmpjs/ssr/render.mjs
+          ./render.mjs
           --url=/{{url "url"}}
           --ip={{meta "ip"}}
           --user-agent='{{meta "ua"}}'
@@ -47,20 +47,6 @@ collection:
       - type: plugin
         path: ./ssr-Linux-x86_64.so
         name: JsonEntrypoint
-
-  # - pattern: "set"
-  #   pipeline:
-  #
-  #     - type: plugin
-  #       path: ./ci.so
-  #       name: Set
-  #
-  # - pattern: "get"
-  #   pipeline:
-  #
-  #     - type: plugin
-  #       path: ./ci.so
-  #       name: Get
 
   # Route
   - pattern: "/cleanthisbitch"
