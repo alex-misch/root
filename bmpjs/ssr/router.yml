@@ -38,7 +38,7 @@ collection:
           --user-agent='{{meta "ua"}}'
           --src=https://jetsmarter.com/data/jscomv5/index.js
       # - type: process
-        # cmd: 'echo {"status": {{q "status"}}, "content": "URL: {{url "url"}}, IP: {{meta "ip"}}, UA: {{meta "ua"}}"}'
+      # cmd: 'echo {"status": {{q "status"}}, "content": "URL: {{url "url"}}, IP: {{meta "ip"}}, UA: {{meta "ua"}}"}'
 
       # - type: plugin
       #   path: ./cache.so

@@ -2,23 +2,25 @@ import fs from 'fs';
 import path from 'path';
 
 const cache = {
+	// cache directory (using file driver)
 	dir: path.resolve('./cache'),
+	// base64 convert helper
 	toBase64: str => Buffer.from(str).toString('base64'),
 
 	get: key => {
 		const keyBase64 = cache.toBase64(key)
-		if (cache.storage.includes(keyBase64))
+		if (fs.readdirSync( cache.dir ).includes(keyBase64))
 			return fs.readFileSync( path.join(cache.dir, keyBase64) ).toString('UTF-8')
 	},
 	set: (key, content) => {
 		const keyBase64 = cache.toBase64(key)
-		return fs.writeFileSync( path.join(cache.dir, keyBase64), Buffer.from(content) )
+		// write to file with named base64 of content key
+		fs.writeFileSync( path.join(cache.dir, keyBase64), Buffer.from(content) )
 	}
 }
 if ( !fs.existsSync(cache.dir) )
 	fs.mkdirSync(cache.dir)
 
-cache.storage = fs.readdirSync( cache.dir )
 
 /**
  * Fetch file
