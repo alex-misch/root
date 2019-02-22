@@ -36,7 +36,7 @@ collection:
           --url=/{{url "url"}}
           --ip={{meta "ip"}}
           --user-agent='{{meta "ua"}}'
-          --src=https://jetsmarter.com/data/jscomv5/index.js
+          --src=https://jetsmarter.com/data/jscomv5/index.es.js
       # - type: process
       # cmd: 'echo {"status": {{q "status"}}, "content": "URL: {{url "url"}}, IP: {{meta "ip"}}, UA: {{meta "ua"}}"}'
 

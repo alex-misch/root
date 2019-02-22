@@ -8,7 +8,7 @@ class HTMLDocument extends HTMLElement {
 		super()
 		this.body = new HTMLElement('body', {}, this)
 		this.head = new HTMLElement('head', {}, this)
-		this.baseURI = baseURI
+		this.baseURI = baseURI || ""
 	}
 
 	createTextNode(content) {

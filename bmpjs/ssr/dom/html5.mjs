@@ -14,7 +14,7 @@ import { Writable } from 'stream'
 URL.prototype.replace = () => {}
 
 const appLogger = {
-	warn: (...args) => console.warn('[APP CONSOLE]',...args),
+	warn: (...args) => {},//console.warn('[APP CONSOLE]',...args),
 	stdout: new Writable(),
 	stderr: new Writable()
 }

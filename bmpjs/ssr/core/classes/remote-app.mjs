@@ -38,15 +38,21 @@ class BmpRemoteApp {
 		const sourceCode = await download( this.entrypoint )
 
 		// Execute fetched code in virtual machine
-		const { result } = await this.vm.run({
-			code: sourceCode,
-			rootUrl: this.entrypoint,
-		})
+		let evaluated = null
+		try {
+			evaluated = await this.vm.run({
+				code: sourceCode,
+				rootUrl: this.entrypoint,
+			})
+		} catch (e) {
+			console.error(`Fail to execute ${e}`)
+			process.exit(1)
+		}
 
 		// Application must return app class
-		if ( !result.Application)
-			throw new Error(`Fail to get "Application" key in result of evaluating. Got ${result}`)
-		return result
+		if ( !evaluated.result.Application)
+			throw new Error(`Fail to get "Application" key in result of evaluating. Got ${evaluated.result}`)
+		return evaluated.result
 	}
 
 	async sitemap() {
@@ -86,7 +92,6 @@ class BmpRemoteApp {
 	 * @return { Object } { html, statusCode }
 	 */
 	async render() {
-
 		const result = {
 			// baseURI: 'http://bmp.lo:8080/ssr/',
 			css: '',
@@ -128,11 +133,11 @@ class BmpRemoteApp {
 			const shell = Application.constructor.generateDocument(result)
 			return {
 				html: shell,
-				statusCode:  result.statusCode
+				statusCode: result.statusCode
 			}
 		} catch (err) {
 			console.error('Fail to render', err)
-			process.exit( 1 )
+			// process.exit( 1 )
 		}
 
 	}
