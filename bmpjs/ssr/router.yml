@@ -12,7 +12,7 @@ collection:
           --experimental-vm-modules
           ./sitemap.mjs
           --output=stdout
-          --src=https://jetsmarter.com/data/jscomv5/index.js
+          --src=https://jetsmarter.com/data/jscomv5/index.es.js
 
       - type: plugin
         path: ./ssr-Linux-x86_64.so
