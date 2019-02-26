@@ -67,11 +67,10 @@ class BmpRemoteApp {
 				continue
 
 			// register component as already
-			const alreadyGenerated = this.registredComponents.includes(Element.tagName)
-			this.registredComponents.push(Element.tagName)
-
 			// { constructor, tagname } of custom element
 			const Element = this.vm.getContext().customElements.get( route.tagName )
+			const alreadyGenerated = this.registredComponents.includes(Element.tagName)
+
 			const hasUrlConf = Element && typeof Element.constructor.getUrlConf == 'function'
 
 			if ( !hasDynamic(route.pattern) ) {
@@ -83,6 +82,7 @@ class BmpRemoteApp {
 
 			if ( hasUrlConf ) { // component declarated urlConf generator
 				if ( !alreadyGenerated ) {
+					this.registredComponents.push(Element.tagName)
 					// url conf of a component must be generated
 					const ownRoutes = await Element.constructor.getUrlConf(route.pattern, replaceDynamicParts)
 					routes.push( ...ownRoutes )

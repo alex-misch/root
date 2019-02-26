@@ -13,7 +13,13 @@ const remoteApp = new BmpRemoteApp({
 })
 
 const generate = async (remoteApp) => {
-	const sitemap = await remoteApp.sitemap()
+	let sitemap
+	try {
+		sitemap = await remoteApp.sitemap()
+	} catch (e) {
+		console.error(e)
+		process.exit(1)
+	}
 	if (args.output === 'stdout') {
 		process.stdout.write( JSON.stringify({
 			status: 200,
@@ -23,9 +29,14 @@ const generate = async (remoteApp) => {
 	} else {
 		fs.writeFile( './sitemap.xml', sitemap.toXML(), (err) => {
 			if (err) throw err;
-			console.log('Sitemap was saved to "sitemap.xml"!');
+			console.warn('Sitemap was saved to "sitemap.xml"!');
 		})
 	}
 }
 
-generate(remoteApp)
+try {
+	generate(remoteApp)
+} catch(e) {
+	console.error('Fail to render', e)
+	process.exit(1)
+}
