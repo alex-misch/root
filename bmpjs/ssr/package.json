@@ -4,7 +4,7 @@
   "description": "run ECMA SCRIPT Modules on server",
   "main": "index.mjs",
   "scripts": {
-    "render": "node --experimental-modules --no-warnings --experimental-vm-modules render.mjs --url=/asdfasdf --src=/ssr/source/index.es.js --static=https://jetsmarter.com/data/jscomv5/index.js",
+    "render": "node --experimental-modules --no-warnings --experimental-vm-modules render.mjs --url=/ --src=https://d35qz7xn7nfid5.cloudfront.net/ssr/index.es.js",
     "_render": "node --experimental-modules --no-warnings --experimental-vm-modules render.mjs --url=/ --src=https://d35qz7xn7nfid5.cloudfront.net/ssr/index.es.js",
     "sitemap": "node --experimental-modules --no-warnings --experimental-vm-modules sitemap.mjs --output=stdout --src=https://d35qz7xn7nfid5.cloudfront.net/ssr/index.es.js",
     "dockerstart": "docker-compose exec ssrbmp sh -c 'npm run render'",
@@ -13,7 +13,7 @@
   "author": "boomfunc",
   "license": "ISC",
   "bmp": {
-    "_external": {
+    "-external": {
       "bmp-core": "https://jetsmarter.com/data/website/code/test/bmp-core.js",
       "bmp-router": "https://jetsmarter.com/data/website/code/test/bmp-router.js"
     }

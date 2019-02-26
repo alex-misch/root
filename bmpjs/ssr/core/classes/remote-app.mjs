@@ -38,9 +38,9 @@ class BmpRemoteApp {
 		const sourceCode = await download( this.entrypoint )
 
 		// Execute fetched code in virtual machine
-		let evaluated = null
+		let sandbox = null
 		try {
-			evaluated = await this.vm.run({
+			sandbox = await this.vm.run({
 				code: sourceCode,
 				rootUrl: this.entrypoint,
 			})
@@ -49,10 +49,10 @@ class BmpRemoteApp {
 			process.exit(1)
 		}
 
-		// Application must return app class
-		if ( !evaluated.result.Application)
-			throw new Error(`Fail to get "Application" key in result of evaluating. Got ${evaluated.result}`)
-		return evaluated.result
+		// Evaluated sandbox must return app class
+		if ( !sandbox.result.Application)
+			throw new Error(`Fail to get "Application" key in result of evaluating. Got ${sandbox.result}`)
+		return sandbox.result
 	}
 
 	async sitemap() {
@@ -61,27 +61,33 @@ class BmpRemoteApp {
 		this.registredComponents = []
 
 		const routes = []
+		// go to each custom element of route and load his own urlConf
 		for (const route of Application.constructor.config.routes) {
-			if ( !hasDynamic(route.pattern) ) {
-				routes.push(route.pattern)
-			}
-			// skip dynamic patterns, it overwritten in element urlconf
-			// go to each custom element of route and load his own urlConf
-			const Element = this.vm.getContext().customElements.get( route.tagName )
+			if ( route.skipSitemap )
+				continue
 
-			// component declarated urlConf generator
-			if ( Element && typeof Element.constructor.getUrlConf == 'function' ) {
-				const alreadyGenerated = this.registredComponents.includes(Element.tagName)
+			// register component as already
+			const alreadyGenerated = this.registredComponents.includes(Element.tagName)
+			this.registredComponents.push(Element.tagName)
+
+			// { constructor, tagname } of custom element
+			const Element = this.vm.getContext().customElements.get( route.tagName )
+			const hasUrlConf = Element && typeof Element.constructor.getUrlConf == 'function'
+
+			if ( !hasDynamic(route.pattern) ) {
+				// skip dynamic patterns, it overwritten in element urlconf
+				routes.push(route.pattern)
+			} else if ( !hasUrlConf ){
+				console.warn( `Looks like error: "${route.tagName}" has dynamic segment(s), but getUrlConf function not declarated.` )
+			}
+
+			if ( hasUrlConf ) { // component declarated urlConf generator
 				if ( !alreadyGenerated ) {
 					// url conf of a component must be generated
-					this.registredComponents.push(Element.tagName)
 					const ownRoutes = await Element.constructor.getUrlConf(route.pattern, replaceDynamicParts)
 					routes.push( ...ownRoutes )
 				}
 			}
-			// else {
-			// 	console.warn( `Looks like error: "${route.tagName}" has dynamic segment(s), but getUrlConf function not declarated.` )
-			// }
 		}
 
 		return new SitemapGenerator( routes, this.clientRequest.origin )
@@ -98,7 +104,8 @@ class BmpRemoteApp {
 			html: '',
 			head: null,
 			lang: 'en',
-			statusCode: 500
+			statusCode: 500,
+			metatags: {}
 		}
 
 		// get instances of application
@@ -121,6 +128,7 @@ class BmpRemoteApp {
 			}
 			result.head = this.vm.getContext().document.head.innerHTML
 			result.statusCode = appElement.statusCode( this.clientRequest.uri )
+			result.metatags = appElement.metatags( this.clientRequest.uri )
 		} catch(e) {
 			// TODO: parse valid status code
 			// return shell with empty app tag

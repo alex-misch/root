@@ -99,6 +99,7 @@ class VirtualDomAdapter extends HTMLAdapter {
 				await component.ready()
 			if ( typeof component.onAttached == 'function' )
 				await component.onAttached()
+			console.error('RENDER', component.tagName)
 
 			arrChilds.push( await component.render() )
 		} else if ( typeof component.connectedCallback == 'function' ) {
