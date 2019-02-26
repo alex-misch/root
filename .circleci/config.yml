@@ -7,7 +7,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Build core
+          name: Server site rendering tests
           working_directory: ./bmpjs/ssr
           command: |
             npm install
