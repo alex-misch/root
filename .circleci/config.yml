@@ -73,6 +73,7 @@ workflows:
   version: 2
   deploy:
     jobs:
+      - ssr-test
       - build-core
       - build-router
       - deploy:
