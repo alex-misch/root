@@ -1,6 +1,18 @@
 version: 2
 jobs:
 
+  ssr-test:
+    docker:
+      - image: node:10
+    steps:
+      - checkout
+      - run:
+          name: Build core
+          working_directory: ./bmpjs/ssr
+          command: |
+            npm install
+            npm test
+
   build-core:
     docker:
       - image: node:10

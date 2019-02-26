@@ -4,9 +4,7 @@ import { unifyPathname } from "../utils/uri.mjs";
 
 
 const header = `<?xml version="1.0" encoding="UTF-8" ?>`
-const xmlUrlset = content => `
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${ content }</urlset>
-`
+const xmlUrlset = content => `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${ content }</urlset>`
 const xmlURL = url => `<url><loc>${ url }</loc></url>`
 
 class SitemapGenerator {

@@ -8,7 +8,7 @@
     "_render": "node --experimental-modules --no-warnings --experimental-vm-modules render.mjs --url=/ --src=https://d35qz7xn7nfid5.cloudfront.net/ssr/index.es.js",
     "sitemap": "node --experimental-modules --no-warnings --experimental-vm-modules sitemap.mjs --output=stdout --src=https://d35qz7xn7nfid5.cloudfront.net/ssr/index.es.js",
     "dockerstart": "docker-compose exec ssrbmp sh -c 'npm run render'",
-    "test": "node ./node_modules/.bin/jest"
+    "test": "node --experimental-modules --no-warnings ./node_modules/.bin/jest"
   },
   "author": "boomfunc",
   "license": "ISC",
@@ -21,22 +21,25 @@
   "babel": {
     "presets": [
       "@babel/env"
+    ],
+    "plugins": [
+      "@babel/plugin-syntax-dynamic-import"
     ]
   },
   "jest": {
     "verbose": true,
     "bail": false,
     "collectCoverage": false,
-    "modulePathIgnorePatterns": [
-      "sandbox",
-      "node_modules"
-    ],
     "moduleFileExtensions": [
       "js",
+      "json",
       "mjs"
     ],
+    "modulePathIgnorePatterns": [
+      "node_modules"
+    ],
     "transform": {
-      "^.+\\.mjs$": "babel-jest"
+      "^.+\\.m?jsx?$": "babel-jest"
     }
   },
   "dependencies": {
@@ -45,8 +48,9 @@
   },
   "devDependencies": {
     "@babel/core": "^7.2.2",
+    "@babel/plugin-syntax-dynamic-import": "^7.2.0",
     "@babel/preset-env": "^7.3.1",
     "babel-jest": "^24.0.0",
-    "jest": "^24.0.0"
+    "jest": "^24.1.0"
   }
 }
