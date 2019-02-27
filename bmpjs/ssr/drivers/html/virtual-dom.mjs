@@ -19,7 +19,7 @@ class VirtualDOMDriver {
 			props: props || {},
 			children: children.reduce(( output, iter ) => {
 				if ( Array.isArray( iter ))
-					return [ ...output, ...iter ]
+					return [ ...output, ...iter ] // WTF?
 				else
 					return [ ...output, iter ]
 			}, []).filter( child => child !== null )

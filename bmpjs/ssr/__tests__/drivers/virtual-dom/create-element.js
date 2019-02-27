@@ -18,6 +18,18 @@ describe("VirtualDOMDriver createElement", () => {
 
 	})
 
+	test("with array childs", () => {
+
+		const element = VirtualDOMDriver.createElement(
+			"div",
+			{ class: 'fake' },
+			[1,2,3]
+		)
+
+		expect(element.children).toEqual([1,2,3])
+
+	})
+
 	test("with partial params", () => {
 
 		const element = VirtualDOMDriver.createElement("div")

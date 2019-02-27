@@ -18,4 +18,10 @@ describe("CustomElements", () => {
 		expect(ce.elementsRegistry.length).toBe(0)
 	})
 
+	test("register one tag twice throws error", () => {
+		customElements.define( 'tag', class {} )
+		expect( () => customElements.define('tag', class {}) )
+			.toThrow()
+	})
+
 })

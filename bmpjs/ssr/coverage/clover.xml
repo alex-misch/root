@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1551283920187" clover="3.2.0">
-  <project timestamp="1551283920187" name="All files">
-    <metrics statements="187" coveredstatements="99" conditionals="89" coveredconditionals="53" methods="113" coveredmethods="41" elements="389" coveredelements="193" complexity="0" loc="187" ncloc="187" packages="4" files="8" classes="8"/>
+<coverage generated="1551287026663" clover="3.2.0">
+  <project timestamp="1551287026664" name="All files">
+    <metrics statements="187" coveredstatements="104" conditionals="93" coveredconditionals="64" methods="113" coveredmethods="41" elements="393" coveredelements="209" complexity="0" loc="187" ncloc="187" packages="4" files="8" classes="8"/>
     <package name="core">
       <metrics statements="9" coveredstatements="9" conditionals="0" coveredconditionals="0" methods="5" coveredmethods="5"/>
       <file name="sitemap-generator.mjs" path="/Users/alexander/letsnet/root/bmpjs/ssr/core/sitemap-generator.mjs">
@@ -18,35 +18,35 @@
       </file>
     </package>
     <package name="dom">
-      <metrics statements="106" coveredstatements="22" conditionals="37" coveredconditionals="10" methods="86" coveredmethods="14"/>
+      <metrics statements="106" coveredstatements="23" conditionals="37" coveredconditionals="11" methods="86" coveredmethods="14"/>
       <file name="custom-elements.mjs" path="/Users/alexander/letsnet/root/bmpjs/ssr/dom/custom-elements.mjs">
-        <metrics statements="7" coveredstatements="6" conditionals="2" coveredconditionals="1" methods="5" coveredmethods="5"/>
+        <metrics statements="7" coveredstatements="7" conditionals="2" coveredconditionals="2" methods="5" coveredmethods="5"/>
         <line num="7" count="5" type="stmt"/>
-        <line num="11" count="7" type="stmt"/>
-        <line num="16" count="6" type="stmt"/>
-        <line num="21" count="1" type="cond" truecount="1" falsecount="1"/>
-        <line num="22" count="0" type="stmt"/>
-        <line num="24" count="1" type="stmt"/>
+        <line num="11" count="12" type="stmt"/>
+        <line num="16" count="9" type="stmt"/>
+        <line num="21" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="22" count="1" type="stmt"/>
+        <line num="24" count="2" type="stmt"/>
         <line num="31" count="4" type="stmt"/>
       </file>
       <file name="element.mjs" path="/Users/alexander/letsnet/root/bmpjs/ssr/dom/element.mjs">
         <metrics statements="46" coveredstatements="10" conditionals="21" coveredconditionals="7" methods="42" coveredmethods="5"/>
-        <line num="8" count="10" type="cond" truecount="1" falsecount="1"/>
-        <line num="9" count="10" type="cond" truecount="2" falsecount="0"/>
-        <line num="10" count="10" type="stmt"/>
-        <line num="11" count="10" type="stmt"/>
-        <line num="13" count="10" type="stmt"/>
-        <line num="14" count="10" type="stmt"/>
+        <line num="8" count="14" type="cond" truecount="1" falsecount="1"/>
+        <line num="9" count="14" type="cond" truecount="2" falsecount="0"/>
+        <line num="10" count="14" type="stmt"/>
+        <line num="11" count="14" type="stmt"/>
+        <line num="13" count="14" type="stmt"/>
+        <line num="14" count="14" type="stmt"/>
         <line num="19" count="0" type="stmt"/>
         <line num="21" count="0" type="cond" truecount="0" falsecount="2"/>
         <line num="22" count="0" type="stmt"/>
         <line num="23" count="0" type="stmt"/>
         <line num="31" count="0" type="stmt"/>
         <line num="34" count="0" type="stmt"/>
-        <line num="38" count="9" type="stmt"/>
+        <line num="38" count="13" type="stmt"/>
         <line num="41" count="0" type="stmt"/>
-        <line num="46" count="14" type="stmt"/>
-        <line num="47" count="14" type="cond" truecount="2" falsecount="0"/>
+        <line num="46" count="20" type="stmt"/>
+        <line num="47" count="20" type="cond" truecount="2" falsecount="0"/>
         <line num="51" count="0" type="stmt"/>
         <line num="55" count="0" type="stmt"/>
         <line num="59" count="0" type="stmt"/>
@@ -54,7 +54,7 @@
         <line num="61" count="0" type="stmt"/>
         <line num="63" count="0" type="stmt"/>
         <line num="67" count="0" type="stmt"/>
-        <line num="70" count="12" type="cond" truecount="1" falsecount="1"/>
+        <line num="70" count="17" type="cond" truecount="1" falsecount="1"/>
         <line num="74" count="0" type="stmt"/>
         <line num="75" count="0" type="cond" truecount="0" falsecount="2"/>
         <line num="76" count="0" type="stmt"/>
@@ -90,17 +90,17 @@
         <line num="21" count="0" type="stmt"/>
         <line num="25" count="0" type="stmt"/>
         <line num="33" count="0" type="stmt"/>
-        <line num="43" count="5" type="stmt"/>
-        <line num="44" count="5" type="cond" truecount="1" falsecount="1"/>
+        <line num="43" count="8" type="stmt"/>
+        <line num="44" count="8" type="cond" truecount="1" falsecount="1"/>
         <line num="45" count="0" type="stmt"/>
         <line num="46" count="0" type="stmt"/>
         <line num="47" count="0" type="stmt"/>
-        <line num="49" count="5" type="stmt"/>
+        <line num="49" count="8" type="stmt"/>
         <line num="54" count="0" type="stmt"/>
       </file>
       <file name="html-element.mjs" path="/Users/alexander/letsnet/root/bmpjs/ssr/dom/html-element.mjs">
         <metrics statements="36" coveredstatements="3" conditionals="8" coveredconditionals="1" methods="31" coveredmethods="3"/>
-        <line num="8" count="10" type="stmt"/>
+        <line num="8" count="14" type="stmt"/>
         <line num="20" count="0" type="stmt"/>
         <line num="22" count="0" type="stmt"/>
         <line num="24" count="0" type="stmt"/>
@@ -117,8 +117,8 @@
         <line num="44" count="0" type="stmt"/>
         <line num="45" count="0" type="stmt"/>
         <line num="46" count="0" type="stmt"/>
-        <line num="50" count="1" type="stmt"/>
-        <line num="51" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="50" count="2" type="stmt"/>
+        <line num="51" count="2" type="cond" truecount="1" falsecount="1"/>
         <line num="55" count="0" type="stmt"/>
         <line num="56" count="0" type="stmt"/>
         <line num="57" count="0" type="stmt"/>
@@ -139,90 +139,90 @@
       </file>
     </package>
     <package name="drivers.html">
-      <metrics statements="38" coveredstatements="35" conditionals="28" coveredconditionals="24" methods="9" coveredmethods="9"/>
+      <metrics statements="38" coveredstatements="38" conditionals="28" coveredconditionals="26" methods="9" coveredmethods="9"/>
       <file name="virtual-dom.mjs" path="/Users/alexander/letsnet/root/bmpjs/ssr/drivers/html/virtual-dom.mjs">
-        <metrics statements="38" coveredstatements="35" conditionals="28" coveredconditionals="24" methods="9" coveredmethods="9"/>
-        <line num="17" count="2" type="stmt"/>
-        <line num="21" count="3" type="cond" truecount="1" falsecount="1"/>
-        <line num="22" count="0" type="stmt"/>
+        <metrics statements="38" coveredstatements="38" conditionals="28" coveredconditionals="26" methods="9" coveredmethods="9"/>
+        <line num="17" count="3" type="stmt"/>
+        <line num="21" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="22" count="1" type="stmt"/>
         <line num="24" count="3" type="stmt"/>
-        <line num="25" count="3" type="stmt"/>
-        <line num="35" count="10" type="stmt"/>
-        <line num="36" count="10" type="stmt"/>
-        <line num="46" count="5" type="cond" truecount="1" falsecount="0"/>
-        <line num="47" count="5" type="stmt"/>
-        <line num="48" count="5" type="cond" truecount="2" falsecount="0"/>
-        <line num="49" count="4" type="stmt"/>
-        <line num="50" count="2" type="stmt"/>
-        <line num="51" count="2" type="cond" truecount="2" falsecount="0"/>
-        <line num="53" count="5" type="stmt"/>
-        <line num="54" count="5" type="stmt"/>
-        <line num="63" count="24" type="cond" truecount="2" falsecount="0"/>
-        <line num="64" count="4" type="stmt"/>
-        <line num="65" count="4" type="stmt"/>
-        <line num="68" count="20" type="cond" truecount="2" falsecount="0"/>
-        <line num="69" count="4" type="stmt"/>
-        <line num="71" count="16" type="cond" truecount="2" falsecount="0"/>
-        <line num="72" count="3" type="stmt"/>
-        <line num="74" count="13" type="cond" truecount="2" falsecount="0"/>
-        <line num="75" count="10" type="stmt"/>
-        <line num="77" count="3" type="stmt"/>
-        <line num="87" count="9" type="stmt"/>
-        <line num="88" count="9" type="cond" truecount="1" falsecount="1"/>
-        <line num="89" count="0" type="stmt"/>
-        <line num="91" count="9" type="cond" truecount="2" falsecount="0"/>
+        <line num="25" count="6" type="stmt"/>
+        <line num="35" count="15" type="stmt"/>
+        <line num="36" count="15" type="stmt"/>
+        <line num="46" count="8" type="cond" truecount="1" falsecount="0"/>
+        <line num="47" count="8" type="stmt"/>
+        <line num="48" count="8" type="cond" truecount="2" falsecount="0"/>
+        <line num="49" count="5" type="stmt"/>
+        <line num="50" count="3" type="stmt"/>
+        <line num="51" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="53" count="8" type="stmt"/>
+        <line num="54" count="8" type="stmt"/>
+        <line num="63" count="33" type="cond" truecount="2" falsecount="0"/>
+        <line num="64" count="5" type="stmt"/>
+        <line num="65" count="5" type="stmt"/>
+        <line num="68" count="28" type="cond" truecount="2" falsecount="0"/>
+        <line num="69" count="5" type="stmt"/>
+        <line num="71" count="23" type="cond" truecount="2" falsecount="0"/>
+        <line num="72" count="2" type="stmt"/>
+        <line num="74" count="21" type="cond" truecount="2" falsecount="0"/>
+        <line num="75" count="15" type="stmt"/>
+        <line num="77" count="6" type="stmt"/>
+        <line num="87" count="13" type="stmt"/>
+        <line num="88" count="13" type="cond" truecount="2" falsecount="0"/>
+        <line num="89" count="1" type="stmt"/>
+        <line num="91" count="13" type="cond" truecount="2" falsecount="0"/>
         <line num="93" count="1" type="cond" truecount="1" falsecount="1"/>
-        <line num="94" count="0" type="stmt"/>
+        <line num="94" count="1" type="stmt"/>
         <line num="95" count="1" type="cond" truecount="1" falsecount="1"/>
         <line num="96" count="1" type="stmt"/>
         <line num="98" count="1" type="stmt"/>
-        <line num="99" count="8" type="cond" truecount="2" falsecount="0"/>
+        <line num="99" count="12" type="cond" truecount="2" falsecount="0"/>
         <line num="101" count="1" type="stmt"/>
         <line num="102" count="1" type="stmt"/>
-        <line num="104" count="9" type="stmt"/>
+        <line num="104" count="13" type="stmt"/>
       </file>
     </package>
     <package name="utils">
-      <metrics statements="34" coveredstatements="33" conditionals="24" coveredconditionals="19" methods="13" coveredmethods="13"/>
+      <metrics statements="34" coveredstatements="34" conditionals="28" coveredconditionals="27" methods="13" coveredmethods="13"/>
       <file name="html.mjs" path="/Users/alexander/letsnet/root/bmpjs/ssr/utils/html.mjs">
-        <metrics statements="14" coveredstatements="14" conditionals="14" coveredconditionals="10" methods="7" coveredmethods="7"/>
+        <metrics statements="14" coveredstatements="14" conditionals="18" coveredconditionals="17" methods="7" coveredmethods="7"/>
         <line num="5" count="4" type="stmt"/>
-        <line num="6" count="6" type="cond" truecount="1" falsecount="1"/>
-        <line num="7" count="6" type="stmt"/>
-        <line num="8" count="6" type="stmt"/>
+        <line num="6" count="12" type="cond" truecount="4" falsecount="0"/>
+        <line num="7" count="10" type="cond" truecount="1" falsecount="1"/>
+        <line num="8" count="10" type="stmt"/>
         <line num="16" count="4" type="stmt"/>
         <line num="33" count="4" type="stmt"/>
-        <line num="34" count="8" type="cond" truecount="1" falsecount="1"/>
+        <line num="34" count="10" type="cond" truecount="2" falsecount="0"/>
         <line num="49" count="4" type="stmt"/>
-        <line num="50" count="1" type="cond" truecount="4" falsecount="1"/>
+        <line num="50" count="6" type="cond" truecount="5" falsecount="0"/>
         <line num="51" count="1" type="stmt"/>
-        <line num="52" count="8" type="stmt"/>
-        <line num="53" count="5" type="cond" truecount="3" falsecount="0"/>
-        <line num="54" count="4" type="cond" truecount="1" falsecount="1"/>
-        <line num="55" count="4" type="stmt"/>
+        <line num="52" count="9" type="stmt"/>
+        <line num="53" count="6" type="cond" truecount="3" falsecount="0"/>
+        <line num="54" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="55" count="5" type="stmt"/>
       </file>
       <file name="uri.mjs" path="/Users/alexander/letsnet/root/bmpjs/ssr/utils/uri.mjs">
-        <metrics statements="20" coveredstatements="19" conditionals="10" coveredconditionals="9" methods="6" coveredmethods="6"/>
+        <metrics statements="20" coveredstatements="20" conditionals="10" coveredconditionals="10" methods="6" coveredmethods="6"/>
         <line num="12" count="2" type="stmt"/>
-        <line num="13" count="20" type="cond" truecount="4" falsecount="0"/>
-        <line num="14" count="18" type="stmt"/>
+        <line num="13" count="21" type="cond" truecount="4" falsecount="0"/>
+        <line num="14" count="19" type="stmt"/>
         <line num="25" count="4" type="stmt"/>
         <line num="38" count="2" type="stmt"/>
-        <line num="39" count="16" type="stmt"/>
-        <line num="40" count="16" type="cond" truecount="2" falsecount="0"/>
+        <line num="39" count="17" type="stmt"/>
+        <line num="40" count="17" type="cond" truecount="2" falsecount="0"/>
         <line num="41" count="10" type="stmt"/>
-        <line num="43" count="6" type="stmt"/>
-        <line num="44" count="6" type="cond" truecount="1" falsecount="1"/>
-        <line num="45" count="0" type="stmt"/>
-        <line num="47" count="6" type="stmt"/>
-        <line num="49" count="6" type="stmt"/>
+        <line num="43" count="7" type="stmt"/>
+        <line num="44" count="7" type="cond" truecount="2" falsecount="0"/>
+        <line num="45" count="1" type="stmt"/>
+        <line num="47" count="7" type="stmt"/>
+        <line num="49" count="7" type="stmt"/>
         <line num="57" count="2" type="stmt"/>
-        <line num="58" count="6" type="stmt"/>
-        <line num="60" count="28" type="stmt"/>
-        <line num="62" count="16" type="stmt"/>
-        <line num="63" count="16" type="cond" truecount="2" falsecount="0"/>
-        <line num="64" count="6" type="stmt"/>
-        <line num="67" count="6" type="stmt"/>
+        <line num="58" count="7" type="stmt"/>
+        <line num="60" count="31" type="stmt"/>
+        <line num="62" count="17" type="stmt"/>
+        <line num="63" count="17" type="cond" truecount="2" falsecount="0"/>
+        <line num="64" count="7" type="stmt"/>
+        <line num="67" count="7" type="stmt"/>
       </file>
     </package>
   </project>

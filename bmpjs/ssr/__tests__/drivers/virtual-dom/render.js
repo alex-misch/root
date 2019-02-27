@@ -1,8 +1,8 @@
 import VirtualDOMDriver from "../../../drivers/html/virtual-dom.mjs";
 import { HTMLElement } from '../../../dom/html-element'
 
-const driver = new VirtualDOMDriver()
-
+let driver
+beforeAll( () => driver = new VirtualDOMDriver() )
 
 describe("VirtualDOMDriver deepRender", () => {
 
@@ -32,12 +32,12 @@ describe("VirtualDOMDriver deepRender", () => {
 		const mock = jest.fn()
 		TestVDElement.prototype.render = mock.mockReturnValue({ type: 'div' })
 		TestVDElement.prototype.onAttached = jest.fn()
-		TestVDElement.prototype.render = jest.fn()
+		TestVDElement.prototype.ready = jest.fn()
 		// Tests
 		const element = await driver.deepRender(new TestVDElement())
 		expect( element.render ).toHaveBeenCalled()
 		expect( element.onAttached ).toHaveBeenCalled()
-		expect( element.render ).toHaveBeenCalled()
+		expect( element.ready ).toHaveBeenCalled()
 		resolve()
 	})
 
@@ -52,17 +52,26 @@ describe("VirtualDOMDriver deepRender", () => {
 		resolve()
 	})
 
-	// test("array converter should return all instances HTMLElement", async resolve => {
-	// 	const arrOfElements = await driver.deepRender([
-	// 		{ type: 'div' },
-	// 		new HTMLElement('span')
-	// 	])
-	// 	expect( arrOfElements ).toBeInstanceOf( Array )
-	// 	arrOfElements.forEach( el => expect(el).toBeInstanceOf(HTMLElement) )
+	test("array converter should return all instances HTMLElement", async resolve => {
+		const arrOfElements = await driver.deepRender([
+			{ type: 'div' },
+			new HTMLElement('span')
+		])
+		expect( arrOfElements ).toBeInstanceOf( Array )
+		arrOfElements.forEach( el => expect(el).toBeInstanceOf(HTMLElement) )
 
-	// 	expect( await driver.render({}) ).toBeInstanceOf( Object )
+		// expect( await driver.render({}) ).toBeInstanceOf( Object )
 
-	// 	resolve()
-	// })
+		resolve()
+	})
+
+	test("safeHTML should be inserted as HTML code", async resolve => {
+		const element = await driver.deepRender({
+			type: 'div',
+			props: { safeHTML: '<div class="foobar">Hello!</div>' }
+		})
+		expect( element.innerHTML ).toBe(`<div class="foobar">Hello!</div>`)
+		resolve()
+	})
 
 })

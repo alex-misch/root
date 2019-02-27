@@ -15,15 +15,15 @@ describe("unifyPathname", () => {
 
   test( "url with segments", () => {
 
-    [
-      '/foo//bar///baz/////',
+    [	'/foo//bar///baz/////',
       'foo//bar///baz',
       '/foo/bar//baz',
       'foo/bar//baz/',
     ].forEach( pathname => {
       expect( unifyPathname( pathname ) ).toBe( '/foo/bar/baz/' )
     })
-  })
+	})
+
   test( "url with parameters", () => {
 
     expect( unifyPathname( `/foo//bar///baz/?foo=bar` ) ).toBe( '/foo/bar/baz/?foo=bar' )
@@ -81,6 +81,12 @@ describe("replaceDynamicParts", () => {
 		expect(
 			replaceDynamicParts('/:first_segment/s2/', { first_segment: 'baz' })
 		).toBe( '/baz/s2/' )
+	})
+
+	test("segments with expected vals", () => {
+		expect(
+			replaceDynamicParts('/:first_segment{foo|bar}/', { first_segment: 'bar' })
+		).toBe( '/bar/' )
 	})
 
 })

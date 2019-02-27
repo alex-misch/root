@@ -3,8 +3,8 @@
  * @param { String } text
  */
 const escapeHtml = text => {
-	if (!(text instanceof String))
-		text = text.toString()
+	if ( typeof text !== 'boolean' && !text ) return ''
+	if ( !(text instanceof String) ) text = text.toString()
   return text
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
