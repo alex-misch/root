@@ -1,15 +1,17 @@
 
-// import { RemoteApp } from '../../core/classes/remote-app'
-
 describe( "execApp method", () => {
-	test("empty", () => {})
+	test("empty", () => {
+	})
 })
 
 describe("sitemap method", () => {
-	test("empty", () => {})
+	test("empty", () => {
+	})
 })
 
 
 describe("render method", () => {
-	test("empty", () => {})
+	test("empty", () => {
+
+	})
 })

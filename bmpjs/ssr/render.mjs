@@ -2,7 +2,7 @@
 import { getProcessArguments, requiredArgs } from './utils/arguments.mjs'
 
 import BmpRemoteApp from './core/classes/remote-app'
-import VirtualDOMAdapter from './adapters/html/virtual-dom'
+import VirtualDOMDriver from './drivers/html/virtual-dom'
 
 requiredArgs( 'url', 'src' )
 const args = getProcessArguments('url', 'headers', 'user-agent', 'ip', 'src', 'static', 'host')
@@ -16,7 +16,7 @@ global.request = {
 
 const render = async (clientRequest, entrypoint) => {
 	const app = new BmpRemoteApp({
-		htmlAdapter: new VirtualDOMAdapter(),
+		htmlDriver: new VirtualDOMDriver(),
 		entrypoint: entrypoint,
 		clientRequest: clientRequest
 	})

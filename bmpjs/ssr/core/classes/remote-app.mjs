@@ -2,7 +2,6 @@ import VirtualMachine from './virtual-machine'
 import { download } from '../../utils/file.mjs'
 import { HTML5Api } from "../../dom/html5.mjs";
 import { SitemapGenerator } from '../sitemap-generator.mjs'
-import HTMLAdapter from '../interfaces/html-adapter.mjs';
 import {
 	replaceDynamicParts,
 	hasDynamic
@@ -13,12 +12,12 @@ class BmpRemoteApp {
 	/**
 	 * Configurating app and start virtual machine to run code
 	 * @constructor
-	 * @param { Object } { clientRequest, htmlAdapter, entrypoint }
+	 * @param { Object } { clientRequest, htmlDriver, entrypoint }
 	 *
 	 */
-	constructor({ clientRequest, htmlAdapter, entrypoint }) {
-		/** @param { HTMLAdapter } htmlAdapter adapter of html5 stringifier */
-		this.htmlAdapter = htmlAdapter
+	constructor({ clientRequest, htmlDriver, entrypoint }) {
+		/** @param htmlDriver driver of html5 stringifier */
+		this.htmlDriver = htmlDriver
 		/** @param {String} entrypoint script URL  */
 		this.entrypoint = entrypoint
 		/** @param {Object} clientRequest key-value pair object with client request */
@@ -50,7 +49,7 @@ class BmpRemoteApp {
 		}
 
 		// Evaluated sandbox must return app class
-		if ( !sandbox.result.Application)
+		if ( !sandbox.result.Application )
 			throw new Error(`Fail to get "Application" key in result of evaluating. Got ${sandbox.result}`)
 		return sandbox.result
 	}
@@ -112,12 +111,12 @@ class BmpRemoteApp {
 		const { Application, CssJS } = await this.execApp()
 
 		try {
-			// createElement is static method, like VirtualDOMAdapter.createElement
+			// createElement is static method, like VirtualDOMDriver.createElement
 			// so we must call this method from constructor
-			const appInstance = this.htmlAdapter.constructor.createElement( Application.tagName )
+			const appInstance = this.htmlDriver.constructor.createElement( Application.tagName )
 			// render all child elements recursively
 			/** @var { HTMLElement } appElement */
-			const appElement = await this.htmlAdapter.deepRender( appInstance )
+			const appElement = await this.htmlDriver.deepRender( appInstance )
 			// By default it can supports HTML5 Api, so get outerHTML
 			result.html = appElement.outerHTML
 			// generate styles of document

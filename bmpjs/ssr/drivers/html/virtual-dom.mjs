@@ -1,16 +1,11 @@
-import HTMLAdapter from '../../core/interfaces/html-adapter'
-import { customElements } from '../../dom/custom-elements'
 import { HTMLElement } from '../../dom/html-element.mjs';
 import { HTMLDocument } from '../../dom/html-document.mjs';
 
 /**
  * Server-size Virtual Dom objects converter to HTML DOM instances
  */
-class VirtualDomAdapter extends HTMLAdapter {
+class VirtualDOMDriver {
 
-	constructor() {
-		super()
-	}
 
 	/**
 	 * Creates VirtualDOM object
@@ -51,9 +46,9 @@ class VirtualDomAdapter extends HTMLAdapter {
 		let { type: tagName, props, children = [] } = instance
 		let element = HTMLDocument.createElement(tagName)
 		if ( props )  {
-			element.attributes = props && Object.keys(props).map( key => ({ name: key, value: props[key] }) )
+			element.attributes = Object.keys(props).map( key => ({ name: key, value: props[key] }) )
 			const ref = element.getAttribute('ref')
-			if (typeof ref == 'function ') ref(element)
+			if (typeof ref === 'function') ref(element)
 		}
 		await this.render(element, children)
 		return element
@@ -112,4 +107,4 @@ class VirtualDomAdapter extends HTMLAdapter {
 
 }
 
-export default VirtualDomAdapter
+export default VirtualDOMDriver

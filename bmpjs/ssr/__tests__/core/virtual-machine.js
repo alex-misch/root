@@ -1,0 +1,7 @@
+
+
+describe("VirtualMachine", () => {
+
+	test('empty', () => {})
+
+})
