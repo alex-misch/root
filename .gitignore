@@ -34,4 +34,4 @@ node_modules/
 bmp_modules/
 npm-debug.log
 
-.coverage
+coverage
