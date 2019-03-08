@@ -12,8 +12,8 @@ collection:
           --experimental-vm-modules
           ./sitemap.mjs
           --output=stdout
-          --src=https://d35qz7xn7nfid5.cloudfront.net/ssr/index.es.js
-      # --src=https://jetsmarter.com/data/jscomv5/index.es.js
+          --src=https://jetsmarter.com/data/jscomv5/index.es.js
+        # --src=https://d35qz7xn7nfid5.cloudfront.net/ssr/index.es.js
 
       - type: plugin
         path: ./ssr-Linux-x86_64.so
@@ -38,8 +38,8 @@ collection:
           --ip={{meta "ip"}}
           --user-agent='{{meta "ua"}}'
           --origin=https://jetsmarter.com/
-          --src=https://d35qz7xn7nfid5.cloudfront.net/ssr/index.es.js
-      # --src=https://jetsmarter.com/data/jscomv5/index.es.js
+          --src=https://jetsmarter.com/data/jscomv5/index.es.js
+      # --src=https://d35qz7xn7nfid5.cloudfront.net/ssr/index.es.js
       # - type: process
       # cmd: 'echo {"status": {{q "status"}}, "content": "URL: {{url "url"}}, IP: {{meta "ip"}}, UA: {{meta "ua"}}"}'
 
