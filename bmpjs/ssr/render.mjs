@@ -5,15 +5,14 @@ import BmpRemoteApp from './core/classes/remote-app'
 import VirtualDOMDriver from './drivers/html/virtual-dom'
 
 requiredArgs( 'url', 'src' )
-const args = getProcessArguments('url', 'headers', 'user-agent', 'ip', 'src', 'static', 'host')
+const args = getProcessArguments('url', 'headers', 'user-agent', 'ip', 'src', 'origin', 'host')
 global.request = {
 	headers: (args.headers || {}),
 	uri: args.url,
 	ip: args.ip,
-	static: args.static,
+	origin: args.origin,
 	userAgent: args['user-agent'] || 'Google Chrome'
 }
-
 const render = async (clientRequest, entrypoint) => {
 	const app = new BmpRemoteApp({
 		htmlDriver: new VirtualDOMDriver(),

@@ -25,10 +25,11 @@ class BmpRemoteApp {
 
 		/** Create enviroment of vitrual machine and start it */
 		const vmContext = HTML5Api({
-			baseURI: clientRequest.static,
-			url: clientRequest.origin + clientRequest.uri,
+			baseURI: clientRequest.origin,
+			url: (clientRequest.origin.replace(/https?:\/\/(.*)\/$/, '$1') + clientRequest.uri),
 			userAgent: clientRequest.userAgent
 		})
+		console.warn(vmContext.location)
 		this.vm = new VirtualMachine(vmContext)
 	}
 
@@ -135,6 +136,8 @@ class BmpRemoteApp {
 			result.statusCode = 200
 			console.error(e)
 		}
+		// TOOD
+		result.baseURI = this.clientRequest.origin
 
 		try {
 			const shell = Application.constructor.generateDocument(result)

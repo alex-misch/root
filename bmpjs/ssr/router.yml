@@ -12,7 +12,8 @@ collection:
           --experimental-vm-modules
           ./sitemap.mjs
           --output=stdout
-          --src=https://jetsmarter.com/data/jscomv5/index.es.js
+          --src=https://d35qz7xn7nfid5.cloudfront.net/ssr/index.es.js
+      # --src=https://jetsmarter.com/data/jscomv5/index.es.js
 
       - type: plugin
         path: ./ssr-Linux-x86_64.so
@@ -36,7 +37,9 @@ collection:
           --url=/{{url "url"}}
           --ip={{meta "ip"}}
           --user-agent='{{meta "ua"}}'
-          --src=https://jetsmarter.com/data/jscomv5/index.es.js
+          --origin=https://jetsmarter.com/
+          --src=https://d35qz7xn7nfid5.cloudfront.net/ssr/index.es.js
+      # --src=https://jetsmarter.com/data/jscomv5/index.es.js
       # - type: process
       # cmd: 'echo {"status": {{q "status"}}, "content": "URL: {{url "url"}}, IP: {{meta "ip"}}, UA: {{meta "ua"}}"}'
 
@@ -62,3 +65,10 @@ collection:
 
       - type: process
         cmd: echo pong
+
+  # Serve static data
+  - pattern: "/data/{url:*}"
+    pipeline:
+
+      - type: process
+        cmd: cat ./cache/{{url "url"}}

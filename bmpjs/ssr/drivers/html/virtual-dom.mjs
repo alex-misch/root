@@ -101,7 +101,10 @@ class VirtualDOMDriver {
 			await component.connectedCallback()
 			arrChilds.push( ...component.childNodes )
 		}
-		component.childNodes = await this.deepRender(arrChilds)
+
+		component.innerHTML = await Promise.all(
+			arrChilds.map( async child => await this.deepRender(child) )
+		)
 	}
 
 

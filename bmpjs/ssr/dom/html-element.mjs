@@ -24,6 +24,27 @@ class HTMLElement extends Element {
 		return []
 	}
 
+	set href(val) {
+		this.setAttribute('href', val)
+	}
+
+	setMutationCallback(fn) {
+		this._mutationCallback = fn
+	}
+
+	_mutation(mutationRecords) {
+		if (typeof this._mutationCallback === 'function') {
+			this._mutationCallback(mutationRecords)
+		}
+	}
+
+	appendChild(node) {
+		if (node instanceof Element)
+			node.parent = this
+		this.childNodes.push(node)
+		this._mutation([{ addedNodes: [node] }])
+	}
+
 	_createElement({ tag, attrib, children }) {
 
 		const CustomElement = customElements.get(tag)
@@ -41,9 +62,11 @@ class HTMLElement extends Element {
 	}
 
 	set innerHTML(content) {
-		const obj = et.parse(content)
-		const el = this._createElement( obj.getroot() )
-		this.childNodes = [ el ]
+		// const obj = et.parse(content)
+		// const content = this._createElement( obj.getroot() )
+		const _content = Array.isArray(content) ? content : [ content ]
+		this.childNodes = _content
+		this._mutation([{ addedNodes: _content }])
 	}
 
 	get innerHTML() {

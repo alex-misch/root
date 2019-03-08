@@ -9,6 +9,7 @@ class Element {
 		if (tagName) this.tagName = tagName
 		this.childNodes = []
 		this.children = this.childNodes
+		this.nodeType = 3
 
 		this.id = ''
 		this.parent = parent
@@ -17,11 +18,6 @@ class Element {
 	/** Work with content */
 	animate() {}
 	get parentNode() { return this.parent }
-	appendChild(node) {
-		if (node instanceof Element)
-			node.parent = this
-		this.childNodes.push(node)
-	}
 
 	insertBefore() {}
 	insertAdjacentElement() {}
