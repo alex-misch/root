@@ -4,9 +4,11 @@ import { HTMLDocument } from "./html-document.mjs";
 import { DOMException } from './dom-exception.mjs';
 import { CustomElements, customElements } from "./custom-elements.mjs";
 import { Navigator } from "./navigator"
-import fetch from 'node-fetch-polyfill'
 import { Console } from 'console'
 import { Writable } from 'stream'
+// import fetch from 'node-fetch-polyfill'
+// import { timeStamp } from '../utils/timeline'
+
 /**
  * NodeJS doesn't support rewriting URL, but we are creating browser ENV
  * so add replace support
@@ -62,17 +64,19 @@ const HTML5Api = ({ url, userAgent, baseURI }) => ({
 	CustomElements,
 	customElements,
 	CustomEvent: class {},
-	fetch,
-	// : (...args) => {
-	// 	console.log(args[0])
-	// 	return fetch(...args)
+	fetch: () => {},
+	// async (...args) => {
+	// 	console.error('fetch', timeStamp(), args[0])
+	// 	const res = await fetch(...args)
+	// 	console.error('fetch end', timeStamp(), args[0])
+	// 	return res
 	// },
 
 	/** BMP api */
 
 	/** Contants */
 	/** TODO: move it to dynamic variables (m.b. from CLI ) */
-	SERVER_NAME: 'https://jetsmarter.com',
+	SERVER_NAME: `https://${url}`,
 	apiGateway: 'https://api.jetsmarter.com',
 	IS_SSR: true,
 	location: new URL(`https://${url}`),

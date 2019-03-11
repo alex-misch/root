@@ -3,6 +3,7 @@ import { getProcessArguments, requiredArgs } from './utils/arguments.mjs'
 
 import BmpRemoteApp from './core/classes/remote-app'
 import VirtualDOMDriver from './drivers/html/virtual-dom'
+import { timeStamp } from './utils/timeline.mjs';
 
 requiredArgs( 'url', 'src' )
 const args = getProcessArguments('url', 'headers', 'user-agent', 'ip', 'src', 'origin', 'host')
@@ -13,6 +14,7 @@ global.request = {
 	origin: args.origin,
 	userAgent: args['user-agent'] || 'Google Chrome'
 }
+
 const render = async (clientRequest, entrypoint) => {
 	const app = new BmpRemoteApp({
 		htmlDriver: new VirtualDOMDriver(),
@@ -27,7 +29,10 @@ const render = async (clientRequest, entrypoint) => {
 		content: html,
 		mime: 'text/html'
 	}
+
+	console.warn('\nbefore stdout', timeStamp())
 	process.stdout.write( JSON.stringify(output) )
+	process.on('exit', code => console.warn(`Exit ${code}`, timeStamp() ))
 	// process.exit(0)
 }
 

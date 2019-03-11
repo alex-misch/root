@@ -6,6 +6,7 @@ import {
 	replaceDynamicParts,
 	hasDynamic
 } from '../../utils/uri.mjs';
+import { timeStamp } from '../../utils/timeline.mjs';
 
 class BmpRemoteApp {
 
@@ -29,7 +30,6 @@ class BmpRemoteApp {
 			url: (clientRequest.origin.replace(/https?:\/\/(.*)\/$/, '$1') + clientRequest.uri),
 			userAgent: clientRequest.userAgent
 		})
-		console.warn(vmContext.location)
 		this.vm = new VirtualMachine(vmContext)
 	}
 
@@ -77,7 +77,6 @@ class BmpRemoteApp {
 				// skip dynamic patterns, it overwritten in element urlconf
 				routes.push(route.pattern)
 			} else if ( !hasUrlConf ){
-				console.warn( `Looks like error: "${route.tagName}" has dynamic segment(s), but getUrlConf function not declarated.` )
 			}
 
 			if ( hasUrlConf ) { // component declarated urlConf generator

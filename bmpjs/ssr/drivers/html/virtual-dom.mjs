@@ -1,5 +1,6 @@
 import { HTMLElement } from '../../dom/html-element.mjs';
 import { HTMLDocument } from '../../dom/html-document.mjs';
+import { timeStamp } from '../../utils/timeline.mjs';
 
 /**
  * Server-size Virtual Dom objects converter to HTML DOM instances
