@@ -12,7 +12,7 @@ collection:
           --experimental-vm-modules
           ./sitemap.mjs
           --output=stdout
-          --origin=http://bmp.lo:8080/
+          --origin=https://jetmsarter.com/
           --src=https://jetsmarter.com/data/jscomv5/index.es.js
         # --src=https://d35qz7xn7nfid5.cloudfront.net/ssr/index.es.js
 
@@ -38,7 +38,7 @@ collection:
           --url=/{{url "url"}}
           --ip={{meta "ip"}}
           --user-agent='{{meta "ua"}}'
-          --origin=http://bmp.lo:8080/
+          --origin=https://jetmsarter.com/
           --src=https://jetsmarter.com/data/jscomv5/index.es.js
         # --src=https://d35qz7xn7nfid5.cloudfront.net/ssr/index.es.js
       # - type: process

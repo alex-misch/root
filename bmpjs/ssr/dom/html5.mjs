@@ -76,7 +76,7 @@ const HTML5Api = ({ url, userAgent, baseURI }) => ({
 
 	/** Contants */
 	/** TODO: move it to dynamic variables (m.b. from CLI ) */
-	SERVER_NAME: `https://${url}`,
+	SERVER_NAME: 'https://jetsmarter.com',
 	apiGateway: 'https://api.jetsmarter.com',
 	IS_SSR: true,
 	location: new URL(`https://${url}`),
