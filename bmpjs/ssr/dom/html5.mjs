@@ -8,7 +8,7 @@ import { Console } from 'console'
 import { Writable } from 'stream'
 import fetch from 'node-fetch-polyfill'
 // import { requirejs } from './requirejs'
-// import { timeStamp } from '../utils/timeline'
+import { timeStamp } from '../utils/timeline'
 
 /**
  * NodeJS doesn't support rewriting URL, but we are creating browser ENV
@@ -69,7 +69,7 @@ const HTML5Api = ({ url, userAgent, baseURI }) => ({
 	fetch: async (...args) => {
 		const fetchTime = (new Date()).getTime()
 		const res = await fetch(...args)
-		console.warn('\nFetch end in', timeStamp(fetchTime), args)
+		console.warn('\nFetch end in', timeStamp(fetchTime), args[0])
 		return res
 	},
 

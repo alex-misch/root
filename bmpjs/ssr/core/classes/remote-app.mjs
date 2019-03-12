@@ -135,11 +135,8 @@ class BmpRemoteApp {
 			result.statusCode = 200
 			console.error(e)
 		}
-		// TOOD
-		result.baseURI = this.clientRequest.origin
-		if (document.title)
-			result.title = document.title
 
+		result.baseURI = this.clientRequest.origin
 		try {
 			const shell = Application.constructor.generateDocument(result)
 			return {
