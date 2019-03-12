@@ -26,7 +26,7 @@ appLogger.stdout.on('pipe', appLogger.warn)
 appLogger.stderr.on('pipe', appLogger.warn)
 
 const HTML5Api = ({ url, userAgent, baseURI }) => ({
-	// console: new Console(appLogger),
+	console: new Console(appLogger),
 	/** HTML5 Api */
 	HTMLElement,
 	Node: {
