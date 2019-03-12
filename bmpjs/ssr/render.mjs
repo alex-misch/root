@@ -30,9 +30,8 @@ const render = async (clientRequest, entrypoint) => {
 		mime: 'text/html'
 	}
 
-	console.warn('\nbefore stdout', timeStamp())
 	process.stdout.write( JSON.stringify(output) )
-	process.on('exit', code => console.warn(`Exit ${code}`, timeStamp() ))
+	process.on('exit', code => console.warn(`Node SSR Finished in `, timeStamp() ))
 	// process.exit(0)
 }
 

@@ -65,7 +65,7 @@ class HTMLElement extends Element {
 		// const obj = et.parse(content)
 		// const content = this._createElement( obj.getroot() )
 		const _content = Array.isArray(content) ? content : [ content ]
-		this.childNodes = _content
+		this.childNodes = this.children = _content
 		this._mutation([{ addedNodes: _content }])
 	}
 

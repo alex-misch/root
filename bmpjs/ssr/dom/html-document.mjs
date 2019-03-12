@@ -11,6 +11,16 @@ class HTMLDocument extends HTMLElement {
 		this.baseURI = baseURI || ""
 	}
 
+	set title(content) {
+		let titleElement = this.childNodes.find( child => child.tagName === 'title' )
+		if ( !titleElement ) {
+			titleElement = new HTMLElement('title', {}, this)
+			titleElement.innerHTML
+			this.head.appendChild(titleElement)
+		}
+		titleElement.innerHTML = content
+	}
+
 	createTextNode(content) {
 		return String(content)
 	}

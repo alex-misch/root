@@ -61,13 +61,16 @@ class VirtualDOMDriver {
 	 * @param @optional cssjs css of this instance (optional)
 	 */
 	async deepRender( content ) {
+		if ( ['string','number','boolean'].includes(typeof content) ) {
+			return content.toString()
+		}
+
 		if ( content instanceof HTMLElement ) {
 			await this.render(content)
+			// console.error(content)
 			return content
 		}
 
-		if ( ['string','number','boolean'].includes(typeof content) )
-			return content.toString()
 
 		if ( !content ) // like a null, undefined and other unexpected values
 			return ''
@@ -100,12 +103,13 @@ class VirtualDOMDriver {
 		} else if ( typeof component.connectedCallback == 'function' ) {
 			// most likely a customElement
 			await component.connectedCallback()
-			arrChilds.push( ...component.childNodes )
 		}
 
-		component.innerHTML = await Promise.all(
-			arrChilds.map( async child => await this.deepRender(child) )
-		)
+		// save old childnodes of component
+		if (component.childNodes && component.childNodes.length)
+			arrChilds.push( ...component.childNodes )
+
+		component.innerHTML = await this.deepRender(arrChilds)
 	}
 
 

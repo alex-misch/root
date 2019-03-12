@@ -11,11 +11,10 @@ import project from '../../package.json'
  * @returns { String }
  */
 const genURL = (root, to) => {
-	if ( project.bmp.external.hasOwnProperty( to ))
+	if ( project.bmp.external && project.bmp.external.hasOwnProperty( to ))
 		return project.bmp.external[ to ]
 
-  if ( path.isAbsolute( to ))
-    return to
+  if ( path.isAbsolute( to )) return to
   const referanceURL = new URL(root)
   return `${referanceURL.origin}${ path.normalize(`${path.join(path.dirname(referanceURL.pathname), to)}`) }`
 }
@@ -85,26 +84,10 @@ class VirtualMachine {
 		const url = genURL( referencePath, dependencePath )
 
 		 // try to get from cache
-		if ( this.cache[url] )
-			return this.cache[url]
+		if ( this.cache[url] ) return this.cache[url]
 
-		this.cache[url] = await download( url )
+		this.cache[url] = await download( url.endsWith('.js') ? url : `${url}.es.js` )
 		return this.cache[url]
-		// load file from remote
-		// try {
-		// 	// TODO: make it more flexible
-		// 	if ( dependencePath === './config.js' ) {
-		// 		console.log( 'Skip dependency', dependencePath )
-		// 		return 'export {};' // config is empty, all config is already here
-		// 	} else {
-		// 		// console.log( 'Load dependency', dependencePath, ' from ', url )
-		// 		this.cache[url] = await download( url )
-		// 		return this.cache[url]
-		// 	}
-
-		// } catch ( error ) {
-		// 	throw new Error(`\nUnable to get file content: ${error}\n`)
-		// }
 	}
 
 	/** Link module of throw error */

@@ -74,4 +74,16 @@ describe("VirtualDOMDriver deepRender", () => {
 		resolve()
 	})
 
+	test("simple HTMLElement", async resolve => {
+		const el = new HTMLElement('script')
+		el.innerHTML = 'console.log("f")'
+		el.setAttribute('type', 'application/ld+json')
+
+		const rendered = await driver.deepRender(el)
+		expect( rendered ).toBeInstanceOf( HTMLElement )
+		expect( rendered.getAttribute('type') ).toBe( 'application/ld+json' )
+		expect( rendered.innerHTML ).toBe( 'console.log("f")' )
+
+		resolve()
+	})
 })

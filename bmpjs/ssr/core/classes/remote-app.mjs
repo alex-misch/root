@@ -31,6 +31,7 @@ class BmpRemoteApp {
 			userAgent: clientRequest.userAgent
 		})
 		this.vm = new VirtualMachine(vmContext)
+
 	}
 
 	async execApp() {
@@ -109,7 +110,7 @@ class BmpRemoteApp {
 
 		// get instances of application
 		const { Application, CssJS } = await this.execApp()
-
+		const { document } = this.vm.getContext()
 		try {
 			// createElement is static method, like VirtualDOMDriver.createElement
 			// so we must call this method from constructor
@@ -125,9 +126,8 @@ class BmpRemoteApp {
 					return CssJS.componentsRegistry[name].stringify()
 				}).join('')
 			}
-			result.head = this.vm.getContext().document.head.innerHTML
+			result.head = document.head.innerHTML
 			result.statusCode = appElement.statusCode( this.clientRequest.uri )
-			result.metatags = appElement.metatags( this.clientRequest.uri )
 		} catch(e) {
 			// TODO: parse valid status code
 			// return shell with empty app tag
@@ -137,6 +137,8 @@ class BmpRemoteApp {
 		}
 		// TOOD
 		result.baseURI = this.clientRequest.origin
+		if (document.title)
+			result.title = document.title
 
 		try {
 			const shell = Application.constructor.generateDocument(result)

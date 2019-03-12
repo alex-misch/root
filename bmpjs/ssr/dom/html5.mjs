@@ -6,7 +6,8 @@ import { CustomElements, customElements } from "./custom-elements.mjs";
 import { Navigator } from "./navigator"
 import { Console } from 'console'
 import { Writable } from 'stream'
-// import fetch from 'node-fetch-polyfill'
+import fetch from 'node-fetch-polyfill'
+// import { requirejs } from './requirejs'
 // import { timeStamp } from '../utils/timeline'
 
 /**
@@ -16,7 +17,7 @@ import { Writable } from 'stream'
 URL.prototype.replace = () => {}
 
 const appLogger = {
-	warn: (...args) => {},//console.warn('[APP CONSOLE]',...args),
+	warn: (...args) => {}, //console.warn('[APP CONSOLE]',...args),
 	stdout: new Writable(),
 	stderr: new Writable()
 }
@@ -25,7 +26,7 @@ appLogger.stdout.on('pipe', appLogger.warn)
 appLogger.stderr.on('pipe', appLogger.warn)
 
 const HTML5Api = ({ url, userAgent, baseURI }) => ({
-	console: new Console(appLogger),
+	// console: new Console(appLogger),
 	/** HTML5 Api */
 	HTMLElement,
 	Node: {
@@ -60,17 +61,17 @@ const HTML5Api = ({ url, userAgent, baseURI }) => ({
 	requestAnimationFrame: () => {},
 
 	/** Polyfills */
+	requirejs: () => {},
 	require: () => {},
 	CustomElements,
 	customElements,
 	CustomEvent: class {},
-	fetch: () => {},
-	// async (...args) => {
-	// 	console.error('fetch', timeStamp(), args[0])
-	// 	const res = await fetch(...args)
-	// 	console.error('fetch end', timeStamp(), args[0])
-	// 	return res
-	// },
+	fetch: async (...args) => {
+		const fetchTime = (new Date()).getTime()
+		const res = await fetch(...args)
+		console.warn('\nFetch end in', timeStamp(fetchTime), args)
+		return res
+	},
 
 	/** BMP api */
 
