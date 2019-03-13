@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os/exec"
 
-	"github.com/boomfunc/root/base/tools"
 	"github.com/boomfunc/root/tools/log"
 )
 
@@ -44,9 +43,7 @@ func (p *process) run(ctx context.Context) error {
 	stderr := new(bytes.Buffer)
 
 	// fill templates from ctx
-	parts := tools.CLISplit(
-		tools.StringFromCtx(ctx, p.cmd),
-	)
+	parts := CmdSplitRender(ctx, p.cmd)
 
 	// create command with cancel functinality
 	cmd := exec.CommandContext(ctx, parts[0], parts[1:]...)

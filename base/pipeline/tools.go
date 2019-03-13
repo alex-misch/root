@@ -5,7 +5,15 @@ import (
 	"io"
 
 	"github.com/boomfunc/root/tools/flow"
+	"github.com/boomfunc/root/base/tools"
 )
+
+// CmdSplitRender return rendered parts for process argv
+func CmdSplitRender(ctx context.Context, cmd string) []string {
+	return tools.CLISplit(
+		tools.StringFromCtx(ctx, cmd),
+	)
+}
 
 // piping establishes pipe connections between IO processes (Able)
 // the first obj accepts as stdin the input buffer

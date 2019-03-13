@@ -5,8 +5,10 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"fmt"
 
 	"github.com/boomfunc/root/base/tools"
+	srvctx "github.com/boomfunc/root/base/server/context"
 )
 
 func checkMatrix(t *testing.T, matrix [][]int, objs []Exec) {
@@ -399,4 +401,27 @@ func TestRun(t *testing.T) {
 			// 	process4 := NewProcess("wc", "-l")             // count matches
 		})
 	})
+}
+
+func TestCmdSplitRender(t *testing.T) {
+	ctx := context.Background()
+
+	srvctx.SetMeta(ctx, "ip", "1.1.1.1")
+	srvctx.SetMeta(ctx, "ua", "foo 'bar' baz")
+	srvctx.SetMeta(ctx, "url", "blog/love-chartered-flight's/")
+
+	tableTests := []struct {
+		input string
+		output []string
+	}{
+		{`node   --url=/{{meta "url"}} --ip={{meta "ip"}}  --user-agent='{{meta "ua"}}'`, []string{}},
+	}
+
+	for i, tt := range tableTests {
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+			if output := CmdSplitRender(ctx, tt.input); !reflect.DeepEqual(output, tt.output) {
+				t.Fatalf("Expected %q, got %q", tt.output, output)
+			}
+		})
+	}
 }
