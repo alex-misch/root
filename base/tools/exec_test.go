@@ -56,6 +56,7 @@ func TestCLISplit(t *testing.T) {
 				"--ip={{meta \"ip\"}}",   // non escaped - same result
 			},
 		},
+		{`node   --url=/{{meta "url"}} --ip={{meta "ip"}}  --user-agent='{{meta "ua"}}'`, []string{"node", "--url=/{{meta \"url\"}}", "--ip={{meta \"ip\"}}", "--user-agent={{meta \"ua\"}}"}},
 	}
 
 	for i, tt := range tableTests {

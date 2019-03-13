@@ -23,10 +23,10 @@ func cli(data []byte, atEOF bool) (int, []byte, error) {
 	}
 
 	// Scan until separator
-	var includeConditionRune bool // does we need to include rune on which disables escape mode (closing rune)
-	var escaped bool              // force write rune and skip another logic
-	var condition func(rune) bool // condition used as separator (break signal) by default - space and newlines
-	var token bytes.Buffer        // final splitted part (word)
+	var includeConditionRune bool        // does we need to include rune on which disables escape mode (closing rune)
+	var escaped bool                     // force write rune and skip another logic
+	var condition func(r0, r1 rune) bool // condition used as separator (break signal) by default - space and newlines
+	var token bytes.Buffer               // final splitted part (word)
 
 	for i, width := start, 0; i < len(data); i += width {
 		var r rune // current rune
@@ -38,7 +38,7 @@ func cli(data []byte, atEOF bool) (int, []byte, error) {
 		switch {
 		// case for disabling escaped mode if confition
 		case escaped:
-			if condition(r) { // closing
+			if condition(r, r2) { // closing
 				if includeConditionRune {
 					token.WriteRune(r)
 				}
@@ -53,16 +53,16 @@ func cli(data []byte, atEOF bool) (int, []byte, error) {
 		case r == '\\': // Single Character Quote
 			escaped = true
 			includeConditionRune = true
-			condition = func(br rune) bool { return true } // disable escape on next
+			condition = func(r0, r1 rune) bool { return true } // disable escape on next
 
 		case IsQuote(r): // Quote
 			escaped = true
-			condition = func(br rune) bool { return br == r } // disable escape when next rune is same quote
+			condition = func(r0, r1 rune) bool { return r0 == r } // disable escape when rune is same quote
 
 		case r == '{' && r2 == '{': // interpolation
 			escaped = true
 			includeConditionRune = true
-			condition = func(br rune) bool { return r == '}' && r2 == '}' } // disable escape on closing interpolation tags
+			condition = func(r0, r1 rune) bool { return r0 == '}' && r1 == '}' } // disable escape on closing interpolation tags
 			token.WriteRune(r)
 
 		// this case return splitted word by space or newline (if we are not in escape mode)

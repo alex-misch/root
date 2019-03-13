@@ -4,15 +4,19 @@ import (
 	"context"
 	"io"
 
-	"github.com/boomfunc/root/tools/flow"
 	"github.com/boomfunc/root/base/tools"
+	"github.com/boomfunc/root/tools/flow"
 )
 
 // CmdSplitRender return rendered parts for process argv
 func CmdSplitRender(ctx context.Context, cmd string) []string {
-	return tools.CLISplit(
-		tools.StringFromCtx(ctx, cmd),
-	)
+	parts := tools.CLISplit(cmd)
+
+	for i, part := range parts {
+		parts[i] = tools.StringFromCtx(ctx, part)
+	}
+
+	return parts
 }
 
 // piping establishes pipe connections between IO processes (Able)

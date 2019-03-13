@@ -3,12 +3,12 @@ package pipeline
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
-	"fmt"
 
-	"github.com/boomfunc/root/base/tools"
 	srvctx "github.com/boomfunc/root/base/server/context"
+	"github.com/boomfunc/root/base/tools"
 )
 
 func checkMatrix(t *testing.T, matrix [][]int, objs []Exec) {
@@ -404,17 +404,18 @@ func TestRun(t *testing.T) {
 }
 
 func TestCmdSplitRender(t *testing.T) {
-	ctx := context.Background()
-
+	ctx := srvctx.New()
 	srvctx.SetMeta(ctx, "ip", "1.1.1.1")
 	srvctx.SetMeta(ctx, "ua", "foo 'bar' baz")
 	srvctx.SetMeta(ctx, "url", "blog/love-chartered-flight's/")
 
 	tableTests := []struct {
-		input string
+		input  string
 		output []string
 	}{
-		{`node   --url=/{{meta "url"}} --ip={{meta "ip"}}  --user-agent='{{meta "ua"}}'`, []string{}},
+		{`node   --url=/{{meta "url"}} --ip={{meta "ip"}}  --user-agent='{{meta "ua"}}'`, []string{
+			"node", "--url=/blog/love-chartered-flight's/", "--ip=1.1.1.1", "--user-agent=foo 'bar' baz",
+		}},
 	}
 
 	for i, tt := range tableTests {
