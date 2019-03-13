@@ -23,44 +23,62 @@ func cli(data []byte, atEOF bool) (int, []byte, error) {
 	}
 
 	// Scan until separator
-	var escaped bool                                // force write rune and skip another logic
-	var grouped bool                                // indicates that group between quotes is writing
-	var condition func(rune) bool = unicode.IsSpace // condition used as separator (break signal) by default - space and newlines
-	var token bytes.Buffer                          // final splitted part
+	var includeConditionRune bool // does we need to include rune on which disables escape mode (closing rune)
+	var escaped bool              // force write rune and skip another logic
+	var condition func(rune) bool // condition used as separator (break signal) by default - space and newlines
+	var token bytes.Buffer        // final splitted part (word)
 
 	for i, width := start, 0; i < len(data); i += width {
 		var r rune // current rune
 
-		// get first rune and it's size
-		r, width = utf8.DecodeRune(data[i:])
+		r, width = utf8.DecodeRune(data[i:])     // get first rune and it's size
+		r2, _ := utf8.DecodeRune(data[i+width:]) // get next rune
 
-		// process rune
+		// set flags and process rune
 		switch {
-		case escaped: // escaped character - skip this
-			escaped = false    // don't forget to disable `escaped` mode
-			token.WriteRune(r) // add escaped rune to buffer
-		case r == '\\': // Single Character Quote
-			escaped = true // set escaped to true for next sign
-		case condition(r): // we catch break rune!
-			// NOTE: opening and closing quotes not included in token
-			return i + width, token.Bytes(), nil
-		case IsQuote(r): // Quote
-			if !grouped {
-				// opening case
-				// NOTE: opening and closing quotes not included in token
-				condition = func(br rune) bool { return br == r } // set break rune to nearest same quote
-				grouped = true                                    // set group iterating begin
-				break
+		// case for disabling escaped mode if confition
+		case escaped:
+			if condition(r) { // closing
+				if includeConditionRune {
+					token.WriteRune(r)
+				}
+				escaped = false
+				includeConditionRune = false
+
+			} else {
+				token.WriteRune(r)
 			}
-			fallthrough
-		default: // some another rune, skip
-			token.WriteRune(r) // add rune to buffer
+
+		// next cases is for check does we need enable escaping
+		case r == '\\': // Single Character Quote
+			escaped = true
+			includeConditionRune = true
+			condition = func(br rune) bool { return true } // disable escape on next
+
+		case IsQuote(r): // Quote
+			escaped = true
+			condition = func(br rune) bool { return br == r } // disable escape when next rune is same quote
+
+		case r == '{' && r2 == '{': // interpolation
+			escaped = true
+			includeConditionRune = true
+			condition = func(br rune) bool { return r == '}' && r2 == '}' } // disable escape on closing interpolation tags
+			token.WriteRune(r)
+
+		// this case return splitted word by space or newline (if we are not in escape mode)
+		case !escaped && unicode.IsSpace(r):
+			return i + width, token.Bytes(), nil
+
+		default:
+			token.WriteRune(r)
 		}
 	}
+
 	// If we're at EOF, we have a final, non-empty, non-terminated word. Return it.
 	if atEOF && len(data) > start {
-		return len(data), data[start:], nil
+		return len(data), token.Bytes(), nil
 	}
+
 	// Request more data.
 	return 0, nil, nil
 }
