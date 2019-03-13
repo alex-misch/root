@@ -30,7 +30,9 @@ func BenchmarkCLISplit(b *testing.B) {
 		"cmd",                                // (not trimmed)
 	}
 
-	if output := CLISplit(input); !reflect.DeepEqual(output, words) {
-		b.Fatalf("Expected %q, got %q", words, output)
+	for i := 0; i < b.N; i++ {
+		if output := CLISplit(input); !reflect.DeepEqual(output, words) {
+			b.Fatalf("Expected %q, got %q", words, output)
+		}
 	}
 }
