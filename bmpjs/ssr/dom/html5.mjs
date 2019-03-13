@@ -26,7 +26,7 @@ appLogger.stdout.on('pipe', appLogger.warn)
 appLogger.stderr.on('pipe', appLogger.warn)
 
 const HTML5Api = ({ url, userAgent, baseURI }) => ({
-	console: new Console(appLogger),
+	// console: new Console(appLogger),
 	/** HTML5 Api */
 	HTMLElement,
 	Node: {
@@ -69,7 +69,7 @@ const HTML5Api = ({ url, userAgent, baseURI }) => ({
 	fetch: async (...args) => {
 		const fetchTime = (new Date()).getTime()
 		const res = await fetch(...args)
-		console.warn('\nFetch end in', timeStamp(fetchTime), args[0])
+		console.warn('Fetch end in', timeStamp(fetchTime), args[0])
 		return res
 	},
 

@@ -129,11 +129,8 @@ class BmpRemoteApp {
 			result.head = document.head.innerHTML
 			result.statusCode = appElement.statusCode( this.clientRequest.uri )
 		} catch(e) {
-			// TODO: parse valid status code
-			// return shell with empty app tag
-			result.html = `<${Application.tagName}></${Application.tagName}>`
-			result.statusCode = 200
 			console.error(e)
+			throw e
 		}
 
 		result.baseURI = this.clientRequest.origin

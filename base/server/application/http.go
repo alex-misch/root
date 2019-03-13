@@ -3,8 +3,11 @@ package application
 import (
 	"bufio"
 	"context"
+	"fmt"
 	"io"
+	"mime"
 	"net/http"
+	"path/filepath"
 	"time"
 
 	srvctx "github.com/boomfunc/root/base/server/context"
@@ -91,7 +94,12 @@ func (packer *httpPacker) Pack(ctx context.Context, r io.Reader, w io.Writer) er
 
 	// HEADERS SECTION
 	// default headers values
-	response.Header.Set("Content-Type", "text/plain; charset=utf-8")
+	mt := mime.TypeByExtension(filepath.Ext(packer.request.URL.Path))
+	if mt == "" {
+		mt = "text/plain"
+	}
+	response.Header.Set("Content-Type", fmt.Sprintf("%s; charset=utf-8", mt))
+	// response.Header.Set("Content-Type", "text/plain; charset=utf-8")
 	response.Header.Set("X-Content-Type-Options", "nosniff")
 	response.Header.Set("Date", time.Now().Format(time.RFC1123))
 

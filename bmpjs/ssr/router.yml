@@ -38,8 +38,9 @@ collection:
           --url=/{{url "url"}}
           --ip={{meta "ip"}}
           --user-agent='{{meta "ua"}}'
-          --origin=https://jetsmarter.com/
           --src=https://jetsmarter.com/data/jscomv5/index.es.js
+          --origin=http://bmp.lo:8080/
+        # --origin=https://jetsmarter.com/
         # --src=https://d35qz7xn7nfid5.cloudfront.net/ssr/index.es.js
       # - type: process
       # cmd: 'echo {"status": {{q "status"}}, "content": "URL: {{url "url"}}, IP: {{meta "ip"}}, UA: {{meta "ua"}}"}'
@@ -68,8 +69,8 @@ collection:
         cmd: echo pong
 
   # Serve static data
-  # - pattern: "/data/{url:*}"
-  #   pipeline:
+  - pattern: "/data/{url:*}"
+    pipeline:
 
-  #     - type: process
-  #       cmd: cat ./cache/{{url "url"}}
+      - type: process
+        cmd: cat ./cache/{{url "url"}}
