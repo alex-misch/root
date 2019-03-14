@@ -24,7 +24,7 @@ x-defaults:
 
 services:
 
-  # containers for writing, building and linting code
+  # containers for writing, building, testing, profiling and linting code
   build:
     << : *service
     command: .scripts/build.sh
@@ -36,6 +36,10 @@ services:
   bench:
     << : *service
     command: .scripts/bench.sh
+
+  profile:
+    << : *service
+    command: .scripts/profile.sh
 
   fmt:
     << : *service
