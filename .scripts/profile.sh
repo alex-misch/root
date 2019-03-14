@@ -9,7 +9,7 @@ BASE=`basename "${NODE}"`
 # run benchmarks with profiling
 go get -d -t ./${NODE}/...
 go clean -testcache || true
-go test -bench=. -benchmem \
+go test -run=^$$ -bench=. -benchmem \
 	-cpuprofile ${BASE}-cpu.prof \
 	-memprofile ${BASE}-mem.prof \
 	./${NODE}/...
