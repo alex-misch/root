@@ -31,23 +31,10 @@ func TCP(ip net.IP, port int) (Interface, error) {
 }
 
 func tcpFD(conn *net.TCPConn) (uintptr, error) {
-	raw, err := conn.SyscallConn()
+	f, err := conn.File()
 	if err != nil {
 		return 0, err
 	}
 
-	var fd uintptr
-
-	// TODO for now it is some kind of workaround
-	// TODO inner error not visible!
-	f := func(innerFd uintptr) bool {
-		fd = innerFd
-		return true
-	}
-
-	if err := raw.Read(f); err != nil {
-		return 0, err
-	}
-
-	return fd, nil
+	return f.Fd(), nil
 }

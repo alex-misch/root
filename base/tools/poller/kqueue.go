@@ -31,6 +31,16 @@ func New() (Interface, error) {
 }
 
 func (p *kqueue) Add(fd uintptr) error {
+	// Set the file back to non blocking mode since conn.File() sets underlying
+	// os.File to blocking mode. This is useful to get conn.Set{Read}Deadline
+	// methods still working on source Conn.
+	//
+	// See https://golang.org/pkg/net/#TCPConn.File
+	// See /usr/local/go/src/net/net.go: conn.File()
+	if err := unix.SetNonblock(int(fd), true); err != nil {
+		return err
+	}
+
 	event := unix.Kevent_t{
 		Ident:  uint64(fd),
 		Filter: unix.EVFILT_READ | unix.EVFILT_WRITE, // available for reading or writing event
@@ -63,6 +73,7 @@ func (p *kqueue) Events() ([]Event, []Event, error) {
 			ce = append(ce, ev)
 		} else if event.Filter&(unix.EVFILT_READ) != 0 {
 			// Check event 'ready to read'
+			unix.Close(int(ev.Fd()))
 			re = append(re, ev)
 		}
 	}

@@ -20,7 +20,7 @@ type epoll struct {
 }
 
 func New() (Interface, error) {
-	// create epoll
+	// create epoll and store their file descriptor
 	fd, err := unix.EpollCreate1(0)
 	if err != nil {
 		return nil, err
@@ -31,6 +31,12 @@ func New() (Interface, error) {
 }
 
 func (p *epoll) Add(fd uintptr) error {
+	// Set the file back to non blocking mode since conn.File() sets underlying
+	// os.File to blocking mode. This is useful to get conn.Set{Read}Deadline
+	// methods still working on source Conn.
+	//
+	// See https://golang.org/pkg/net/#TCPConn.File
+	// See /usr/local/go/src/net/net.go: conn.File()
 	if err := unix.SetNonblock(int(fd), true); err != nil {
 		return err
 	}
@@ -65,6 +71,7 @@ func (p *epoll) Events() ([]Event, []Event, error) {
 			ce = append(ce, ev)
 		} else if event.Events&(unix.EPOLLIN) != 0 {
 			// Check event 'ready to read'
+			unix.Close(int(ev.Fd()))
 			re = append(re, ev)
 		}
 	}
