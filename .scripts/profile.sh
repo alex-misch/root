@@ -18,5 +18,5 @@ go test -race -run=^$$ -bench=. -benchmem \
 apt-get update
 apt-get install -y graphviz gv
 
-go tool pprof -svg /go/bin/base-Linux-x86_64 ${BASE}-cpu.prof > ${BASE}-cpu.svg
-go tool pprof -svg /go/bin/base-Linux-x86_64 ${BASE}-mem.prof > ${BASE}-mem.svg
+go tool pprof -svg /go/bin/base-$(uname -s)-$(uname -m) ${BASE}-cpu.prof > ${BASE}-cpu.svg
+go tool pprof -svg /go/bin/base-$(uname -s)-$(uname -m) ${BASE}-mem.prof > ${BASE}-mem.svg
