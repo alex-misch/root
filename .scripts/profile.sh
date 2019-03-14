@@ -16,7 +16,10 @@ go test -run=^$$ -bench=. -benchmem \
 
 # generate graph and binary output
 apt-get update
-apt-get install -y graphviz gv
+apt-get install -y graphviz gv # for svg generation
 
 go tool pprof -svg /go/bin/base-$(uname -s)-$(uname -m) ${BASE}-cpu.prof > ${BASE}-cpu.svg
 go tool pprof -svg /go/bin/base-$(uname -s)-$(uname -m) ${BASE}-mem.prof > ${BASE}-mem.svg
+
+go tool pprof -top /go/bin/base-$(uname -s)-$(uname -m) ${BASE}-cpu.prof > ${BASE}-cpu.top
+go tool pprof -top /go/bin/base-$(uname -s)-$(uname -m) ${BASE}-mem.prof > ${BASE}-mem.top
