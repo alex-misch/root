@@ -81,6 +81,8 @@ const HTML5Api = ({ url, userAgent, baseURI }) => ({
 	apiGateway: 'https://api.jetsmarter.com',
 	IS_SSR: true,
 	location: new URL(`https://${url}`),
+	btoa: str => new Buffer(str).toString('base64'),
+	atob: str => new Buffer(str, 'base64').toString(),
 	window: {
 		innerWidth: 0,
 		innerHeight: 0

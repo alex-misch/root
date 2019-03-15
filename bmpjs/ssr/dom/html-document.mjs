@@ -12,13 +12,18 @@ class HTMLDocument extends HTMLElement {
 	}
 
 	set title(content) {
-		let titleElement = this.childNodes.find( child => child.tagName === 'title' )
+		let titleElement = this.head.childNodes.find( child => child.tagName === 'title' )
 		if ( !titleElement ) {
 			titleElement = new HTMLElement('title', {}, this)
 			titleElement.innerHTML
 			this.head.appendChild(titleElement)
 		}
 		titleElement.innerHTML = content
+	}
+
+	get title() {
+		const el = this.head.childNodes.find( el => el.tagName === 'title' )
+		return el ? el.innerHTML : ''
 	}
 
 	createTextNode(content) {
@@ -62,7 +67,9 @@ class HTMLDocument extends HTMLElement {
 
 	get implementation() {
 		return {
-			createHTMLDocument: () => {}
+			createHTMLDocument: () => {
+				return new HTMLDocument()
+			}
 		}
 	}
 

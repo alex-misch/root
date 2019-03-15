@@ -6,7 +6,10 @@ class Element {
 
 	constructor(tagName, attributes = [], parent) {
 		this.attributes = attributes || []
-		if (tagName) this.tagName = tagName
+		if (tagName) {
+			this.tagName = tagName
+			this.nodeName = tagName
+		}
 		this.childNodes = []
 		this.children = this.childNodes
 		this.nodeType = 3

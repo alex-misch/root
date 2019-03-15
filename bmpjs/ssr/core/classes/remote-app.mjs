@@ -25,6 +25,7 @@ class BmpRemoteApp {
 		this.clientRequest = clientRequest
 
 		/** Create enviroment of vitrual machine and start it */
+
 		const vmContext = HTML5Api({
 			baseURI: clientRequest.origin,
 			url: (clientRequest.origin.replace(/https?:\/\/(.*)\/$/, '$1') + clientRequest.uri),
@@ -99,13 +100,11 @@ class BmpRemoteApp {
 	 */
 	async render() {
 		const result = {
-			// baseURI: 'http://bmp.lo:8080/ssr/',
-			css: '',
-			html: '',
-			head: null,
-			lang: 'en',
-			statusCode: 500,
-			metatags: {}
+			css: '', // CSS of document
+			html: '', // HTML of document
+			head: null, // head of document
+			lang: 'en', // TODO: multilanguage
+			statusCode: 500, //by default it is internal error
 		}
 
 		// get instances of application
@@ -127,6 +126,7 @@ class BmpRemoteApp {
 				}).join('')
 			}
 			result.head = document.head.innerHTML
+			// rewrite status code by application
 			result.statusCode = appElement.statusCode( this.clientRequest.uri )
 		} catch(e) {
 			console.error(e)
