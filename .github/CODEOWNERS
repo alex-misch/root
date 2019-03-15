@@ -7,11 +7,11 @@
 
 * @yollov @agurinov @takesfive @alex-misch
 
-*.mjs @takesfive @alex-misch @yollov
-*.js @takesfive @alex-misch @yollov
-*.rc @takesfive @alex-misch @yollov
-*.css @takesfive @alex-misch @yollov
-*.html @takesfive @alex-misch @yollov
-*.sass @takesfive @alex-misch @yollov
+*.mjs @takesfive @alex-misch
+*.js @takesfive @alex-misch
+*.rc @takesfive @alex-misch
+*.css @takesfive @alex-misch
+*.html @takesfive @alex-misch
+*.sass @takesfive @alex-misch
 
 *.go @agurinov
