@@ -8,6 +8,7 @@ NODE='base/pipeline'
 NODE='base/tools'
 
 PROFILING_DIR="./${NODE}/.profiling"
+rm -rf ${PROFILING_DIR}
 mkdir -p ${PROFILING_DIR}
 
 # run benchmarks with profiling and collect all data under
@@ -27,18 +28,17 @@ GOGC=off go test -run=^$$ -bench=. -benchmem \
 apt-get update
 apt-get install -y graphviz gv # for svg generation
 
-# NOTE:
-# -inuse_space      Display in-use memory size
-# -inuse_objects    Display in-use object counts
-# -alloc_space      Display allocated memory size
-# -alloc_objects    Display allocated object counts
-
 # generate graph and binary output
 # cpu data visualization
 go tool pprof -svg ${PROFILING_DIR}/bin.test ${PROFILING_DIR}/cpu.pprof > ${PROFILING_DIR}/cpu.svg
 go tool pprof -top ${PROFILING_DIR}/bin.test ${PROFILING_DIR}/cpu.pprof > ${PROFILING_DIR}/cpu.top
 
 # memory data visualization
+# NOTE:
+# -inuse_space      Display in-use memory size
+# -inuse_objects    Display in-use object counts
+# -alloc_space      Display allocated memory size
+# -alloc_objects    Display allocated object counts
 for TYPE in 'alloc_objects' 'alloc_space' 'inuse_objects' 'inuse_space'; do
 	go tool pprof -${TYPE} -svg ${PROFILING_DIR}/bin.test ${PROFILING_DIR}/mem.pprof > ${PROFILING_DIR}/mem_${TYPE}.svg
 	go tool pprof -${TYPE} -top ${PROFILING_DIR}/bin.test ${PROFILING_DIR}/mem.pprof > ${PROFILING_DIR}/mem_${TYPE}.top
