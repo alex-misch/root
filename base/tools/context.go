@@ -3,15 +3,15 @@ package tools
 // DEPRECATED!
 
 import (
-	"bytes"
 	"context"
+	"strings"
 	"text/template"
 
 	srvctx "github.com/boomfunc/root/base/server/context"
 )
 
-// BUG: errors in template not visible - returns source string - no good
-func render(ctx context.Context, s string) string {
+// BenchmarkStringsFromCtx-2   	   50000	     28248 ns/op	    6879 B/op	     109 allocs/op
+func StringsFromCtx(ctx context.Context, ss []string) []string {
 	q := func(key string) (string, error) { return srvctx.GetQ(ctx, key) }
 	url := func(key string) (string, error) { return srvctx.GetUrl(ctx, key) }
 	meta := func(key string) (interface{}, error) { return srvctx.GetMeta(ctx, key) }
@@ -22,29 +22,25 @@ func render(ctx context.Context, s string) string {
 		"q":    q,
 		"url":  url,
 	}
-	tpl, err := template.New("").Funcs(funcMap).Parse(s)
-	if err != nil {
-		return s
+
+	// create parent template and string builder
+	tpl := template.New("").Funcs(funcMap)
+	var b strings.Builder
+
+	for i := 0; i < len(ss); i++ {
+		inner, err := tpl.Parse(ss[i])
+		if err != nil {
+			continue
+		}
+
+		if err := inner.Execute(&b, nil); err != nil {
+			b.Reset()
+			continue
+		}
+
+		ss[i] = b.String()
+		b.Reset()
 	}
 
-	// TODO look for better solution
-	var b bytes.Buffer
-
-	if err := tpl.Execute(&b, nil); err != nil {
-		return s
-	}
-
-	return b.String()
+	return ss
 }
-
-func StringFromCtx(ctx context.Context, s string) string {
-	return render(ctx, s)
-}
-
-// func FillStrings(ctx context.Context, ss []string) []string {
-// 	for i, s := range ss {
-// 		ns, _ := render(ctx, s)
-// 		ss[i] = ns
-// 	}
-// 	return ss
-// }
