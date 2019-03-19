@@ -26,7 +26,7 @@ func New(layers ...Layer) Pipeline {
 	return Pipeline(layers)
 }
 
-// Run runs all layers step by step with joining inputs and outputs (by io.Pipes)
+// Run runs all layers step by step with joining inputs and outputs (by Pipes)
 // NOTE: Run implements flow.Step interface
 func (p Pipeline) Run(ctx context.Context) error {
 	// Phase 1. fetch global input and output (required context information)

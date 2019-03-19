@@ -10,13 +10,10 @@ import (
 
 // CmdSplitRender return rendered parts for process argv
 func CmdSplitRender(ctx context.Context, cmd string) []string {
-	parts := tools.CLISplit(cmd)
-
-	for i, part := range parts {
-		parts[i] = tools.StringFromCtx(ctx, part)
-	}
-
-	return parts
+	return tools.StringsFromCtx(
+		ctx,
+		tools.CLISplit(cmd),
+	)
 }
 
 // piping establishes pipe connections between IO processes (Able)
