@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"os"
 	"strings"
 
 	"github.com/boomfunc/root/base/conf"
@@ -83,7 +84,10 @@ func (app *Application) Handle(fl *flow.Data) {
 	}
 
 	// Run pipeline (under app layer)
-	pr, pw := io.Pipe()
+	pr, pw, err := os.Pipe()
+	if err != nil {
+		return
+	}
 
 	// we will run view through executor
 	// NOTE: if we suddenly want to run through flow.Group - with pipe this idea will fail

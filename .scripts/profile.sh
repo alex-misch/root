@@ -4,8 +4,6 @@ set -eux
 # if first arg is node in monorepo graph - apply commands to this node (package),
 # otherwise - to root (all repo nodes)
 NODE=${1:-.}
-NODE='base/pipeline'
-NODE='base/tools'
 
 PROFILING_DIR="./${NODE}/.profiling"
 rm -rf ${PROFILING_DIR}
@@ -18,7 +16,6 @@ go clean -testcache || true
 GOGC=off go test -run=^$$ -bench=. -benchmem \
 	-benchtime=2s \
 	-o ${PROFILING_DIR}/bin.test \
-	-trace ${PROFILING_DIR}/trace.out \
 	-cpuprofile ${PROFILING_DIR}/cpu.pprof \
 	-memprofile ${PROFILING_DIR}/mem.pprof \
 	-memprofilerate=1 \
@@ -46,4 +43,18 @@ done
 
 # TODO: goroutine data visualization
 
-# TODO: go tool trace trace.out
+# NOTE: for profiling runnning apps:
+# p := profile.Start(profile.CPUProfile, profile.ProfilePath("/go/src/github.com/boomfunc/root/base"), profile.NoShutdownHook)
+#
+# 	go func() {
+# 		sigchan := make(chan os.Signal, 10)
+#
+# 		signal.Notify(sigchan, os.Interrupt)
+# 		signal.Notify(sigchan, syscall.SIGTERM)
+# 		signal.Notify(sigchan, syscall.SIGINT)
+# 		signal.Notify(sigchan, syscall.SIGKILL)
+#
+# 		<-sigchan
+# 		p.Stop()
+# 		os.Exit(0)
+# 	}()

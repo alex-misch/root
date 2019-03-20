@@ -75,14 +75,15 @@ func (packer *httpPacker) Pack(ctx context.Context, r io.Reader, w io.Writer) er
 
 	// generate response
 	response := http.Response{
-		Status:     http.StatusText(status),
-		StatusCode: status,
-		Proto:      packer.request.Proto,
-		ProtoMajor: packer.request.ProtoMajor,
-		ProtoMinor: packer.request.ProtoMinor,
-		Body:       tools.ReadCloser(r),
-		Request:    packer.request,
-		Header:     make(http.Header, 0),
+		Status:        http.StatusText(status),
+		StatusCode:    status,
+		Proto:         packer.request.Proto,
+		ProtoMajor:    packer.request.ProtoMajor,
+		ProtoMinor:    packer.request.ProtoMinor,
+		Body:          tools.ReadCloser(r),
+		ContentLength: -1, // oterwise additional reading in net/http
+		Request:       packer.request,
+		Header:        make(http.Header, 0),
 	}
 
 	defer response.Body.Close()

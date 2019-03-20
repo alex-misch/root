@@ -3,6 +3,7 @@ package pipeline
 import (
 	"context"
 	"io"
+	"os"
 
 	"github.com/boomfunc/root/base/tools"
 	"github.com/boomfunc/root/tools/flow"
@@ -37,7 +38,10 @@ func piping(input io.ReadCloser, output io.WriteCloser, objs ...Able) error {
 			objs[i].setStdout(output)
 		} else {
 			// this is intermediate obj, need piping
-			r, w := io.Pipe()
+			r, w, err := os.Pipe()
+			if err != nil {
+				return err
+			}
 			objs[i].setStdout(w)
 			objs[i+1].setStdin(r)
 		}
@@ -56,6 +60,9 @@ func run(ctx context.Context, objs ...Exec) error {
 	run := make([]flow.Step, len(objs))
 	close := make([]flow.Step, len(objs))
 
+	// TODO: https://play.golang.org/p/Xypr8Wc8ief
+	// https://play.golang.org/p/t3-IiusbO-Y
+	// https://play.golang.org/p/tAf371RKRzq
 	for i, obj := range objs {
 		// prerun is a group of two operations step by step - `prepare` and `check`
 		prerun[i] = flow.Group(flow.Func(obj.prepare), flow.Func(obj.check))
