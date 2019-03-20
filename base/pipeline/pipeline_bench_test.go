@@ -1,38 +1,45 @@
 package pipeline
 
-// import (
-// 	"bytes"
-// 	"fmt"
-// 	"log"
-// 	"os/exec"
-// 	"testing"
-// )
+import (
+	"context"
+	"fmt"
+	"os"
+	"testing"
 
-// func BenchmarkChaining(b *testing.B) {
-// 	b.Run("first", func(b *testing.B) {
-// 		for i := 0; i < b.N; i++ {
-// 			b.StopTimer()
-//
-// 			input := bytes.NewBuffer([]byte{'g', 'o', 'l', 'a', 'n'})
-// 			output := bytes.NewBuffer([]byte{})
-//
-// 			b.StartTimer()
-//
-// 			err := connect(
-// 				input,
-// 				output,
-// 				exec.Command("ls"),
-// 				// exec.Command("grep bench"),
-// 				exec.Command("wc", "-l"),
-// 			)
-//
-// 			b.StopTimer()
-//
-// 			if err != nil {
-// 				log.Fatal(err)
-// 			}
-//
-// 			fmt.Println("RESPONSE", output.String())
-// 		}
-// 	})
-// }
+	"github.com/boomfunc/root/base/tools"
+)
+
+func BenchmarkPipeline(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		b.StopTimer()
+
+		r1, w1, err := os.Pipe()
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		_, w2, err := os.Pipe()
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		go func() {
+			fmt.Fprint(w1, "foobar")
+			w1.Close()
+		}()
+
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, "input", tools.ReadCloser(r1))
+		ctx = context.WithValue(ctx, "output", tools.WriteCloser(w2))
+
+		b.StartTimer()
+
+		New(
+			NewProcess("/bin/cat /dev/stdin"), // read 'foobar' from stdin
+			NewProcess("/usr/bin/rev"),        // reverse -> raboof
+			NewProcess("/bin/grep -o raboof"), // grep reversed (must be 1 match)
+			NewProcess("/usr/bin/wc -l"),      // count matches
+		).Run(ctx)
+
+	}
+}

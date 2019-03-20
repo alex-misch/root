@@ -413,7 +413,7 @@ func TestCmdSplitRender(t *testing.T) {
 		input  string
 		output []string
 	}{
-		{`node   --url=/{{meta "url"}} --ip={{meta "ip"}}  --user-agent='{{meta "ua"}}'`, []string{
+		{"node --url=/{{meta \"url\"}} --ip={{meta \"ip\"}} --user-agent='{{meta \"ua\"}}'", []string{
 			"node", "--url=/blog/love-chartered-flight's/", "--ip=1.1.1.1", "--user-agent=foo 'bar' baz",
 		}},
 	}
