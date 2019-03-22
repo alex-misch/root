@@ -23,7 +23,7 @@ type process struct {
 }
 
 // NewProcess returns pipeline.Layer of process type
-func NewProcess(cmd string) *process {
+func NewProcess(cmd string) Layer {
 	return &process{
 		cmd:   cmd,
 		parts: new([]string), // for non nil pointer -> for safe cloning
