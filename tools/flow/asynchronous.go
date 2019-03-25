@@ -102,7 +102,7 @@ func (group *async) executeStep(ctx context.Context, cancel context.CancelFunc, 
 		// context cancelled by another function
 		// no need for starting execution of `fn`
 	default:
-		// Default is must to avoid blocking
+		// Default is required to avoid blocking on select
 		// we can start atomic function execution
 		if err := step.Run(ctx); err != nil {
 			if group.wait && !group.closed {
@@ -134,12 +134,17 @@ func (group *async) close(cancel context.CancelFunc) {
 }
 
 func (group *async) Run(ctx context.Context) error {
-	// create cancellation for current group
-	// NOTE: for parent groups, there is a parent context, the cancellation of which here will also be tracked
-	ctx, cancel := context.WithCancel(ctx)
+	var cancel context.CancelFunc // NOTE: by default - nil
 
-	// Make sure it's called to release resources even if no errors
-	defer group.close(cancel)
+	// if we work in `delay` mode - no need to work with any kind of cancellation
+	// let's check it!
+	if group.wait {
+		// create cancellation for current group
+		// NOTE: for parent groups, there is a parent context, the cancellation of which here will also be tracked
+		ctx, cancel = context.WithCancel(ctx)
+		// Make sure it's called to release resources even if no errors
+		defer group.close(cancel)
+	}
 
 	// iterate over steps and run goroutines
 	// for {
