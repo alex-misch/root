@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	ErrWrongDiff = errors.New("graph: Provided `diff` is invalid")
-	ErrNotDir    = errors.New("graph: Provided `root` is not directory")
+	ErrWrongDiff = errors.New("ci/graph: Provided `diff` is invalid")
+	ErrNotDir    = errors.New("ci/graph: Provided `root` is not directory")
 )
 
 type Graph struct {
@@ -143,6 +143,7 @@ func (graph *Graph) Link() {
 // addCtx create child step's context from parent and save it to collection
 // collection will be passed to parent context for future using
 func (graph *Graph) addCtx(ctx context.Context, step flow.Step, pack, name string) {
+	// WithValue returns copy of ctx
 	ctx = context.WithValue(ctx, "pack", pack)
 	ctx = context.WithValue(ctx, "name", name)
 
@@ -152,12 +153,12 @@ func (graph *Graph) addCtx(ctx context.Context, step flow.Step, pack, name strin
 
 // changes returns list of direct nodes changed and indirect nodes changed
 // by direct node's roots
-func (graph *Graph) changes(parent context.Context, roots []string) (direct []*Node, indirect []*Node) {
+func (graph *Graph) changes(ctx context.Context, roots []string) (direct []*Node, indirect []*Node) {
 	for _, root := range roots {
 		if node, ok := graph.nodes[root]; ok {
 			// create copy of context for this job
 			for name, job := range node.Jobs {
-				graph.addCtx(parent, job, root, name)
+				graph.addCtx(ctx, job, root, name)
 			}
 			// append to output tree
 			direct = append(direct, node)
@@ -167,7 +168,7 @@ func (graph *Graph) changes(parent context.Context, roots []string) (direct []*N
 			for _, inode := range graph.edges[root] {
 				// create copy of context for this job
 				for name, job := range inode.Jobs {
-					graph.addCtx(parent, job, root, name)
+					graph.addCtx(ctx, job, root, name)
 				}
 				// append to output tree
 				indirect = append(indirect, inode)

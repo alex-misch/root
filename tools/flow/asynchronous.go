@@ -155,26 +155,27 @@ func (group *async) Run(ctx context.Context) error {
 	// 		break
 	// 	}
 	for _, step := range group.steps {
-		// Pre Phase. NOTE: step might be nil -> we need to check if it makes sense at all
+		// Pre Phase. Checks
+		// NOTE: step might be nil -> we need to check if it makes sense at all
 		if step == nil {
 			continue
 		}
 
-		// Phase 2. Get worker
+		// Phase 1. Get worker
 		// NOTE: workers interface might be nil => no limits and no wait-release logic
 		if group.workers != nil {
 			group.workers.wait() // blocking operation
 			// TODO: group.workers.Pop() // blocking operation
 		}
 
-		// Phase 3. Waiting counter
+		// Phase 2. Waiting counter
 		// if we don't need to wait for flow execution - disable sync logic
 		// backwards operation at `group.execute.defer`
 		if group.wait {
 			group.wg.Add(1)
 		}
 
-		// Phase 4. Run step in goroutine
+		// Phase 3. Run step in goroutine
 		go group.executeStep(ctx, cancel, step)
 	}
 
