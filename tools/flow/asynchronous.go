@@ -97,18 +97,22 @@ func (group *async) executeStep(ctx context.Context, cancel context.CancelFunc, 
 	}()
 
 	// check for incoming signal of uselessness of this function
-	select {
-	case <-ctx.Done():
-		// context cancelled by another function
-		// no need for starting execution of `fn`
-	default:
-		// Default is required to avoid blocking on select
-		// we can start atomic function execution
-		if err := step.Run(ctx); err != nil {
-			if group.wait && !group.closed {
-				group.errCh <- err
-				cancel()
-			}
+	// here workaround from delay: if delay mode set to true - ignore select below
+	if delay, _ := ctx.Value("delay").(bool); !delay {
+		select {
+		case <-ctx.Done():
+			// context cancelled by another function
+			// no need for starting execution of `fn`
+		default:
+			// default is required to avoid blocking on select
+		}
+	}
+
+	// we can start atomic function execution
+	if err := step.Run(ctx); err != nil {
+		if group.wait && !group.closed {
+			group.errCh <- err
+			cancel()
 		}
 	}
 }

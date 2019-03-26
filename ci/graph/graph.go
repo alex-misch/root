@@ -3,11 +3,13 @@ package graph
 import (
 	"context"
 	"errors"
+	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 
+	"github.com/boomfunc/root/ci/tools"
 	"github.com/boomfunc/root/tools/flow"
-	"github.com/boomfunc/root/tools/log"
 )
 
 var (
@@ -179,9 +181,9 @@ func (graph *Graph) changes(ctx context.Context, roots []string) (direct []*Node
 	return
 }
 
-// steps return total tree (mixed) of flow.Step
+// step return total tree (mixed) of flow.Step
 // built by analyzing changed paths and their belonging to the nodes
-func (graph *Graph) steps(direct []*Node, indirect []*Node) flow.Step {
+func (graph *Graph) step(direct []*Node, indirect []*Node) flow.Step {
 	// total steps for resolving all tree's flow
 	total := make([]flow.Step, 0)
 
@@ -219,6 +221,36 @@ func (graph *Graph) steps(direct []*Node, indirect []*Node) flow.Step {
 	return flow.Group(total...)
 }
 
+// logger returns writer for log graph map
+// TODO: defer garbage
+func (graph *Graph) logger(uuid string) (io.Writer, error) {
+	// get abs path for log file
+	path := tools.GraphMapPath(uuid)
+
+	// check directory exists, otherwise create it
+	dir := filepath.Dir(path)
+	if _, err := os.Stat(dir); err != nil {
+		if os.IsNotExist(err) {
+			// not exists -> create dir
+			if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+				return nil, err
+			}
+		} else {
+			// some unexpected error from stat
+			return nil, err
+		}
+	}
+
+	// directory exists - create file
+	f, err := os.Create(path)
+	if err != nil {
+		// error while creating file
+		return nil, err
+	}
+
+	return f, nil
+}
+
 // Run implements Step interface
 // run mixed nested flow.Step interface
 func (graph *Graph) Run(ctx context.Context) error {
@@ -245,8 +277,17 @@ func (graph *Graph) Run(ctx context.Context) error {
 	// Phase 4.
 	// get final flow.Step for perform
 	// and go deeper into running
-	steps := graph.steps(direct, indirect)
-	log.Debugf("Flow to perform:\n%s", steps)
+	step := graph.step(direct, indirect)
 
-	return flow.ExecuteWithContext(ctx, steps)
+	// Phase 5. Log graph execution map
+	// TODO: workaround detected. Print map to file
+	session, ok := ctx.Value("session").(string)
+	if ok {
+		if logger, err := graph.logger(session); err == nil {
+			fmt.Fprint(logger, step)
+		}
+	}
+
+	// Phase 6. Execute tree
+	return flow.ExecuteWithContext(ctx, step)
 }

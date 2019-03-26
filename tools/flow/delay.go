@@ -41,14 +41,19 @@ func Delay(workers int, immediately Step, steps ...Step) Step {
 
 func (d *delay) Run(ctx context.Context) error {
 	// Phase 1. run immediately step
-	if err := d.immediately.Run(ctx); err != nil {
+	if err := ExecuteWithContext(ctx, d.immediately); err != nil {
 		return err
 	}
 
 	// Phase 1. run async with non wait flag
 	// fill the pool of workers (prepare)
 	d.add(cap(d.workers))
+
+	// NOTE: looks like workaround: set context to `delayed` mode
+	// all subtree will ignore context.Done channel in asynchronous group
+	ctx = context.WithValue(ctx, "delay", true)
+
 	// run asynchronous with waiting and with resource limits based on worker's channel
 	// NOTE: dispatcher implements `pool` interface itself // TODO: looks not good => move to separate struct
-	return newAsync(false, d, d.steps...).Run(ctx)
+	return newAsync(false, d, d.steps...).Run(context.Background())
 }

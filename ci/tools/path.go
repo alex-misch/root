@@ -68,3 +68,13 @@ func LogPath(container string) string {
 		fmt.Sprintf("%s.log", container),
 	)
 }
+
+// LogPath calculates path where container logs will be stored
+func GraphMapPath(session string) string {
+	return filepath.Join(
+		CIROOT,
+		"sessions",
+		session,
+		"map",
+	)
+}

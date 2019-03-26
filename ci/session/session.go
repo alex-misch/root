@@ -11,36 +11,19 @@ import (
 )
 
 type Session struct {
-	UUID uuid.UUID
-	repo *git.Repository
-	step flow.Step
+	UUID   uuid.UUID
+	origin string
+	ref    string
+	repo   *git.Repository
+	step   flow.Step
 }
 
-// repo: github.com/boomfunc/root - what we clonning what is
+// New returns new static session definition
 func New(origin, ref string) (*Session, error) {
-	// clone repository to `path`
-	repo, err := git.GetRepo(origin, tools.RepoPath(origin), ref)
-	if err != nil {
-		return nil, err
-	}
-
-	// garbage if repo exists
-	defer func() {
-		if err != nil {
-			repo.Destroy()
-		}
-	}()
-
-	// create flow graph
-	graph, err := graph.New(repo.Path)
-	if err != nil {
-		return nil, err
-	}
-
 	session := &Session{
-		UUID: uuid.New(),
-		repo: repo,
-		step: graph,
+		origin: origin,
+		ref:    ref,
+		UUID:   uuid.New(),
 	}
 
 	return session, nil
@@ -51,8 +34,22 @@ func New(origin, ref string) (*Session, error) {
 // Runs all steps with the same context (mixed)
 // here context creates and cancels if something wrong
 func (session *Session) Run(ctx context.Context) error {
-	// garbage anyway
+	// clone repository to `path`
+	repo, err := git.GetRepo(session.origin, tools.RepoPath(session.origin), session.ref)
+	if err != nil {
+		return err
+	}
+	session.repo = repo
+
+	// garbage repository anyway
 	defer session.repo.Destroy()
+
+	// create flow graph
+	graph, err := graph.New(repo.Path)
+	if err != nil {
+		return err
+	}
+	session.step = graph
 
 	// get diff of last repo commit
 	// if we cannot calculate diff what to build - no need to continue session runnning

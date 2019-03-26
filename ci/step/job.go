@@ -162,7 +162,7 @@ func (step *Job) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-// logger returns writer fo container logs
+// logger returns writer for container logs
 // now it is file located at tools.LogPath
 // TODO: defer garbage
 func (step *Job) logger() (io.Writer, error) {

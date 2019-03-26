@@ -1,14 +1,22 @@
 collection:
 
-  # Route
+  # create new session and run in background
   - pattern: "/github"
     pipeline:
 
-      - type: process
-        cmd: ./ci/github.sh
+      - type: plugin
+        path: ./ci-Linux-x86_64.so
+        name: SessionRun
 
-  # Route
-  - pattern: "/logs/{container:*}"
+  # container map by session id
+  - pattern: "/sessions/{session:*}/map"
+    pipeline:
+
+      - type: process
+        cmd: cat /bmpci/sessions/{{url "session"}}/map
+
+  # log by container id
+  - pattern: "/containers/{container:*}/log"
     pipeline:
 
       - type: process
