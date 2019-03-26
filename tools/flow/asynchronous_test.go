@@ -48,10 +48,6 @@ func TestAsyncPrivate(t *testing.T) {
 			}
 
 		})
-		t.Run("nonwait", func(t *testing.T) {
-			// with nonwait - object without channels - no close - no panic
-			newAsync(false, nil, nil).close(nil)
-		})
 	})
 
 	t.Run("executeStep", func(t *testing.T) {

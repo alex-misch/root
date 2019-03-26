@@ -113,17 +113,17 @@ func (group *async) executeStep(ctx context.Context, cancel context.CancelFunc, 
 	}
 }
 
-// close closes group channels for r/w ops
+// close closes group channels for i/o ops
+// also closes close fucn and release all resources
 func (group *async) close(cancel context.CancelFunc) {
 	group.mutex.Lock()
 
-	group.closed = true // block channels for read/write operations
-	// NOTE: synchronization channels required ONLY if we want to wait for results
-	// if delay mode - no need to create and close channels
-	if group.wait {
-		close(group.errCh)
-		close(group.doneCh)
-	}
+	// block channels for i/o operations
+	group.closed = true
+
+	// close synchronization channels
+	close(group.errCh)
+	close(group.doneCh)
 
 	group.mutex.Unlock()
 
@@ -136,7 +136,9 @@ func (group *async) close(cancel context.CancelFunc) {
 func (group *async) Run(ctx context.Context) error {
 	var cancel context.CancelFunc // NOTE: by default - nil
 
-	// if we work in `delay` mode - no need to work with any kind of cancellation
+	// NOTE: synchronization channels required ONLY if we want to wait for results
+	// if delay mode - no need to create and close channels
+	// also as no need to work with any kind of cancellation
 	// let's check it!
 	if group.wait {
 		// create cancellation for current group
