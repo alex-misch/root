@@ -1,15 +1,10 @@
 FROM scratch
 
-# create app directory environment
-RUN set -ex \
-		&& mkdir -p /boomfunc/app
-
 # Copy our static executable
 COPY /go/bin/base-$(uname -s)-$(uname -m) /boomfunc/base
 
 # Trigger for check app can be execute on this OS
-RUN set -ex \
-		&& /boomfunc/base --version
+RUN /boomfunc/base --version
 
 WORKDIR /boomfunc/app
 
