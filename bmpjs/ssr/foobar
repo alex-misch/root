@@ -11,6 +11,7 @@ jobs:
       script: /go/src/github.com/boomfunc/root/.scripts
       src: /go/src/github.com/boomfunc/root
 
+
   deploy:
     docker: docker://docker:latest
     entrypoint: |
