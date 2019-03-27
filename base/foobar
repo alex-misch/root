@@ -8,8 +8,8 @@ jobs:
 
 
     mount:
-      script: /go/src/package/.scripts
-      src: /go/src/package
+      script: /go/src/github.com/boomfunc/root/.scripts
+      src: /go/src/github.com/boomfunc/root
 
 
   build:
