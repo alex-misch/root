@@ -14,12 +14,12 @@ jobs:
   build:
     docker: docker://golang:1.11
     entrypoint: |
-      .scripts/build-bin.sh
+      .scripts/build-bin.sh 'base'
 
     mount:
-      script: /go/src/github.com/boomfunc/root/base/.scripts
+      script: /go/src/github.com/boomfunc/root/.scripts
       artifact: /go/bin
-      src: /go/src/github.com/boomfunc/root/base
+      src: /go/src/github.com/boomfunc/root
 
 
   deploy:
