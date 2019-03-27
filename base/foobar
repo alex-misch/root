@@ -4,15 +4,12 @@ jobs:
     docker: docker://golang:1.11
     entrypoint: |
       pwd
-      ls -la
-      ls -la .scripts
-      ls -la .scripts/test.sh
       .scripts/test.sh
 
 
     mount:
-      script: /go/src/github.com/boomfunc/root/base/.scripts
-      src: /go/src/github.com/boomfunc/root/base
+      script: /go/src/package/.scripts
+      src: /go/src/package
 
 
   build:
