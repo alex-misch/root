@@ -25,9 +25,7 @@ jobs:
   deploy:
     docker: docker://docker:latest
     entrypoint: |
-      pwd
-      ls -lah /go/bin
-      ls -lah ./
+      cat ./base/Dockerfile
 
       docker login --username=gurinov --password=Zx1991cv
       docker build -t boomfunc/base:ttt ./base
