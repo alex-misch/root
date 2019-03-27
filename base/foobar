@@ -33,7 +33,7 @@ jobs:
 
     mount:
       artifact: /go/bin
-      src: /go/src/github.com/boomfunc/root
+      src: /go/bin
 
 direct: [test, build, deploy]
 indirect: [test]
