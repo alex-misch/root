@@ -222,8 +222,7 @@ func (graph *Graph) step(direct []*Node, indirect []*Node) flow.Step {
 }
 
 // logger returns writer for log graph map
-// TODO: defer garbage
-func (graph *Graph) logger(uuid string) (io.Writer, error) {
+func (graph *Graph) logger(uuid string) (io.WriteCloser, error) {
 	// get abs path for log file
 	path := tools.GraphMapPath(uuid)
 
@@ -283,7 +282,9 @@ func (graph *Graph) Run(ctx context.Context) error {
 	// TODO: workaround detected. Print map to file
 	session, ok := ctx.Value("session").(string)
 	if ok {
-		if logger, err := graph.logger(session); err == nil {
+		logger, err := graph.logger(session)
+		if err == nil {
+			defer logger.Close()
 			fmt.Fprint(logger, step)
 		}
 	}

@@ -44,7 +44,8 @@ func (env *JobEnvironment) SrcPath() string {
 	return tools.AbsWorkdir(
 		tools.RepoPath(env.session),
 		env.pack,
-		env.context,
+		"$/",
+		// env.context,
 	)
 }
 
@@ -63,7 +64,6 @@ func (env *JobEnvironment) ScriptPath() string {
 func (env *JobEnvironment) ArtifactPath() string {
 	return tools.ArtifactPath(
 		env.session,
-		env.name,
 	)
 }
 
