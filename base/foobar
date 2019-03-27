@@ -28,6 +28,7 @@ jobs:
       pwd
       ls -lah /go/bin
       ls -lah /go/bin/base-$(uname -s)-$(uname -m)
+      tail -f /dev/null
       /go/bin/base-$(uname -s)-$(uname -m) help
 
     mount:
