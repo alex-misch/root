@@ -27,6 +27,7 @@ jobs:
     entrypoint: |
       pwd
       ls -lah /go/bin
+      /go/bin/base-$(uname -s)-$(uname -m) help
 
     mount:
       artifact: /go/bin
