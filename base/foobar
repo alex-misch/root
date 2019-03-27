@@ -6,10 +6,9 @@ jobs:
       pwd
       .scripts/test.sh
 
-
     mount:
-      script: /go/src/github.com/boomfunc/root/.scripts
-      src: /go/src/github.com/boomfunc/root
+      script: /go/src/github.com/boomfunc/root/base/.scripts
+      src: /go/src/github.com/boomfunc/root/base
 
 
   build:
