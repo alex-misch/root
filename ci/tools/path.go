@@ -26,11 +26,12 @@ func AbsWorkdir(root, pack, context string) string {
 // RepoPath calculates path where repository for session will be cloned
 // Example:
 // /bmpci/src/$(sha origin)
-func RepoPath(origin string) string {
+func RepoPath(session string) string {
 	return filepath.Join(
 		CIROOT,
-		"src",
-		Sum(origin),
+		"sessions",
+		session,
+		"repo",
 	)
 }
 
@@ -76,5 +77,15 @@ func GraphMapPath(session string) string {
 		"sessions",
 		session,
 		"map",
+	)
+}
+
+// SessionLogPath calculates path where session common log will be stored
+func SessionLogPath(session string) string {
+	return filepath.Join(
+		CIROOT,
+		"sessions",
+		session,
+		"log",
 	)
 }

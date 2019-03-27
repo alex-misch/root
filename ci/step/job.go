@@ -288,5 +288,5 @@ func (step *Job) Run(ctx context.Context) error {
 
 // String implements fmt.Stringer interface
 func (step *Job) String() string {
-	return fmt.Sprintf("JOB(%s)", step.UUID)
+	return fmt.Sprintf("JOB(%s, ID: %s)", step.Docker, step.UUID)
 }
