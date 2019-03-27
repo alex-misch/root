@@ -3,7 +3,6 @@ jobs:
   test:
     docker: docker://golang:1.11
     entrypoint: |
-      pwd
       .scripts/test.sh 'base'
 
     mount:
