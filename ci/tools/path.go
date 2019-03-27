@@ -38,13 +38,13 @@ func RepoPath(session string) string {
 // ArtifactPath calculates path where container artifacts will be stored
 // Example:
 // /bmpci/artifact/$(sessionUUID)/$(sha origin + pack)
-func ArtifactPath(session, origin, pack string) string {
+func ArtifactPath(session, name string) string {
 	return filepath.Join(
 		CIROOT,
-		"artifact",
+		"sessions",
 		session,
-		Sum(origin, pack),
-		// env.name,
+		"artifacts",
+		name,
 	)
 }
 
@@ -65,7 +65,7 @@ func CachePath(origin, pack, name string) string {
 func LogPath(container string) string {
 	return filepath.Join(
 		CIROOT,
-		"log",
+		"containers",
 		fmt.Sprintf("%s.log", container),
 	)
 }

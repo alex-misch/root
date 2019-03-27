@@ -63,8 +63,7 @@ func (env *JobEnvironment) ScriptPath() string {
 func (env *JobEnvironment) ArtifactPath() string {
 	return tools.ArtifactPath(
 		env.session,
-		env.origin,
-		env.pack,
+		env.name,
 	)
 }
 
@@ -164,8 +163,7 @@ func (step *Job) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 // logger returns writer for container logs
 // now it is file located at tools.LogPath
-// TODO: defer garbage
-func (step *Job) logger() (io.Writer, error) {
+func (step *Job) logger() (io.WriteCloser, error) {
 	// get abs path for log file
 	path := tools.LogPath(
 		step.UUID.String(),
@@ -228,6 +226,7 @@ func (step *Job) run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	defer logger.Close()
 
 	// Create and run container
 	err = docker.RunContainer(
