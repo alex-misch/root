@@ -23,18 +23,19 @@ jobs:
 
 
   deploy:
-    docker: docker://atlassian/pipelines-awscli
+    docker: docker://docker:latest
     entrypoint: |
       pwd
       ls -lah /go/bin
+      ls -lah ./
 
-      mkdir -p /lib64
-      ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
-
-      /go/bin/base-$(uname -s)-$(uname -m) help
+      docker login --username=gurinov --password=Zx1991cv
+      docker build -t boomfunc/base:ttt ./base
+      docker push boomfunc/base:ttt
 
     mount:
       artifact: /go/bin
+      src: /go/src/github.com/boomfunc/root
 
 direct: [test, build, deploy]
 indirect: [test]
