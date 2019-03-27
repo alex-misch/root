@@ -27,7 +27,7 @@ collection:
     pipeline:
 
       - type: process
-        cmd: cat /bmpci/log/{{url "container"}}.log
+        cmd: cat /bmpci/containers/{{url "container"}}.log
 
   # Route
   # AWS ECS ping
