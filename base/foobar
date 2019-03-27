@@ -7,6 +7,7 @@ jobs:
       ls -la
       .scripts/test.sh
 
+
     mount:
       script: /go/src/github.com/boomfunc/root/base/.scripts
       src: /go/src/github.com/boomfunc/root/base
