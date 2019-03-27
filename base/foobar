@@ -3,27 +3,24 @@ jobs:
   test:
     docker: docker://golang:1.11
     entrypoint: |
-      #.scripts/test.sh
-      cat cli/log.go
+      pwd
+      ls -la
+      .scripts/test.sh
 
     mount:
-      script: /go/src/package/.scripts
-      src: /go/src/package
+      script: /go/src/github.com/boomfunc/root/base/.scripts
+      src: /go/src/github.com/boomfunc/root/base
 
 
   build:
     docker: docker://golang:1.11
     entrypoint: |
-      pwd
-      ls -lah .scripts
-      ls -lah
-      cat cli/log.go
-      #.scripts/build-bin.sh
+      .scripts/build-bin.sh
 
     mount:
-      script: /go/src/package/.scripts
+      script: /go/src/github.com/boomfunc/root/base/.scripts
       artifact: /go/bin
-      src: /go/src/package
+      src: /go/src/github.com/boomfunc/root/base
 
 
   deploy:
