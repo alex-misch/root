@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/boomfunc/root/ci/session"
 	"io"
 
 	"github.com/boomfunc/root/ci/cli"
+	"github.com/boomfunc/root/ci/session"
 	"github.com/boomfunc/root/tools/flow"
 )
 
@@ -27,7 +27,7 @@ func SessionRun(ctx context.Context) error {
 	}
 
 	// create new session
-	session, err := session.New("https://github.com/agurinov/root", "refs/heads/ci")
+	session, err := session.New("https://github.com/agurinov/root.git", "refs/heads/master")
 	if err != nil {
 		return err
 	}

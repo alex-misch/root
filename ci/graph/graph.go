@@ -165,7 +165,7 @@ func (graph *Graph) changes(ctx context.Context, roots []string) (direct []*Node
 			// append to output tree
 			direct = append(direct, node)
 
-			// calculate nodes, depends on drect changed (indirect)
+			// calculate nodes, depends on direct changed (indirect)
 			// add deps to indirect
 			for _, inode := range graph.edges[root] {
 				// create copy of context for this job
@@ -194,7 +194,7 @@ func (graph *Graph) step(direct []*Node, indirect []*Node) flow.Step {
 	for _, node := range indirect {
 		// check steps exists
 		// may return nil, job or another step (for example group or parallel)
-		if step := node.steps(node.Indirect); step != nil {
+		if step := node.step(node.Indirect); step != nil {
 			indirects = append(indirects, step)
 		}
 	}
@@ -208,7 +208,7 @@ func (graph *Graph) step(direct []*Node, indirect []*Node) flow.Step {
 	for _, node := range direct {
 		// check steps exists
 		// may return nil, job or another step (for example group or parallel)
-		if step := node.steps(node.Direct); step != nil {
+		if step := node.step(node.Direct); step != nil {
 			directs = append(directs, step)
 		}
 	}

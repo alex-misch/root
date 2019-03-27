@@ -45,9 +45,9 @@ func NodeFromLocalFile(name string) (*Node, error) {
 	return loadYAML(f)
 }
 
-// steps returns Step slice by their names from collection
+// step returns Step slice by their names from collection
 // in `names` order
-func (node *Node) steps(names []string) flow.Step {
+func (node *Node) step(names []string) flow.Step {
 	steps := make([]flow.Step, 0)
 
 	for _, name := range names {
