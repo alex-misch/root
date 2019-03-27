@@ -38,6 +38,13 @@ func Mounts(paths ...[]string) []mount.Mount {
 		})
 	}
 
+	// append docker socket
+	mounts = append(mounts, mount.Mount{
+		Type:   mount.TypeBind,
+		Source: "/var/run/docker.sock", // from (host path)
+		Target: "/var/run/docker.sock", // to (container path)
+	})
+
 	switch len(mounts) {
 	case 0:
 		return nil
