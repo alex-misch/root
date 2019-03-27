@@ -5,6 +5,8 @@ jobs:
     entrypoint: |
       pwd
       ls -la
+      ls -la .scripts
+      ls -la .scripts/test.sh
       .scripts/test.sh
 
 
