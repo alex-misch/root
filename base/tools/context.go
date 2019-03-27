@@ -26,6 +26,7 @@ func StringsFromCtx(ctx context.Context, ss []string) []string {
 	// create parent template and string builder
 	tpl := template.New("").Funcs(funcMap)
 	var b strings.Builder
+	nss := make([]string, len(ss))
 
 	for i := 0; i < len(ss); i++ {
 		inner, err := tpl.Parse(ss[i])
@@ -38,9 +39,9 @@ func StringsFromCtx(ctx context.Context, ss []string) []string {
 			continue
 		}
 
-		ss[i] = b.String()
+		nss[i] = b.String()
 		b.Reset()
 	}
 
-	return ss
+	return nss
 }
