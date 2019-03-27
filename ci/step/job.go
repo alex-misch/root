@@ -42,7 +42,7 @@ func (env *JobEnvironment) LogPath() string {
 // if necessary (if JobMount have `SrcPath` nonempty)
 func (env *JobEnvironment) SrcPath() string {
 	return tools.AbsWorkdir(
-		tools.RepoPath(env.origin),
+		tools.RepoPath(env.session),
 		env.pack,
 		env.context,
 	)
@@ -52,7 +52,7 @@ func (env *JobEnvironment) SrcPath() string {
 // if necessary (if JobMount have `SrcPath` nonempty)
 func (env *JobEnvironment) ScriptPath() string {
 	return tools.AbsWorkdir(
-		tools.RepoPath(env.origin),
+		tools.RepoPath(env.session),
 		env.pack,
 		"$.scripts",
 	)
