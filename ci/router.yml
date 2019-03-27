@@ -8,7 +8,14 @@ collection:
         path: ./ci-Linux-x86_64.so
         name: SessionRun
 
-  # container map by session id
+  # session log by id
+  - pattern: "/sessions/{session:*}/log"
+    pipeline:
+
+      - type: process
+        cmd: cat /bmpci/sessions/{{url "session"}}/log
+
+  # containers map by session id
   - pattern: "/sessions/{session:*}/map"
     pipeline:
 
