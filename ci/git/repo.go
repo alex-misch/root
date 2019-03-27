@@ -31,17 +31,6 @@ func GetRepo(origin, ref, path string) (*Repository, error) {
 		return nil, ErrWrongClonePath
 	}
 
-	if _, err := os.Stat(path); !os.IsNotExist(err) {
-		// exists -> delete folder
-		if err := os.RemoveAll(path); err != nil {
-			return nil, fmt.Errorf("ci/git: %s", err)
-		}
-	}
-	// not exists -> create dir
-	if err := os.MkdirAll(path, os.ModePerm); err != nil {
-		return nil, fmt.Errorf("ci/git: %s", err)
-	}
-
 	// clone last n commits
 	repo, err := gogit.PlainClone(path, false, cloneOpts)
 	if err != nil {

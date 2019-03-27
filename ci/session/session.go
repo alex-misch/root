@@ -2,7 +2,6 @@ package session
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
