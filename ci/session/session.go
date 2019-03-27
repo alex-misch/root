@@ -2,6 +2,10 @@ package session
 
 import (
 	"context"
+	"fmt"
+	"io"
+	"os"
+	"path/filepath"
 
 	"github.com/boomfunc/root/ci/git"
 	"github.com/boomfunc/root/ci/graph"
@@ -29,13 +33,43 @@ func New(origin, ref string) (*Session, error) {
 	return session, nil
 }
 
+// logger returns writer for log session lifecycle
+func (session *Session) logger() (io.WriteCloser, error) {
+	// get abs path for log file
+	path := tools.SessionLogPath(session.UUID.String())
+
+	// check directory exists, otherwise create it
+	dir := filepath.Dir(path)
+	if _, err := os.Stat(dir); err != nil {
+		if os.IsNotExist(err) {
+			// not exists -> create dir
+			if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+				return nil, err
+			}
+		} else {
+			// some unexpected error from stat
+			return nil, err
+		}
+	}
+
+	// directory exists - create file
+	f, err := os.Create(path)
+	if err != nil {
+		// error while creating file
+		return nil, err
+	}
+
+	return f, nil
+}
+
 // Run implements flow.Step interface
 // Run is main entrypoint.
 // Runs all steps with the same context (mixed)
 // here context creates and cancels if something wrong
 func (session *Session) Run(ctx context.Context) error {
 	// clone repository to `path`
-	repo, err := git.GetRepo(session.origin, tools.RepoPath(session.origin), session.ref)
+	path := tools.RepoPath(session.UUID.String())
+	repo, err := git.GetRepo(session.origin, session.ref, path)
 	if err != nil {
 		return err
 	}

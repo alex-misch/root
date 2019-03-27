@@ -19,7 +19,7 @@ type Repository struct {
 	gogit.Repository
 }
 
-func GetRepo(origin, path, ref string) (*Repository, error) {
+func GetRepo(origin, ref, path string) (*Repository, error) {
 	cloneOpts := &gogit.CloneOptions{
 		URL:           origin,
 		ReferenceName: plumbing.ReferenceName(ref),
