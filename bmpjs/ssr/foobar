@@ -3,14 +3,13 @@ jobs:
   test:
     docker: docker://node:10.9-alpine
     entrypoint: |
-      pwd
+      apk add --no-cache git
       npm install --prefix=bmpjs/ssr
       npm test --prefix=bmpjs/ssr
 
     mount:
       script: /go/src/github.com/boomfunc/root/.scripts
       src: /go/src/github.com/boomfunc/root
-
 
   deploy:
     docker: docker://docker:latest
