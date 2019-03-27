@@ -1,34 +1,13 @@
 jobs:
 
-  test:
-    docker: docker://alpine
-    entrypoint: |
-      echo 'TESTED' > /tmp/art/test
-      cat /tmp/art/test
-
-    mount:
-      artifact: /tmp/art
-
-  build:
-    docker: docker://alpine
-    entrypoint: |
-      echo "`cat /tmp/art/test` BUILDED" > /tmp/art/build
-      cat /tmp/art/build
-
-    mount:
-      artifact: /tmp/art
-
   deploy:
-    docker: docker://alpine
+    docker: docker://docker:latest
     entrypoint: |
-      echo "`cat /tmp/art/build` DEPLOYED" > /tmp/art/deploy
-      cat /tmp/art/deploy
+      docker login --username=gurinov --password=Zx1991cv
+      docker build -t boomfunc/ssr:ttt ./bmpjs/ssr/Dockerfile
+      docker push boomfunc/ssr:ttt
 
     mount:
-      artifact: /tmp/art
+      src: /go/src/github.com/boomfunc/root
 
-# deps:
-  # - base
-
-direct: [test, build, deploy]
-indirect: [test]
+direct: [deploy]
