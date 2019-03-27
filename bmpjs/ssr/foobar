@@ -4,7 +4,7 @@ jobs:
     docker: docker://docker:latest
     entrypoint: |
       docker login --username=gurinov --password=Zx1991cv
-      docker build -t boomfunc/ssr:ttt ./bmpjs/ssr/Dockerfile
+      docker build -t boomfunc/ssr:ttt ./bmpjs/ssr
       docker push boomfunc/ssr:ttt
 
     mount:
