@@ -20,6 +20,7 @@ jobs:
       ls -lah
 
       .scripts/build-plugin.sh 'ci'
+      cp ci/router.yml /go/bin/router.yml
 
     mount:
       script: /go/src/github.com/boomfunc/root/.scripts

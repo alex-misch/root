@@ -2,4 +2,5 @@
 # Get pre-compiled base
 FROM boomfunc/base:latest as base
 
-ADD . /boomfunc/app
+ADD router.yml /boomfunc/app
+ADD ci-Linux-x86_64.so /boomfunc/app
