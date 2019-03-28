@@ -16,11 +16,11 @@ collection:
         cmd: cat /bmpci/sessions/{{url "session"}}/log
 
   # containers map by session id
-  - pattern: "/sessions/{session:*}/map"
+  - pattern: "/sessions/{session:*}/graph"
     pipeline:
 
       - type: process
-        cmd: cat /bmpci/sessions/{{url "session"}}/map
+        cmd: cat /bmpci/sessions/{{url "session"}}/graph
 
   # log by container id
   - pattern: "/containers/{container:*}/log"

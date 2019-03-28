@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
 	"io"
 
 	"github.com/boomfunc/root/ci/cli"
@@ -33,16 +33,19 @@ func SessionRun(ctx context.Context) error {
 	}
 
 	return flow.Delay(
-		10,
+		10, // workers queue
 
+		// immediately step is just print information about session
+		// now we using json representation (look at session.MarshalJSON() method)
 		flow.Func(func(ctx context.Context) error {
-			// write to stdout their UUID
-			if _, err := fmt.Fprint(stdout, session.UUID); err != nil {
-				return err
-			}
-			return nil
+			// write session data as json to stdout
+			encoder := json.NewEncoder(stdout)
+			encoder.Encode(session)
+			return err
 		}),
 
-		session, // NOTE: because `sess` implements `flow.Step` interface
+		// behind the scenes step will be `session` itself
+		// NOTE: because `session` implements `flow.Step` interface
+		session,
 	).Run(ctx)
 }

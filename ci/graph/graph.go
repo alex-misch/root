@@ -224,7 +224,7 @@ func (graph *Graph) step(direct []*Node, indirect []*Node) flow.Step {
 // logger returns writer for log graph map
 func (graph *Graph) logger(uuid string) (io.WriteCloser, error) {
 	// get abs path for log file
-	path := tools.GraphMapPath(uuid)
+	path := tools.GraphPath(uuid)
 
 	// check directory exists, otherwise create it
 	dir := filepath.Dir(path)

@@ -69,13 +69,13 @@ func LogPath(container string) string {
 	)
 }
 
-// LogPath calculates path where container logs will be stored
-func GraphMapPath(session string) string {
+// GraphPath calculates path where container logs will be stored
+func GraphPath(session string) string {
 	return filepath.Join(
 		CIROOT,
 		"sessions",
 		session,
-		"map",
+		"graph",
 	)
 }
 

@@ -68,35 +68,51 @@ func (session *Session) logger() (io.WriteCloser, error) {
 func (session *Session) Run(ctx context.Context) error {
 	// clone repository to `path`
 	path := tools.RepoPath(session.UUID.String())
-	repo, err := git.GetRepo(session.origin, session.ref, path)
+	repo, err = git.Clone(session.Origin, session.Ref, path)
 	if err != nil {
-		return err
+		return
 	}
-	session.repo = repo
+	// session.repo = repo
 
 	// garbage repository anyway
-	defer session.repo.Destroy()
+	defer repo.Destroy()
 
 	// create flow graph
 	graph, err := graph.New(repo.Path)
 	if err != nil {
-		return err
+		return
 	}
-	session.step = graph
+	// session.step = graph
 
 	// get diff of last repo commit
 	// if we cannot calculate diff what to build - no need to continue session runnning
-	paths, err := session.repo.Diff()
+	paths, err := repo.Diff()
 	if err != nil {
-		return err
+		return
 	}
 
 	// fill context from current level
 	// fill all we can to low level steps
 	ctx = context.WithValue(ctx, "session", session.UUID.String())
-	ctx = context.WithValue(ctx, "origin", session.repo.Origin)
+	ctx = context.WithValue(ctx, "origin", session.Origin)
 	ctx = context.WithValue(ctx, "diff", paths)
 
 	// run the whole flow
 	return flow.ExecuteWithContext(ctx, session.step)
+
+// MarshalJSON implements json.Marshaler interface
+// because we need dynamic fields not declared on structure
+func (session Session) MarshalJSON() ([]byte, error) {
+	type Alias Session // to prevent infinity loop
+
+	return json.Marshal(&struct {
+		Graph string // graph endpoint
+		Log   string // log endpoint
+		Alias
+	}{
+		// TODO: paths from router dynamically
+		Graph: fmt.Sprintf("/sessions/%s/graph", session.UUID),
+		Log:   fmt.Sprintf("/sessions/%s/log", session.UUID),
+		Alias: Alias(session),
+	})
 }
