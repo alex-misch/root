@@ -2,6 +2,8 @@ package session
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -15,17 +17,17 @@ import (
 
 type Session struct {
 	UUID   uuid.UUID
-	origin string
-	ref    string
-	repo   *git.Repository
-	step   flow.Step
+	Origin string
+	Ref    string
+	// repo   *git.Repository
+	// step flow.Step
 }
 
 // New returns new static session definition
 func New(origin, ref string) (*Session, error) {
 	session := &Session{
-		origin: origin,
-		ref:    ref,
+		Origin: origin,
+		Ref:    ref,
 		UUID:   uuid.New(),
 	}
 
@@ -65,10 +67,10 @@ func (session *Session) logger() (io.WriteCloser, error) {
 // Run is main entrypoint.
 // Runs all steps with the same context (mixed)
 // here context creates and cancels if something wrong
-func (session *Session) Run(ctx context.Context) error {
+func (session *Session) Run(ctx context.Context) (err error) {
 	// clone repository to `path`
 	path := tools.RepoPath(session.UUID.String())
-	repo, err = git.Clone(session.Origin, session.Ref, path)
+	repo, err := git.Clone(session.Origin, session.Ref, path)
 	if err != nil {
 		return
 	}
@@ -98,7 +100,9 @@ func (session *Session) Run(ctx context.Context) error {
 	ctx = context.WithValue(ctx, "diff", paths)
 
 	// run the whole flow
-	return flow.ExecuteWithContext(ctx, session.step)
+	err = flow.ExecuteWithContext(ctx, graph)
+	return
+}
 
 // MarshalJSON implements json.Marshaler interface
 // because we need dynamic fields not declared on structure
