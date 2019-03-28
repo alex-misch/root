@@ -1,0 +1,14 @@
+jobs:
+
+  test:
+    docker: docker://node:10.9-alpine
+    entrypoint: |
+      echo 'test'
+
+  deploy:
+    docker: docker://docker:latest
+    entrypoint: |
+      echo 'deploy'
+
+direct: [test, deploy]
+indirect: [test]
