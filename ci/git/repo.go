@@ -19,16 +19,19 @@ type Repository struct {
 	gogit.Repository
 }
 
-func GetRepo(origin, ref, path string) (*Repository, error) {
+func Clone(origin, ref, path string) (*Repository, error) {
+	// path may be empty
+	if path == "" {
+		return nil, ErrWrongClonePath
+	}
+
+	// calculate clone options
+	// here will be resolved https://github.com/boomfunc/root/issues/17
 	cloneOpts := &gogit.CloneOptions{
 		URL:           origin,
 		ReferenceName: plumbing.ReferenceName(ref),
 		SingleBranch:  true,
 		Depth:         2, // TODO dynamic
-	}
-
-	if path == "" {
-		return nil, ErrWrongClonePath
 	}
 
 	// clone last n commits
