@@ -6,6 +6,7 @@ jobs:
       pwd
       ls -lah
 
+
       .scripts/test.sh 'base'
 
     mount:
@@ -18,6 +19,7 @@ jobs:
     entrypoint: |
       pwd
       ls -lah
+
 
       .scripts/build-bin.sh 'base'
 
@@ -32,6 +34,7 @@ jobs:
     entrypoint: |
       pwd
       ls -lah
+
 
       docker login --username=gurinov --password=Zx1991cv
       docker build -t boomfunc/base:ttt -f ./base/Dockerfile /go/bin

@@ -1,34 +1,46 @@
 jobs:
 
   test:
-    docker: docker://alpine
+    docker: docker://golang:1.11
     entrypoint: |
-      echo 'TESTED' > /tmp/art/test
-      cat /tmp/art/test
+      pwd
+      ls -lah
+
+      .scripts/test.sh 'ci'
 
     mount:
-      artifact: /tmp/art
+      script: /go/src/github.com/boomfunc/root/.scripts
+      src: /go/src/github.com/boomfunc/root
+
 
   build:
-    docker: docker://alpine
+    docker: docker://golang:1.11
     entrypoint: |
-      echo "`cat /tmp/art/test` BUILDED" > /tmp/art/build
-      cat /tmp/art/build
+      pwd
+      ls -lah
+
+      .scripts/build-plugin.sh 'ci'
 
     mount:
-      artifact: /tmp/art
+      script: /go/src/github.com/boomfunc/root/.scripts
+      artifact: /go/bin
+      src: /go/src/github.com/boomfunc/root
+
 
   deploy:
-    docker: docker://alpine
+    docker: docker://docker:latest
     entrypoint: |
-      echo "`cat /tmp/art/build` DEPLOYED" > /tmp/art/deploy
-      cat /tmp/art/deploy
+      pwd
+      ls -lah
+      ls -lah /go/bin
+
+      docker login --username=gurinov --password=Zx1991cv
+      docker build -t boomfunc/ci:ttt -f ./ci/Dockerfile /go/bin
+      docker push boomfunc/ci:ttt
 
     mount:
-      artifact: /tmp/art
-
-# deps:
-  # - base
+      artifact: /go/bin
+      src: /go/src/github.com/boomfunc/root
 
 direct: [test, build, deploy]
 indirect: [test]

@@ -6,6 +6,7 @@ jobs:
       pwd
       ls -lah
 
+
       apk add --no-cache git
       npm install --prefix=bmpjs/ssr
       npm test --prefix=bmpjs/ssr
@@ -19,6 +20,7 @@ jobs:
     entrypoint: |
       pwd
       ls -lah
+
 
       docker login --username=gurinov --password=Zx1991cv
       docker build -t boomfunc/ssr:ttt ./bmpjs/ssr
