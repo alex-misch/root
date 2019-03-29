@@ -2,8 +2,8 @@ package graph
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -18,7 +18,7 @@ var (
 )
 
 type Graph struct {
-	root  string // same as git repo root
+	Root  string // same as git repo root
 	nodes map[string]*Node
 	edges map[string][]*Node
 	ctxs  map[flow.Step]context.Context
@@ -43,14 +43,14 @@ func New(root string) (*Graph, error) {
 	// Phase 2
 	// create empty graph
 	graph := &Graph{
-		root:  root,
+		Root:  root,
 		nodes: make(map[string]*Node),
 		edges: make(map[string][]*Node),
 		ctxs:  make(map[flow.Step]context.Context),
 	}
 
 	// fill the graph
-	if err := filepath.Walk(graph.root, graph.walk); err != nil {
+	if err := filepath.Walk(graph.Root, graph.walk); err != nil {
 		// walk throw fs tree failed
 		return nil, err
 	}
@@ -88,7 +88,7 @@ func (graph *Graph) walk(path string, info os.FileInfo, err error) error {
 	// graph.root == /bmpci/repos/e443156edcb4f6431d71fc14c586dabe47bb858a19b2b31a598eeadbef8cf45f
 	// root will be 'bmpjs/bmp-router/src/styles'
 	// NOTE: calls Clean on the result. Perfect!
-	root, err := filepath.Rel(graph.root, path)
+	root, err := filepath.Rel(graph.Root, path)
 	if err != nil {
 		return err
 	}
@@ -280,15 +280,26 @@ func (graph *Graph) Run(ctx context.Context) error {
 
 	// Phase 5. Log graph execution map
 	// TODO: workaround detected. Print map to file
-	session, ok := ctx.Value("session").(string)
-	if ok {
-		logger, err := graph.logger(session)
-		if err == nil {
+	if session, ok := ctx.Value("session").(string); ok {
+		if logger, err := graph.logger(session); err == nil {
 			defer logger.Close()
-			fmt.Fprint(logger, step)
+			json.NewEncoder(logger).Encode(graph)
 		}
 	}
 
 	// Phase 6. Execute tree
 	return flow.ExecuteWithContext(ctx, step)
+}
+
+// MarshalJSON implements json.Marshaler interface
+func (graph Graph) MarshalJSON() ([]byte, error) {
+	type alias Graph // to prevent infinity loop
+
+	return json.Marshal(&struct {
+		Step flow.Step
+		alias
+	}{
+		Step:  flow.Group(nil, nil),
+		alias: alias(graph),
+	})
 }

@@ -107,16 +107,16 @@ func (session *Session) Run(ctx context.Context) (err error) {
 // MarshalJSON implements json.Marshaler interface
 // because we need dynamic fields not declared on structure
 func (session Session) MarshalJSON() ([]byte, error) {
-	type Alias Session // to prevent infinity loop
+	type alias Session // to prevent infinity loop
 
 	return json.Marshal(&struct {
 		Graph string // graph endpoint
 		Log   string // log endpoint
-		Alias
+		alias
 	}{
 		// TODO: paths from router dynamically
-		Graph: fmt.Sprintf("/sessions/%s/graph", session.UUID),
-		Log:   fmt.Sprintf("/sessions/%s/log", session.UUID),
-		Alias: Alias(session),
+		Graph: fmt.Sprintf("http://playground.lo:8080/sessions/%s/graph", session.UUID),
+		Log:   fmt.Sprintf("http://playground.lo:8080/sessions/%s/log", session.UUID),
+		alias: alias(session),
 	})
 }

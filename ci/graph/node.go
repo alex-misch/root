@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	ConfigName = "foobar"
+	ConfigName = ".bmpci"
 )
 
 type Node struct {

@@ -6,7 +6,17 @@ import (
 	"strings"
 )
 
-const modChar = "\x1b"
+const (
+	modChar = "\x1b"
+)
+
+var (
+	// just shortcuts for logger methods
+	debugPrefix   = Wrap("[DEBUG]", Bold, GrayChar) + "\t"
+	errorPrefix   = Wrap("[ERROR]", Bold, RedChar, Blink) + "\t"
+	infoPrefix    = Wrap("[INFO]", Bold, GreenChar) + "\t"
+	warningPrefix = Wrap("[WARN]", Bold, YellowChar, Blink) + "\t"
+)
 
 type Modification int
 type Modifications []Modification
@@ -72,11 +82,3 @@ func Wrap(v interface{}, mods ...Modification) string {
 	// concat
 	return openingWrapper + fmt.Sprint(v) + closingWrapper
 }
-
-// just shortcuts
-var (
-	debugPrefix   = Wrap("[DEBUG]", Bold, GrayChar) + "\t"
-	errorPrefix   = Wrap("[ERROR]", Bold, RedChar, Blink) + "\t"
-	infoPrefix    = Wrap("[INFO]", Bold, GreenChar) + "\t"
-	warningPrefix = Wrap("[WARN]", Bold, YellowChar, Blink) + "\t"
-)

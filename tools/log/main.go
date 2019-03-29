@@ -1,6 +1,7 @@
 package log
 
-var logger = NewLogger()
+// default logger with linked stdout and stderr
+var logger = NewLogger(nil, nil)
 
 func Debug(args ...interface{}) {
 	logger.Debug(args...)
