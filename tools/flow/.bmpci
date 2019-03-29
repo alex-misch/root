@@ -8,5 +8,6 @@ jobs:
       script: /go/src/github.com/boomfunc/root/.scripts
       src: /go/src/github.com/boomfunc/root
 
+
 direct: [test]
 indirect: [test]
