@@ -4,20 +4,22 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 
 	"github.com/boomfunc/root/ci/tools"
 	"github.com/boomfunc/root/tools/flow"
+	"github.com/google/uuid"
 )
 
 var (
-	ErrWrongDiff = errors.New("ci/graph: Provided `diff` is invalid")
-	ErrNotDir    = errors.New("ci/graph: Provided `root` is not directory")
+	ErrNotDir = errors.New("ci/graph: Provided `root` is not directory")
 )
 
 type Graph struct {
+	UUID  uuid.UUID
 	Root  string // same as git repo root
 	nodes map[string]*Node
 	edges map[string][]*Node
@@ -26,7 +28,7 @@ type Graph struct {
 
 // New creates new filesystem graph, based in root path
 // synonym to git repo and session repo
-func New(root string) (*Graph, error) {
+func New(id uuid.UUID, root string) (*Graph, error) {
 	// Pre phase. Prepare graph root
 	// TODO document this important key concept
 	root = filepath.Clean(root)
@@ -40,10 +42,16 @@ func New(root string) (*Graph, error) {
 		return nil, ErrNotDir
 	}
 
+	// also, check UUID is really provided
+	if id == uuid.Nil {
+		id = uuid.New()
+	}
+
 	// Phase 2
 	// create empty graph
 	graph := &Graph{
 		Root:  root,
+		UUID:  id,
 		nodes: make(map[string]*Node),
 		edges: make(map[string][]*Node),
 		ctxs:  make(map[flow.Step]context.Context),
@@ -222,9 +230,9 @@ func (graph *Graph) step(direct []*Node, indirect []*Node) flow.Step {
 }
 
 // logger returns writer for log graph map
-func (graph *Graph) logger(uuid string) (io.WriteCloser, error) {
+func (graph *Graph) logger() (io.WriteCloser, error) {
 	// get abs path for log file
-	path := tools.GraphPath(uuid)
+	path := tools.GraphPath(graph.UUID.String())
 
 	// check directory exists, otherwise create it
 	dir := filepath.Dir(path)
@@ -256,7 +264,7 @@ func (graph *Graph) Run(ctx context.Context) error {
 	// Phase 1. Get graph `raw` changes (get diff)
 	diff, ok := ctx.Value("diff").([]string)
 	if !ok {
-		return ErrWrongDiff
+		return flow.ErrStepOrphan
 	}
 
 	// Phase 2. Get changed nodes
@@ -279,13 +287,12 @@ func (graph *Graph) Run(ctx context.Context) error {
 	step := graph.step(direct, indirect)
 
 	// Phase 5. Log graph execution map
-	// TODO: workaround detected. Print map to file
-	if session, ok := ctx.Value("session").(string); ok {
-		if logger, err := graph.logger(session); err == nil {
-			defer logger.Close()
-			json.NewEncoder(logger).Encode(graph)
-		}
+	logger, err := graph.logger()
+	if err != nil {
+		return err
 	}
+	defer logger.Close()
+	json.NewEncoder(logger).Encode(graph)
 
 	// Phase 6. Execute tree
 	return flow.ExecuteWithContext(ctx, step)
@@ -296,10 +303,10 @@ func (graph Graph) MarshalJSON() ([]byte, error) {
 	type alias Graph // to prevent infinity loop
 
 	return json.Marshal(&struct {
-		Step flow.Step
+		Map string
 		alias
 	}{
-		Step:  flow.Group(nil, nil),
+		Map:   fmt.Sprintf("%s", flow.Group(nil, nil)),
 		alias: alias(graph),
 	})
 }

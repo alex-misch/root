@@ -24,11 +24,18 @@ type Session struct {
 }
 
 // New returns new static session definition
-func New(origin, ref string) (*Session, error) {
+func New(id uuid.UUID, origin, ref string) (*Session, error) {
+	// Pre phase. check UUID is really provided
+	if id == uuid.Nil {
+		id = uuid.New()
+	}
+
+	// Phase 1
+	// create empty session
 	session := &Session{
+		UUID:   id,
 		Origin: origin,
 		Ref:    ref,
-		UUID:   uuid.New(),
 	}
 
 	return session, nil
@@ -80,7 +87,7 @@ func (session *Session) Run(ctx context.Context) (err error) {
 	defer repo.Destroy()
 
 	// create flow graph
-	graph, err := graph.New(repo.Path)
+	graph, err := graph.New(session.UUID, repo.Path)
 	if err != nil {
 		return
 	}

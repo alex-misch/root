@@ -6,6 +6,7 @@ import (
 	tcli "github.com/boomfunc/root/tools/cli"
 	"github.com/boomfunc/root/tools/flow"
 	"github.com/boomfunc/root/tools/log"
+	"github.com/google/uuid"
 	"github.com/urfave/cli"
 )
 
@@ -32,7 +33,7 @@ func runCommandAction(c *cli.Context) {
 	log.Debugf("Repo origin: %s, reference: %s", origin, ref)
 
 	// Create session (clone repo)
-	session, err := session.New(origin, ref)
+	session, err := session.New(uuid.Nil, origin, ref)
 	if err != nil {
 		tools.FatalLog(err)
 	}

@@ -8,6 +8,7 @@ import (
 	"github.com/boomfunc/root/ci/cli"
 	"github.com/boomfunc/root/ci/session"
 	"github.com/boomfunc/root/tools/flow"
+	"github.com/google/uuid"
 )
 
 var (
@@ -27,7 +28,7 @@ func SessionRun(ctx context.Context) error {
 	}
 
 	// create new session
-	session, err := session.New("https://github.com/agurinov/root.git", "refs/heads/master")
+	session, err := session.New(uuid.Nil, "https://github.com/agurinov/root.git", "refs/heads/master")
 	if err != nil {
 		return err
 	}
