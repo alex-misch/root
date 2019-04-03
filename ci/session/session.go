@@ -61,7 +61,7 @@ func (session *Session) logger() (io.WriteCloser, error) {
 	}
 
 	// directory exists - create file
-	f, err := os.Create(path)
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		// error while creating file
 		return nil, err
@@ -75,23 +75,41 @@ func (session *Session) logger() (io.WriteCloser, error) {
 // Runs all steps with the same context (mixed)
 // here context creates and cancels if something wrong
 func (session *Session) Run(ctx context.Context) (err error) {
+	// Phase 1. Log session execution
+	logger, err := session.logger()
+	if err != nil {
+		return
+	}
+	defer logger.Close()
+
+	fmt.Fprintln(logger, "Session started")
+	defer fmt.Fprintf(logger, "Session finished with error: %v", err)
+
 	// clone repository to `path`
 	path := tools.RepoPath(session.UUID.String())
+	fmt.Fprintf(logger, "Cloning repository to: %s\n", path)
 	repo, err := git.Clone(session.Origin, session.Ref, path)
 	if err != nil {
 		return
 	}
 	// session.repo = repo
+	fmt.Fprintln(logger, "Repository cloned")
 
 	// garbage repository anyway
-	defer repo.Destroy()
+	defer func() {
+		fmt.Fprintln(logger, "Repository destroying...")
+		repo.Destroy()
+		fmt.Fprintf(logger, "Repository destroyed with error: %v\n", err)
+	}()
 
 	// create flow graph
+	fmt.Fprintln(logger, "Graph initializing and linking...")
 	graph, err := graph.New(session.UUID, repo.Path)
 	if err != nil {
 		return
 	}
 	// session.step = graph
+	fmt.Fprintln(logger, "Graph initialized and linked")
 
 	// get diff of last repo commit
 	// if we cannot calculate diff what to build - no need to continue session runnning
@@ -99,6 +117,7 @@ func (session *Session) Run(ctx context.Context) (err error) {
 	if err != nil {
 		return
 	}
+	fmt.Fprintf(logger, "Repository diff calculated: %v\n", paths)
 
 	// fill context from current level
 	// fill all we can to low level steps

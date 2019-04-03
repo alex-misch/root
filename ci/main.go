@@ -44,7 +44,7 @@ func SessionRun(ctx context.Context) error {
 		}),
 
 		// behind the scenes delay step will be `session` itself
-		// NOTE: because `session` implements `flow.Step` interface
+		// because `session` implements `flow.Step` interface
 		session,
 	).Run(ctx)
 }

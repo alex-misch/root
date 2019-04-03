@@ -42,7 +42,7 @@ func (p *epoll) Add(fd uintptr) error {
 	}
 
 	event := &unix.EpollEvent{
-		Events: unix.EPOLLIN | unix.EPOLLRDHUP | unix.EPOLLET | unix.EPOLLONESHOT,
+		Events: unix.EPOLLIN | unix.EPOLLRDHUP | unix.EPOLLET,
 		Fd:     int32(fd),
 	}
 
@@ -67,11 +67,15 @@ func (p *epoll) Events() ([]Event, []Event, error) {
 		if event.Events&(unix.EPOLLRDHUP|unix.EPOLLHUP) != 0 {
 			// closed by peer
 			// http://man7.org/linux/man-pages/man7/epoll.7.html
-			unix.Close(int(ev.Fd()))
+			if err := p.Del(ev.Fd()); err != nil {
+				unix.Close(int(ev.Fd()))
+			}
 			ce = append(ce, ev)
 		} else if event.Events&(unix.EPOLLIN) != 0 {
 			// Check event 'ready to read'
-			unix.Close(int(ev.Fd()))
+			if err := p.Del(ev.Fd()); err != nil {
+				unix.Close(int(ev.Fd()))
+			}
 			re = append(re, ev)
 		}
 	}
