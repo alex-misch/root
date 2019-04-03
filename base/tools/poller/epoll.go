@@ -73,9 +73,7 @@ func (p *epoll) Events() ([]Event, []Event, error) {
 			ce = append(ce, ev)
 		} else if event.Events&(unix.EPOLLIN) != 0 {
 			// Check event 'ready to read'
-			if err := p.Del(ev.Fd()); err != nil {
-				unix.Close(int(ev.Fd()))
-			}
+			p.Del(ev.Fd())
 			re = append(re, ev)
 		}
 	}
