@@ -69,11 +69,13 @@ func (p *kqueue) Events() ([]Event, []Event, error) {
 
 		if event.Flags&(unix.EV_EOF) != 0 {
 			// closed by peer
-			unix.Close(int(ev.Fd()))
+			if err := p.Del(ev.Fd()); err != nil {
+				unix.Close(int(ev.Fd()))
+			}
 			ce = append(ce, ev)
+		// Check event 'ready to read'
 		} else if event.Filter&(unix.EVFILT_READ) != 0 {
-			// Check event 'ready to read'
-			unix.Close(int(ev.Fd()))
+			p.Del(ev.Fd())
 			re = append(re, ev)
 		}
 	}
