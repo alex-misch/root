@@ -67,7 +67,7 @@ func (p *epoll) Events() ([]Event, []Event, error) {
 		if event.Events&(unix.EPOLLRDHUP|unix.EPOLLHUP) != 0 {
 			// closed by peer
 			// http://man7.org/linux/man-pages/man7/epoll.7.html
-			if err := p.Del(ev.Fd()); err != nil {
+			if err := p.Del(ev.Fd()); err == nil {
 				unix.Close(int(ev.Fd()))
 			}
 			ce = append(ce, ev)

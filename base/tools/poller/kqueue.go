@@ -69,7 +69,7 @@ func (p *kqueue) Events() ([]Event, []Event, error) {
 
 		if event.Flags&(unix.EV_EOF) != 0 {
 			// closed by peer
-			if err := p.Del(ev.Fd()); err != nil {
+			if err := p.Del(ev.Fd()); err == nil {
 				unix.Close(int(ev.Fd()))
 			}
 			ce = append(ce, ev)
