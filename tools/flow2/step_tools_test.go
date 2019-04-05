@@ -42,14 +42,13 @@ func TestStepsHeap(t *testing.T) {
 					return
 				}
 
-				sl := h.(*steps)
 				// maximum available places for steps
 				// because
-				if c := cap(*sl); c != tt.cap {
+				if c := cap(h.(*steps).items); c != tt.cap {
 					t.Fatalf("Expected %q, got %q", tt.cap, c)
 				}
 				// at creation stage heap equal to capacity (slice already allocated)
-				if l := len(*sl); l != tt.len {
+				if l := len(h.(*steps).items); l != tt.len {
 					t.Fatalf("Expected %q, got %q", tt.len, l)
 				}
 			})
@@ -57,7 +56,6 @@ func TestStepsHeap(t *testing.T) {
 	})
 
 	h = StepsHeap(a, b, c) // len, cap = 2, 2
-	sl := h.(*steps)
 
 	t.Run("Pop", func(t *testing.T) {
 		// Pop step from heap
@@ -65,11 +63,11 @@ func TestStepsHeap(t *testing.T) {
 			t.Fatalf("Expected %q, got %v", "Step", nil)
 		}
 		// maximum available places for steps
-		if c := cap(*sl); c != 1 {
+		if c := cap(h.(*steps).items); c != 1 {
 			t.Fatalf("Expected %q, got %q", 1, c)
 		}
 		// at creation stage heap must be full
-		if l := len(*sl); l != 1 {
+		if l := len(h.(*steps).items); l != 1 {
 			t.Fatalf("Expected %q, got %q", 1, l)
 		}
 	})
@@ -89,11 +87,11 @@ func TestStepsHeap(t *testing.T) {
 				// Push step to heap
 				h.Push(tt.step)
 				// maximum available places for steps
-				if c := cap(*sl); c != tt.cap {
+				if c := cap(h.(*steps).items); c != tt.cap {
 					t.Fatalf("Expected %q, got %q", tt.cap, c)
 				}
 				// at creation stage heap must be full
-				if l := len(*sl); l != tt.len {
+				if l := len(h.(*steps).items); l != tt.len {
 					t.Fatalf("Expected %q, got %q", tt.len, l)
 				}
 			})

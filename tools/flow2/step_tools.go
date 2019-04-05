@@ -4,18 +4,22 @@ package flow2
 
 import (
 	"container/heap"
+	"sync"
 )
 
 // steps is slice of `Step` which implements heap.Interface
-type steps []Step
+type steps struct {
+	mu    sync.Mutex
+	items []Step
+}
 
 // StepsHeap returns slice of steps as `heap.Interface`
 func StepsHeap(ss ...Step) heap.Interface {
 	// remove nil steps
 	if ss = normalize(ss...); ss != nil {
-		sl := steps(ss)
-		heap.Init(&sl)
-		return &sl
+		h := &steps{items: ss}
+		heap.Init(h)
+		return h
 	}
 
 	// heap empty
@@ -24,11 +28,14 @@ func StepsHeap(ss ...Step) heap.Interface {
 
 // Pop implements heap.Interface
 func (ss *steps) Pop() interface{} {
-	old := *ss
+	ss.mu.Lock()
+	defer ss.mu.Unlock()
+
+	old := ss.items
 	n := len(old)
 
-	*ss = make([]Step, n-1) // NOTE: here realloc (bad or good?)
-	copy(*ss, old[1:])
+	ss.items = make([]Step, n-1) // NOTE: here realloc (bad or good?)
+	copy(ss.items, old[1:])
 
 	return old[0]
 }
@@ -36,26 +43,38 @@ func (ss *steps) Pop() interface{} {
 // Push implements heap.Interface
 // append to slice only if interface is `Step`
 func (ss *steps) Push(x interface{}) {
-	if step, ok := x.(Step); ok {
-		*ss = append(*ss, step)
+	step, ok := x.(Step)
+	if !ok {
+		return
 	}
+
+	ss.mu.Lock()
+	defer ss.mu.Unlock()
+
+	ss.items = append(ss.items, step)
 }
 
 // Len implements sort.Interface
 // Len is the number of elements in the collection.
-func (ss steps) Len() int {
-	return len(ss)
+func (ss *steps) Len() int {
+	ss.mu.Lock()
+	defer ss.mu.Unlock()
+
+	return len(ss.items)
 }
 
 // Less implements sort.Interface
 // Less reports whether the element with
 // index i should sort before the element with index j.
-func (ss steps) Less(i, j int) bool {
+func (ss *steps) Less(i, j int) bool {
 	return false
 }
 
 // Swap implements sort.Interface
 // Swap swaps the elements with indexes i and j.
-func (ss steps) Swap(i, j int) {
-	ss[i], ss[j] = ss[j], ss[i]
+func (ss *steps) Swap(i, j int) {
+	ss.mu.Lock()
+	defer ss.mu.Unlock()
+
+	ss.items[i], ss.items[j] = ss.items[j], ss.items[i]
 }
