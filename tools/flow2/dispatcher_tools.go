@@ -17,10 +17,11 @@ type workers chan struct{}
 func WorkersHeap(n int) heap.Interface {
 	// create empty heap
 	h := workers(make(chan struct{}, n))
+	heap.Init(h)
 
 	// fill a heap of workers
 	for i := 0; i < n; i++ {
-		h.Push(nil)
+		heap.Push(h, nil)
 	}
 
 	return h
@@ -35,7 +36,7 @@ func (ws workers) Pop() interface{} {
 
 // Push implements heap.Interface
 // Returns worker to heap
-func (ws workers) Push(x interface{}) {
+func (ws workers) Push(_ interface{}) {
 	// NOTE: if n > left places - this operation will hung
 	// TODO: maybe throw error pool full?
 	ws <- WORKER

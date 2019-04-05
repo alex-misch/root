@@ -33,7 +33,7 @@ func (g *group) closeStep() {
 	// Phase 1. Return worker
 	// worker's heap might be nil
 	if g.workers != nil {
-		g.workers.Push(nil)
+		heap.Push(g.workers, nil)
 	}
 
 	// Phase 2. Decrement waiting counter
@@ -96,7 +96,7 @@ func (g *group) Run(ctx context.Context) error {
 	// all .Pop() from heaps (steps or workers) might be blocking
 	for {
 		// Phase 1. Get step and check for nil value (means end of chain, close loop)
-		step, ok := g.steps.Pop().(Step)
+		step, ok := heap.Pop(g.steps).(Step)
 		if !ok {
 			// no step available - end of chain
 			break
@@ -108,7 +108,7 @@ func (g *group) Run(ctx context.Context) error {
 		// Phase 2. Get worker
 		// worker's heap might be nil => unlimited resources
 		if g.workers != nil {
-			g.workers.Pop() // wait for worker
+			heap.Pop(g.workers) // wait for worker
 		}
 
 		// Phase 3. Run the `Step`
