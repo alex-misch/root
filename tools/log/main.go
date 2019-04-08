@@ -1,5 +1,14 @@
 package log
 
+
+
+// TODO: introduce log formats
+// for example: AWS CloudWatch:
+// https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.html
+
+
+
+
 // default logger with linked stdout and stderr
 var logger = NewLogger(nil, nil)
 

@@ -11,6 +11,7 @@ import (
 // it is something where we can store step's result
 //
 // TODO: Examples:
+// File
 // Pipe
 // Logger
 // Socket
