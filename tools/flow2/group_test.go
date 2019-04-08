@@ -75,6 +75,32 @@ func TestGroupPrivate(t *testing.T) {
 			})
 		}
 	})
+
+	t.Run("sequence", func(t *testing.T) {
+		var a, b int
+
+		step1 := Func(func(ctx context.Context, input Filer, output Filer) error {
+			a++
+			return nil
+		})
+		step2 := Func(func(ctx context.Context, input Filer, output Filer) error {
+			b++
+			return nil
+		})
+
+		g := &group{
+			steps: StepsHeap(step1, step2),
+		}
+		g.sequence(context.Background())
+
+		if a != 1 {
+			t.Fatalf("Expected %q, got %q", 1, a)
+		}
+
+		if b != 1 {
+			t.Fatalf("Expected %q, got %q", 1, b)
+		}
+	})
 }
 
 func TestGroupPublic(t *testing.T) {

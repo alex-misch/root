@@ -66,7 +66,7 @@ func TestStepsHeap(t *testing.T) {
 
 			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
 				// Pop step from heap
-				if step := h.Pop(); step == nil {
+				if step := heap.Pop(h); step == nil {
 					t.Fatalf("Expected %q, got %v", "<Step>", nil)
 				}
 				// maximum available places for steps
@@ -82,7 +82,7 @@ func TestStepsHeap(t *testing.T) {
 
 		// ... and one more (out of slice - must be nil)
 		t.Run("out", func(t *testing.T) {
-			if step := h.Pop(); step != nil {
+			if step := heap.Pop(h); step != nil {
 				t.Fatalf("Expected %v, got %q", nil, "<Step>")
 			}
 			// maximum available places for steps
@@ -128,7 +128,7 @@ func TestStepsHeap(t *testing.T) {
 		if l := h.Len(); l != 2 {
 			t.Fatalf("Expected %q, got %q", 2, l)
 		}
-		h.Pop()
+		heap.Pop(h)
 		if l := h.Len(); l != 1 {
 			t.Fatalf("Expected %q, got %q", 1, l)
 		}

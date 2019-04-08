@@ -78,8 +78,9 @@ func (ss *steps) Less(i, j int) bool {
 // Swap implements sort.Interface
 // Swap swaps the elements with indexes i and j.
 func (ss *steps) Swap(i, j int) {
-	ss.mu.Lock()
-	defer ss.mu.Unlock()
-
-	ss.items[i], ss.items[j] = ss.items[j], ss.items[i]
+	return
+	// ss.mu.Lock()
+	// defer ss.mu.Unlock()
+	//
+	// ss.items[i], ss.items[j] = ss.items[j], ss.items[i]
 }
