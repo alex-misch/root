@@ -49,6 +49,7 @@ func (g *group) runStep(ctx context.Context, step Step) error {
 	case <-ctx.Done():
 		// context cancelled by another function
 		// no need for starting execution of `step`
+		return ctx.Err()
 	default:
 		// default is required to avoid blocking on select
 		// we can start atomic function execution
@@ -68,9 +69,10 @@ func (g *group) runStep(ctx context.Context, step Step) error {
 func (g *group) wait() error {
 	defer g.Close()
 
-	g.wg.Wait() // wait until all completed
+	// wait until all completed
+	g.wg.Wait()
 
-	// Return value (error)
+	// Return value (fitrst available error from channel)
 	select {
 	case err := <-g.errCh:
 		// error arrived from channel
@@ -146,10 +148,11 @@ func (g *group) Run(ctx context.Context) error {
 // closes all group level resources
 func (g *group) Close() error {
 	// Phase 1. Close all synchronization channels
-	close(g.errCh)
+	if g.errCh != nil {
+		close(g.errCh)
+	}
 
 	// Phase 2. Close execution context
-	// NOTE: context cancellation function might be nil - check for it
 	if g.cancel != nil {
 		g.cancel()
 	}
