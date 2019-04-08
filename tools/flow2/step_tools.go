@@ -34,6 +34,11 @@ func (ss *steps) Pop() interface{} {
 	old := ss.items
 	n := len(old)
 
+	if n == 0 {
+		ss.items = make([]Step, 0) // NOTE: here realloc (bad or good?)
+		return nil
+	}
+
 	ss.items = make([]Step, n-1) // NOTE: here realloc (bad or good?)
 	copy(ss.items, old[1:])
 
