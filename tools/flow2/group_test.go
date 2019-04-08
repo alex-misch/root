@@ -53,17 +53,17 @@ func TestGroupPrivate(t *testing.T) {
 			bit    uint8
 			having bool
 		}{
-			{0, G_CONCURRENT, false},
-			{0, G_DELAY, false},
+			{0, R_CONCURRENT, false},
+			{0, W_DELAY, false},
 
-			{G_DELAY, G_CONCURRENT, false},
-			{G_DELAY, G_DELAY, true},
+			{W_DELAY, R_CONCURRENT, false},
+			{W_DELAY, W_DELAY, true},
 
-			{G_CONCURRENT, G_CONCURRENT, true},
-			{G_CONCURRENT, G_DELAY, false},
+			{R_CONCURRENT, R_CONCURRENT, true},
+			{R_CONCURRENT, W_DELAY, false},
 
-			{G_CONCURRENT | G_DELAY, G_CONCURRENT, true},
-			{G_CONCURRENT | G_DELAY, G_DELAY, true},
+			{R_CONCURRENT | W_DELAY, R_CONCURRENT, true},
+			{R_CONCURRENT | W_DELAY, W_DELAY, true},
 		}
 
 		// main goal - no panics

@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	G_CONCURRENT uint8 = 1 << iota // should we run each step in their own goroutine
-	G_DELAY                        // should we return control before everything is done
+	R_CONCURRENT uint8 = 1 << iota // should we run each step in their own goroutine
+	W_DELAY                        // should we return control before everything is done
 )
 
 // group is some kind of sandbox for running steps as a group
@@ -21,6 +21,57 @@ type group struct {
 	wg     sync.WaitGroup
 	cancel context.CancelFunc // cancellation context for this group
 	errCh  chan error         // channel for collecting errors
+}
+
+// concurrent is a type of runner with own gorouitne for each step
+func (g *group) concurrent(ctx context.Context) {
+	for {
+		// Phase 1. Get step and check for nil value (means end of chain, close loop)
+		step, ok := heap.Pop(g.steps).(Step)
+		if !ok {
+			// no step available - end of chain
+			break
+		}
+
+		// Step arrived, increment waiting counter
+		g.wg.Add(1)
+
+		// Phase 2. Get worker
+		// worker's heap might be nil => unlimited resources => no waiting here
+		if g.workers != nil {
+			heap.Pop(g.workers) // wait for worker
+		}
+
+		// Phase 3. Run the `Step`
+		go g.runStep(ctx, step)
+	}
+}
+
+// sequence is a type of runner with step-by-step step invoking
+func (g *group) sequence(ctx context.Context) {
+	for {
+		// Phase 1. Get step and check for nil value (means end of chain, close loop)
+		step, ok := heap.Pop(g.steps).(Step)
+		if !ok {
+			// no step available - end of chain
+			break
+		}
+
+		// Step arrived, increment waiting counter
+		g.wg.Add(1)
+
+		// Phase 2. Get worker
+		// worker's heap might be nil => unlimited resources => no waiting here
+		if g.workers != nil {
+			heap.Pop(g.workers) // wait for worker
+		}
+
+		// Phase 3. Run the `Step`
+		if err := g.runStep(ctx, step); err != nil {
+			// step failed, no need to move forward more
+			break
+		}
+	}
 }
 
 // newGroup returns new group of steps
@@ -95,56 +146,28 @@ func (g *group) wait() error {
 
 // Run runs group of steps
 func (g *group) Run(ctx context.Context, input Filer, output Filer) error {
-	// Pre phase. Checks
+	// Pre phase. Checks and preparings
 	if g.steps == nil {
 		// nothing to run (empty heap)
 		return nil
 	}
-
 	// create cancellation of this group
 	ctx, g.cancel = context.WithCancel(ctx)
 
-	// Main iteration loop throw available step
-	// all .Pop() from heaps (steps or workers) might be blocking
-	for {
-		// Phase 1. Get step and check for nil value (means end of chain, close loop)
-		step, ok := heap.Pop(g.steps).(Step)
-		if !ok {
-			// no step available - end of chain
-			break
-		}
-
-		// Step arrived, increment waiting counter
-		g.wg.Add(1)
-
-		// Phase 2. Get worker
-		// worker's heap might be nil => unlimited resources => no waiting here
-		if g.workers != nil {
-			heap.Pop(g.workers) // wait for worker
-		}
-
-		// Phase 3. Run the `Step`
-		// multiple modes available
-		// delay concurrent
-		// delay group ???????????
-		// concurrent
-		// group
-		if g.has(G_CONCURRENT) {
-			// run in own thread
-			go g.runStep(ctx, step)
-		} else {
-			// run in current thread
-			if err := g.runStep(ctx, step); err != nil {
-				// step failed, no need to move forward more
-				break
-			}
-		}
+	// Phase 1. Get `runner`
+	// runner is loop iterating logic
+	if g.has(R_CONCURRENT) {
+		g.concurrent(ctx)
+	} else if g.has(W_DELAY) {
+		go g.sequence(ctx)
+	} else {
+		g.sequence(ctx)
 	}
 
-	// Agent thread
-	// waiting for complex execution and results
-	if g.has(G_DELAY) {
-		// delayed mode, no result returns, but agent works in background mode
+	// Phase 2. Get `waiter`
+	// waiter is waiting results logic
+	if g.has(W_DELAY) {
+		// delayed mode, no result returns, but waiting `agent` works in background mode
 		go g.wait()
 		return nil
 	} else {

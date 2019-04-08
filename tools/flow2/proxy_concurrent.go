@@ -5,9 +5,9 @@ import (
 )
 
 func Concurrent(workers, steps heap.Interface) Step {
-	return newGroup(steps, workers, G_CONCURRENT)
+	return newGroup(steps, workers, R_CONCURRENT)
 }
 
 func DelayConcurrent(workers, steps heap.Interface) Step {
-	return newGroup(steps, workers, G_CONCURRENT|G_DELAY)
+	return newGroup(steps, workers, R_CONCURRENT|W_DELAY)
 }

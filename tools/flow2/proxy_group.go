@@ -9,5 +9,5 @@ func Group(workers, steps heap.Interface) Step {
 }
 
 func DelayGroup(workers, steps heap.Interface) Step {
-	return newGroup(steps, workers, G_DELAY)
+	return newGroup(steps, workers, W_DELAY)
 }
