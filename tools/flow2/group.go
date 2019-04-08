@@ -7,13 +7,13 @@ import (
 )
 
 const (
-	G_DELAY      = 1 << iota // should we return control before everything is done
-	G_CONCURRENT             // should we run each step in their own goroutine
+	G_CONCURRENT uint8 = 1 << iota // should we run each step in their own goroutine
+	G_DELAY                        // should we return control before everything is done
 )
 
 // group is some kind of sandbox for running steps as a group
 type group struct {
-	mask byte
+	flags uint8
 
 	workers heap.Interface
 	steps   heap.Interface
@@ -23,10 +23,20 @@ type group struct {
 	errCh  chan error         // channel for collecting errors
 }
 
-// newGroup(nil, nil, G_DELAY|G_CONCURRENT)
-// func newGroup(steps, workers heap.Interface, mask byte) *group {
-//
-// }
+// newGroup returns new group of steps
+// using flags for different running and waiting modifications
+func newGroup(steps, workers heap.Interface, flags uint8) *group {
+	return &group{
+		steps:   steps,
+		workers: workers,
+		flags:   flags,
+	}
+}
+
+// has describes has the group's flags modification bit set
+func (g *group) has(bit uint8) bool {
+	return g.flags&bit != 0
+}
 
 // closeStep releases all resources occupied by the `Step` object
 func (g *group) closeStep() {
@@ -57,7 +67,7 @@ func (g *group) runStep(ctx context.Context, step Step) error {
 		if err := step.Run(ctx, nil, nil); err != nil {
 			g.errCh <- err
 			g.cancel()
-			return err // TODO whaaat?
+			return err
 		}
 	}
 
@@ -84,7 +94,7 @@ func (g *group) wait() error {
 }
 
 // Run runs group of steps
-func (g *group) Run(ctx context.Context) error {
+func (g *group) Run(ctx context.Context, input Filer, output Filer) error {
 	// Pre phase. Checks
 	if g.steps == nil {
 		// nothing to run (empty heap)
@@ -108,7 +118,7 @@ func (g *group) Run(ctx context.Context) error {
 		g.wg.Add(1)
 
 		// Phase 2. Get worker
-		// worker's heap might be nil => unlimited resources
+		// worker's heap might be nil => unlimited resources => no waiting here
 		if g.workers != nil {
 			heap.Pop(g.workers) // wait for worker
 		}
@@ -119,21 +129,21 @@ func (g *group) Run(ctx context.Context) error {
 		// delay group ???????????
 		// concurrent
 		// group
-		if g.mask&G_CONCURRENT != 0 {
+		if g.has(G_CONCURRENT) {
 			// run in own thread
 			go g.runStep(ctx, step)
 		} else {
 			// run in current thread
-			// TODO: what with g.Close()?
 			if err := g.runStep(ctx, step); err != nil {
-				return err
+				// step failed, no need to move forward more
+				break
 			}
 		}
 	}
 
 	// Agent thread
 	// waiting for complex execution and results
-	if g.mask&G_DELAY != 0 {
+	if g.has(G_DELAY) {
 		// delayed mode, no result returns, but agent works in background mode
 		go g.wait()
 		return nil

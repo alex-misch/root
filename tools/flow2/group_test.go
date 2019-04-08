@@ -46,6 +46,35 @@ func TestGroupPrivate(t *testing.T) {
 			}
 		})
 	})
+
+	t.Run("has", func(t *testing.T) {
+		tableTests := []struct {
+			flags  uint8
+			bit    uint8
+			having bool
+		}{
+			{0, G_CONCURRENT, false},
+			{0, G_DELAY, false},
+
+			{G_DELAY, G_CONCURRENT, false},
+			{G_DELAY, G_DELAY, true},
+
+			{G_CONCURRENT, G_CONCURRENT, true},
+			{G_CONCURRENT, G_DELAY, false},
+
+			{G_CONCURRENT | G_DELAY, G_CONCURRENT, true},
+			{G_CONCURRENT | G_DELAY, G_DELAY, true},
+		}
+
+		// main goal - no panics
+		for i, tt := range tableTests {
+			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+				if having := newGroup(nil, nil, tt.flags).has(tt.bit); having != tt.having {
+					t.Fatalf("Expected \"%t\", got \"%t\"", tt.having, having)
+				}
+			})
+		}
+	})
 }
 
 func TestGroupPublic(t *testing.T) {
