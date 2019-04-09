@@ -11,10 +11,10 @@ func TestStepsHeap(t *testing.T) {
 	var a, b, c Step
 	var h heap.Interface
 
-	a = Func(func(ctx context.Context, input Filer, output Filer) error {
+	a = Func(func(ctx context.Context) error {
 		return nil
 	})
-	c = Func(func(ctx context.Context, input Filer, output Filer) error {
+	c = Func(func(ctx context.Context) error {
 		return nil
 	})
 

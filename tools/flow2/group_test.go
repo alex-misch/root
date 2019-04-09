@@ -20,7 +20,7 @@ func TestGroupPrivate(t *testing.T) {
 
 		// tool for generating step
 		stepper := func(err error) Step {
-			return Func(func(ctx context.Context, input Filer, output Filer) error {
+			return Func(func(ctx context.Context) error {
 				// fill bits
 				total |= ran
 				if err != nil {
@@ -169,7 +169,7 @@ func TestGroupPrivate(t *testing.T) {
 		// generate steps
 		for i := 0; i < len(steps); i++ {
 			j := i
-			steps[i] = Func(func(ctx context.Context, input Filer, output Filer) error {
+			steps[i] = Func(func(ctx context.Context) error {
 				total |= uint8(math.Pow(2, float64(j)))
 				// third step (index == 2) will fail, sequence must break
 				if j == 2 {

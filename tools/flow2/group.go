@@ -115,7 +115,7 @@ func (g *group) runStep(ctx context.Context, step Step) error {
 		// default is required to avoid blocking on select
 		// we can start atomic function execution
 		// NOTE: here are no check for `step == nil` because this method invokes from loop where check exists
-		if err := step.Run(ctx, nil, nil); err != nil {
+		if err := step.Run(ctx); err != nil {
 			// oops, we have failed step
 			// Phase 1. Send information to `agent` if he is related
 			if g.errCh != nil {
@@ -156,7 +156,7 @@ func (g *group) wait() error {
 }
 
 // Run runs group of steps
-func (g *group) Run(ctx context.Context, input Filer, output Filer) error {
+func (g *group) Run(ctx context.Context) error {
 	// Pre phase. Checks and preparings
 	if g.steps == nil {
 		// nothing to run (empty heap)
