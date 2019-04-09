@@ -10,6 +10,89 @@ import (
 )
 
 func TestGroupPrivate(t *testing.T) {
+	t.Run("runStep", func(t *testing.T) {
+		// preparing data
+		var total uint8
+
+		var ran uint8 = 1      // step was run
+		var failed uint8 = 2   // step returned error itself
+		var canceled uint8 = 4 // step failed and context was closed
+
+		// tool for generating step
+		stepper := func(err error) Step {
+			return Func(func(ctx context.Context, input Filer, output Filer) error {
+				// fill bits
+				total |= ran
+				if err != nil {
+					total |= failed
+				}
+				// return
+				return err
+			})
+		}
+
+		// mark total bitmask as canceled
+		cancel := func() { total |= canceled }
+		err := errors.New("OOOPS")   // error that can be returned from step
+		errCh := make(chan error, 1) // byffered for nonblock i/o
+
+		// create canceled context for one case
+		cctx, c := context.WithCancel(context.Background())
+		c()
+
+		tableTests := []struct {
+			step   Step               // input step
+			ctx    context.Context    // input context
+			err    error              // output error
+			total  uint8              // bitmask of total final execution flow
+			errCh  chan error         // group `agent` linked
+			cancel context.CancelFunc // cancel group context
+		}{
+			{stepper(nil), cctx, context.Canceled, 0, nil, nil},                               // canceled context
+			{stepper(err), cctx, context.Canceled, 0, nil, nil},                               // canceled context
+			{stepper(nil), context.Background(), nil, ran, nil, nil},                          // regular no error case
+			{stepper(err), context.Background(), err, ran | failed, nil, nil},                 // error case, no channel in group, no cencel func (main check - no errors and panics)
+			{stepper(err), context.Background(), err, ran | failed | canceled, errCh, cancel}, // error case, channel and cancel onboard
+		}
+
+		for i, tt := range tableTests {
+			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+				// reset flow
+				total = 0
+
+				// create group for this test case
+				g := &group{
+					errCh:  tt.errCh,
+					cancel: tt.cancel,
+				}
+				g.wg.Add(1) // runStep calls defer closeStep which decreases waiting counter (otherwise panic about negative counter)
+
+				// check direct returned value
+				if err := g.runStep(tt.ctx, tt.step); err != tt.err {
+					t.Fatalf("Expected %q, got %q", tt.err, err)
+				}
+				if tt.errCh != nil && tt.err != nil {
+					// check error was sended
+					select {
+					case err := <-g.errCh:
+						// error arrived from channel
+						if err != tt.err {
+							t.Fatalf("Expected %q, got %q", tt.err, err)
+						}
+					default:
+						// Default is must be to avoid blocking
+						t.Fatalf("Expected %q, got %v", tt.err, nil)
+					}
+				}
+
+				// check bitmask
+				if total != tt.total {
+					t.Fatalf("Expected %q, got %v", tt.total, total)
+				}
+			})
+		}
+	})
+
 	t.Run("closeStep", func(t *testing.T) {
 		// preparing
 		workers := WorkersHeap(2)
