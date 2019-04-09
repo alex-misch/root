@@ -116,8 +116,19 @@ func (g *group) runStep(ctx context.Context, step Step) error {
 		// we can start atomic function execution
 		// NOTE: here are no check for `step == nil` because this method invokes from loop where check exists
 		if err := step.Run(ctx, nil, nil); err != nil {
-			g.errCh <- err
-			g.cancel()
+			// oops, we have failed step
+			// Phase 1. Send information to `agent` if he is related
+			if g.errCh != nil {
+				g.errCh <- err
+			}
+			// Phase 2. Close execution context
+			// give to understand that execution no sense
+			if g.cancel != nil {
+				g.cancel()
+			}
+
+			// Phase 3. Return error to `runner`
+			// caller can be stopped or something another logic if error
 			return err
 		}
 	}

@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"testing"
 )
 
@@ -77,28 +78,44 @@ func TestGroupPrivate(t *testing.T) {
 	})
 
 	t.Run("sequence", func(t *testing.T) {
-		var a, b int
+		// prepare data
+		var total uint8
+		steps := make([]Step, 4)
+		workers := WorkersHeap(1)
 
-		step1 := Func(func(ctx context.Context, input Filer, output Filer) error {
-			a++
-			return nil
-		})
-		step2 := Func(func(ctx context.Context, input Filer, output Filer) error {
-			b++
-			return nil
-		})
+		// generate steps
+		for i := 0; i < len(steps); i++ {
+			j := i
+			steps[i] = Func(func(ctx context.Context, input Filer, output Filer) error {
+				total |= uint8(math.Pow(2, float64(j)))
+				// third step (index == 2) will fail, sequence must break
+				if j == 2 {
+					return errors.New("OOPS")
+				}
+				return nil
+			})
+		}
 
+		// run group
 		g := &group{
-			steps: StepsHeap(step1, step2),
+			steps:   StepsHeap(steps...),
+			workers: workers,
 		}
 		g.sequence(context.Background())
 
-		if a != 1 {
-			t.Fatalf("Expected %q, got %q", 1, a)
+		// after `runner` agent must not hung
+		// NOTE: no matter about error channel because there is no channel defined
+		g.wait()
+		// after `runner` all workers must be attached back to heap
+		if l := workers.Len(); l != 1 {
+			t.Fatalf("Expected %q, got %q", 1, l)
 		}
 
-		if b != 1 {
-			t.Fatalf("Expected %q, got %q", 1, b)
+		// check total bit mask
+		for i := 0; i < len(steps); i++ {
+			if total&uint8(i+1) == 0 {
+				t.Fatalf("`step%d` not runned", i+1)
+			}
 		}
 	})
 }
