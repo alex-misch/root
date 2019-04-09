@@ -5,6 +5,7 @@ package flow2
 
 import (
 	"container/heap"
+	"fmt"
 )
 
 // WORKER is nil value, just null object in the queue for channel blocking when all workers busy
@@ -58,3 +59,8 @@ func (ws workers) Less(i, j int) bool {
 // Swap implements sort.Interface
 // Swap swaps the elements with indexes i and j.
 func (ws workers) Swap(i, j int) {}
+
+// String implements fmt.Stringer interface
+func (ws workers) String() string {
+	return fmt.Sprintf("WorkersHeap(%d)", cap(ws))
+}

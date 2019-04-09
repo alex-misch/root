@@ -1,0 +1,13 @@
+jobs:
+
+  test:
+    docker: docker://golang:1.11
+    entrypoint: .scripts/test.sh 'tools/flow2'
+
+    mount:
+      script: /go/src/github.com/boomfunc/root/.scripts
+      src: /go/src/github.com/boomfunc/root
+
+
+direct: [test]
+indirect: [test]

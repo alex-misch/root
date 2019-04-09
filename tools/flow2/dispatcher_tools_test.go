@@ -2,6 +2,7 @@ package flow2
 
 import (
 	"container/heap"
+	"fmt"
 	"testing"
 )
 
@@ -26,8 +27,27 @@ func TestWorkersHeap(t *testing.T) {
 	var h heap.Interface
 
 	t.Run("New", func(t *testing.T) {
-		h = WorkersHeap(5)
-		check(t, h, 5, 5) // at the beginning capacity and len are full
+		tableTests := []struct {
+			n     int  // requested workers
+			isNil bool // is output heap nil
+			c     int  // heap initial capacity
+			l     int  // heap initial length
+		}{
+			{0, true, 0, 0},
+			{1, false, 1, 1},
+			{5, false, 5, 5},
+		}
+		for i, tt := range tableTests {
+			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+				h = WorkersHeap(tt.n)
+
+				if tt.isNil && h != nil {
+					t.Fatalf("h: Expected %v, got %q", nil, h)
+				} else {
+					check(t, h, tt.c, tt.l) // at the beginning capacity and len are full
+				}
+			})
+		}
 	})
 
 	t.Run("Pop", func(t *testing.T) {
