@@ -2,15 +2,28 @@ package flow
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"reflect"
 	"testing"
 )
 
+type dummy int
+
+func (step dummy) Run(ctx context.Context) error {
+	if step%2 == 0 {
+		// even number - non error case
+		return nil
+	}
+
+	// if odd - return error
+	return errors.New("OOOPS!")
+}
+
 func TestTools(t *testing.T) {
 	t.Run("normalize", func(t *testing.T) {
-		var foo Step = &dummy{}
-		var bar Step = &dummy{}
+		var foo Step = dummy(2)
+		var bar Step = dummy(4)
 
 		tableTests := []struct {
 			in  []Step

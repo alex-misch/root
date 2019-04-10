@@ -9,9 +9,10 @@ import (
 type transaction struct {
 	up    Step // step to achieve the desired state
 	down  Step // step to rollback to the initial state
-	force bool // indicates that initial state must be rolled back anyway (even if no errors)
+	force bool // indicates that initial state must be rolled back anyway (even if no errors in up)
 }
 
+// Transaction returns new `Step` of transaction type
 func Transaction(up, down Step, force bool) Step {
 	// special case - if not up - there is nothing to do - no need to create transaction
 	if up == nil {
@@ -46,7 +47,7 @@ func (t *transaction) Run(ctx context.Context) error {
 	// forward stage
 	if err := t.up.Run(ctx); err != nil {
 		t.backward(ctx) // forward movement failed, need to rollback
-		return err      // but return error from run
+		return err      // but return error from гз
 	} else if t.force {
 		return t.backward(ctx) // forward movement failed, need to rollback and return error from backward stage
 	}

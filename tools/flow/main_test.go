@@ -8,9 +8,9 @@ import (
 )
 
 func TestMain(t *testing.T) {
-	t.Run("Execute", func(t *testing.T) {
-		var err error = errors.New("Some error")
+	var err error = errors.New("Some error")
 
+	t.Run("Execute", func(t *testing.T) {
 		tableTests := []struct {
 			step Step
 			err  error
@@ -30,8 +30,6 @@ func TestMain(t *testing.T) {
 	})
 
 	t.Run("ExecuteWithContext", func(t *testing.T) {
-		var err error = errors.New("Some error")
-
 		tableTests := []struct {
 			step Step
 			err  error

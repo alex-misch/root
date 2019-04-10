@@ -1,17 +1,9 @@
-// Package flow provides primitives for running some 'tasks'
-// main idea: there is always something that can be done (`Step` interface)
-// there are also resources (some abstract 'workers')
-// package provides combintation of tools for running
-// 1) how much we want to allocate resources for execution
-// 2) do we want to wait for the result
-// 3) timeout and cancellation functionality for all nested flow
-
-// TODO: based on first two we need some heaps for Step's and Resources (with blocking .Pop())
 package flow
 
 import (
 	"context"
 	"errors"
+	"os"
 )
 
 var (
@@ -23,16 +15,23 @@ var (
 	ErrNotAStep = errors.New("tools/flow: Object cannot be used as `Step` interface")
 )
 
-// Step interface describes somethink that can be runned in some flow
-type Step interface {
-	Run(context.Context) error
+// Filer is interface to get underlying pollable file
+// used for describing input and output of step
+// for piping, logging
+// it is something where we can store step's result
+//
+// TODO: Examples:
+// File
+// Pipe
+// Logger
+// Socket
+type Filer interface {
+	File() (*os.File, error)
 }
 
-// pool is interface for control the number of simultaneous goroutines
-// using in `asynchronous`
-type pool interface {
-	wait()    // wait for free resource available
-	release() // return resource back to pool
+// Step interface describes something that can be runned in some flow
+type Step interface {
+	Run(context.Context) error
 }
 
 // Execute is universal runnner for all objects implements Step interface

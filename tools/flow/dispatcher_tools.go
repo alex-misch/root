@@ -1,4 +1,4 @@
-package flow2
+package flow
 
 // set of tools for dispatcher logic
 // workers, their heaps and all similar concepts

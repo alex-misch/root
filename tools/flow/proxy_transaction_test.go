@@ -11,8 +11,8 @@ import (
 func TestTransaction(t *testing.T) {
 	t.Run("New", func(t *testing.T) {
 		// pseudo steps
-		var up Step = &dummy{}
-		var down Step = &dummy{}
+		var up Step = dummy(1)
+		var down Step = dummy(1)
 
 		tableTests := []struct {
 			up    Step
@@ -24,6 +24,7 @@ func TestTransaction(t *testing.T) {
 			{up, nil, up},
 			{up, down, Transaction(up, down, false)},
 		}
+
 		for i, tt := range tableTests {
 			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
 				if final := Transaction(tt.up, tt.down, false); !reflect.DeepEqual(final, tt.final) {

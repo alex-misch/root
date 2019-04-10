@@ -1,4 +1,4 @@
-package flow2
+package flow
 
 // set of tools for `Step` interface
 
