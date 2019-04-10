@@ -24,6 +24,7 @@ func TestTransaction(t *testing.T) {
 			{up, nil, up},
 			{up, down, Transaction(up, down, false)},
 		}
+
 		for i, tt := range tableTests {
 			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
 				if final := Transaction(tt.up, tt.down, false); !reflect.DeepEqual(final, tt.final) {

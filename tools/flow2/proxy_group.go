@@ -4,10 +4,44 @@ import (
 	"container/heap"
 )
 
-func Group(workers, steps heap.Interface) Step {
-	return newGroup(steps, workers, 0)
+// GroupHeap returns group of steps running step-by-step
+// as steps receives heap.Interface
+func GroupHeap(workers, steps heap.Interface) Step {
+	return newGroup(
+		steps,
+		workers,
+		0,
+	)
 }
 
-func DelayGroup(workers, steps heap.Interface) Step {
-	return newGroup(steps, workers, W_DELAY)
+// Group returns group of steps running step-by-step
+// as steps receives as slice of steps
+func Group(workers heap.Interface, steps ...Step) Step {
+	return newGroup(
+		StepsHeap(steps...),
+		workers,
+		0,
+	)
+}
+
+// DelayGroupHeap returns group of steps running step-by-step
+// in background mode
+// as steps receives heap.Interface
+func DelayGroupHeap(workers, steps heap.Interface) Step {
+	return newGroup(
+		steps,
+		workers,
+		W_DELAY|CTX_ORPHAN,
+	)
+}
+
+// DelayGroup returns group of steps running step-by-step
+// in background mode
+// as steps receives as slice of steps
+func DelayGroup(workers heap.Interface, steps ...Step) Step {
+	return newGroup(
+		StepsHeap(steps...),
+		workers,
+		W_DELAY|CTX_ORPHAN,
+	)
 }

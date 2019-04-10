@@ -41,8 +41,10 @@ func TestWorkersHeap(t *testing.T) {
 			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
 				h = WorkersHeap(tt.n)
 
-				if tt.isNil && h != nil {
-					t.Fatalf("h: Expected %v, got %q", nil, h)
+				if tt.isNil {
+					if h != nil {
+						t.Fatalf("h: Expected %v, got %q", nil, h)
+					}
 				} else {
 					check(t, h, tt.c, tt.l) // at the beginning capacity and len are full
 				}

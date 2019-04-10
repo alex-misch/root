@@ -16,6 +16,11 @@ type workers chan struct{}
 
 // WorkersHeap returns limited workers heap
 func WorkersHeap(n int) heap.Interface {
+	// empty heap - no heap creation needed
+	if n == 0 {
+		return nil
+	}
+
 	// create empty heap
 	h := workers(make(chan struct{}, n))
 	heap.Init(h)

@@ -3,12 +3,14 @@ package flow2
 import (
 	"container/heap"
 	"context"
+	"fmt"
 	"sync"
 )
 
 const (
 	R_CONCURRENT uint8 = 1 << iota // should we run each step in their own goroutine
 	W_DELAY                        // should we return control before everything is done
+	CTX_ORPHAN                     // detach current group context from parent
 )
 
 // group is some kind of sandbox for running steps as a group
@@ -162,10 +164,15 @@ func (g *group) Run(ctx context.Context) error {
 		// nothing to run (empty heap)
 		return nil
 	}
-	// create cancellation of this group
+
+	// Phase 1. Prepare context and cancellation for this group
+	if g.has(CTX_ORPHAN) {
+		// NOTE: for future: if we need to save some required values - copy it here
+		ctx = context.Background()
+	}
 	ctx, g.cancel = context.WithCancel(ctx)
 
-	// Phase 1. Get `runner`
+	// Phase 2. Get `runner`
 	// runner is loop iterating logic
 	if g.has(R_CONCURRENT) {
 		g.concurrent(ctx)
@@ -175,7 +182,7 @@ func (g *group) Run(ctx context.Context) error {
 		g.sequence(ctx)
 	}
 
-	// Phase 2. Get `waiter`
+	// Phase 3. Get `waiter`
 	// waiter is waiting results logic
 	if g.has(W_DELAY) {
 		// delayed mode, no result returns, but waiting `agent` works in background mode
@@ -202,4 +209,13 @@ func (g *group) Close() error {
 	}
 
 	return nil
+}
+
+// String implements fmt.Stringer interface
+func (g *group) String() string {
+	if g.has(R_CONCURRENT) {
+		return fmt.Sprintf("Concurrent(delay=%t)", g.has(W_DELAY))
+	} else {
+		return fmt.Sprintf("Group(delay=%t)", g.has(W_DELAY))
+	}
 }
