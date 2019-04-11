@@ -20,9 +20,11 @@ type group struct {
 	workers heap.Interface
 	steps   heap.Interface
 
+	mutex  sync.Mutex // protect variables below
 	wg     sync.WaitGroup
 	cancel context.CancelFunc // cancellation context for this group
 	errCh  chan error         // channel for collecting errors
+	doneCh chan struct{}      // channel indicates all groups step completes
 }
 
 // concurrent is a type of runner with own gorouitne for each step
@@ -83,6 +85,7 @@ func newGroup(steps, workers heap.Interface, flags uint8) *group {
 		flags:   flags,
 		workers: workers,
 		steps:   steps,
+		doneCh:  make(chan struct{}, 1),
 	}
 
 	// Create error channel for linking agent
@@ -100,6 +103,9 @@ func newGroup(steps, workers heap.Interface, flags uint8) *group {
 
 // has describes has the group's flags modification bit set
 func (g *group) has(bit uint8) bool {
+	g.mutex.Lock()
+	defer g.mutex.Unlock()
+
 	return g.flags&bit != 0
 }
 
@@ -156,16 +162,31 @@ func (g *group) wait() error {
 	defer g.Close()
 
 	// wait until all completed
-	g.wg.Wait()
+	go func() {
+		g.wg.Wait()
+
+		g.mutex.Lock()
+		if g.doneCh != nil {
+			// send complete signal to select below
+			g.doneCh <- struct{}{}
+		}
+		g.mutex.Unlock()
+	}()
 
 	// Return value (fitrst available error from channel)
 	select {
 	case err := <-g.errCh:
 		// error arrived from channel
 		return err
-	default:
-		// Default is must be to avoid blocking
-		return nil
+	case <-g.doneCh:
+		select {
+		case err := <-g.errCh:
+			// error arrived from channel
+			return err
+		default:
+			// Default is must be to avoid blocking
+			return nil
+		}
 	}
 }
 
@@ -210,9 +231,17 @@ func (g *group) Run(ctx context.Context) error {
 // Close implemtns io.Closer interface
 // closes all group level resources
 func (g *group) Close() error {
+	g.mutex.Lock()
+	defer g.mutex.Unlock()
+
 	// Phase 1. Close all synchronization channels
 	if g.errCh != nil {
 		close(g.errCh)
+		g.errCh = nil
+	}
+	if g.doneCh != nil {
+		close(g.doneCh)
+		g.doneCh = nil
 	}
 
 	// Phase 2. Close execution context

@@ -114,7 +114,8 @@ func TestGroupPrivate(t *testing.T) {
 		t.Run("no", func(t *testing.T) {
 			// no error
 			errCh := make(chan error, 1)
-			g := &group{errCh: errCh}
+			doneCh := make(chan struct{}, 1)
+			g := &group{errCh: errCh, doneCh: doneCh}
 			if err := g.wait(); err != nil {
 				t.Fatal(err)
 			}
@@ -123,7 +124,8 @@ func TestGroupPrivate(t *testing.T) {
 		t.Run("yes", func(t *testing.T) {
 			// with error
 			errCh := make(chan error, 1)
-			g := &group{errCh: errCh}
+			doneCh := make(chan struct{}, 1)
+			g := &group{errCh: errCh, doneCh: doneCh}
 			errCh <- errors.New("FOOBAR")
 			if err := g.wait(); err.Error() != "FOOBAR" {
 				t.Fatalf("Expected %q, got %q", "FOOBAR", err.Error())
@@ -183,6 +185,7 @@ func TestGroupPrivate(t *testing.T) {
 		g := &group{
 			steps:   StepsHeap(steps...),
 			workers: workers,
+			doneCh:  make(chan struct{}, 1),
 		}
 		g.sequence(context.Background())
 
@@ -206,13 +209,12 @@ func TestGroupPrivate(t *testing.T) {
 func TestGroupPublic(t *testing.T) {
 	t.Run("Close", func(t *testing.T) {
 		tableTests := []struct {
-			ch     chan error
+			errCh  chan error
+			doneCh chan struct{}
 			cancel context.CancelFunc
 		}{
-			{nil, nil},
-			{nil, func() {}},
-			{make(chan error), nil},
-			{make(chan error), func() {}},
+			{nil, nil, nil},
+			{make(chan error), make(chan struct{}), func() {}},
 			// TODO: also, channel might be already closed
 		}
 
@@ -221,10 +223,18 @@ func TestGroupPublic(t *testing.T) {
 
 		for i, tt := range tableTests {
 			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-				g.errCh = tt.ch
+				g.errCh = tt.errCh
+				g.doneCh = tt.doneCh
 				g.cancel = tt.cancel
 				if err := g.Close(); err != nil {
 					t.Fatal(err)
+				}
+				// channel must be both closed and unlinked
+				if g.errCh != nil {
+					t.Fatalf("errCh: Expected %v, got %v", nil, g.errCh)
+				}
+				if g.doneCh != nil {
+					t.Fatalf("doneCh: Expected %v, got %v", nil, g.doneCh)
 				}
 			})
 		}
