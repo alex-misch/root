@@ -20,8 +20,8 @@ type group struct {
 	workers heap.Interface
 	steps   heap.Interface
 
-	mutex  sync.Mutex // protect variables below
-	wg     sync.WaitGroup
+	mutex  sync.Mutex         // protect variables below
+	wg     sync.WaitGroup     // responsible for waiting that all the steps are finished
 	cancel context.CancelFunc // cancellation context for this group
 	errCh  chan error         // channel for collecting errors
 	doneCh chan struct{}      // channel indicates all groups step completes
