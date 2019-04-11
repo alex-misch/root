@@ -206,7 +206,7 @@ func (graph *Graph) step(direct []*Node, indirect []*Node) flow.Step {
 			indirects = append(indirects, step)
 		}
 	}
-	if step := flow.Concurrent(indirects...); step != nil {
+	if step := flow.Concurrent(nil, indirects...); step != nil {
 		total = append(total, step)
 	}
 
@@ -220,13 +220,13 @@ func (graph *Graph) step(direct []*Node, indirect []*Node) flow.Step {
 			directs = append(directs, step)
 		}
 	}
-	if step := flow.Concurrent(directs...); step != nil {
+	if step := flow.Concurrent(nil, directs...); step != nil {
 		total = append(total, step)
 	}
 	// TODO end of DRY code
 
 	// return total flow
-	return flow.Group(total...)
+	return flow.Group(nil, total...)
 }
 
 // logger returns writer for log graph map

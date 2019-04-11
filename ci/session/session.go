@@ -90,7 +90,8 @@ func (session *Session) Run(ctx context.Context) (err error) {
 	fmt.Fprintf(logger, "Cloning repository to: %s\n", path)
 	repo, err := git.Clone(session.Origin, session.Ref, path)
 	if err != nil {
-		return
+		fmt.Println("git.Clone:", err)
+		return err
 	}
 	// session.repo = repo
 	fmt.Fprintln(logger, "Repository cloned")
@@ -98,8 +99,8 @@ func (session *Session) Run(ctx context.Context) (err error) {
 	// garbage repository anyway
 	defer func() {
 		fmt.Fprintln(logger, "Repository destroying...")
-		repo.Destroy()
-		fmt.Fprintf(logger, "Repository destroyed with error: %v\n", err)
+		derr := repo.Destroy()
+		fmt.Fprintf(logger, "Repository destroyed with error: %v\n", derr)
 	}()
 
 	// create flow graph

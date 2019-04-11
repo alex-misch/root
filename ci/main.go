@@ -33,8 +33,8 @@ func SessionRun(ctx context.Context) error {
 		return err
 	}
 
-	return flow.Delay(
-		10, // workers queue (now it is hardcode)
+	return flow.Group(
+		nil,
 
 		// immediately step is just print information about session
 		// now we using json representation (look at session.MarshalJSON() method)
@@ -43,8 +43,12 @@ func SessionRun(ctx context.Context) error {
 			return json.NewEncoder(stdout).Encode(session)
 		}),
 
-		// behind the scenes delay step will be `session` itself
-		// because `session` implements `flow.Step` interface
-		session,
+		flow.DelayGroup(
+			flow.WorkersHeap(10), // workers queue (now it is hardcode)
+
+			// behind the scenes delay step will be `session` itself
+			// because `session` implements `flow.Step` interface
+			session,
+		),
 	).Run(ctx)
 }

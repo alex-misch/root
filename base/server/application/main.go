@@ -93,6 +93,7 @@ func (app *Application) Handle(fl *flow.Data) {
 	// NOTE: if we suddenly want to run through flow.Group - with pipe this idea will fail
 	// because pw without reader will hang
 	err = executor.Concurrent(
+		nil, // unlimited workers
 
 		// First part is writing to pipe `pipeline`'s output
 		executor.Func(func(ctx context.Context) error {

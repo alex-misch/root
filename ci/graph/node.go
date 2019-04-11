@@ -58,5 +58,5 @@ func (node *Node) step(names []string) flow.Step {
 		}
 	}
 
-	return flow.Group(steps...)
+	return flow.Group(nil, steps...)
 }

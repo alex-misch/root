@@ -65,7 +65,7 @@ func run(ctx context.Context, objs ...Exec) error {
 	// https://play.golang.org/p/tAf371RKRzq
 	for i, obj := range objs {
 		// prerun is a group of two operations step by step - `prepare` and `check`
-		prerun[i] = flow.Group(flow.Func(obj.prepare), flow.Func(obj.check))
+		prerun[i] = flow.Group(nil, flow.Func(obj.prepare), flow.Func(obj.check))
 		// run is a transaction with mandatory rollback (`run` is up and `close` is down)
 		run[i] = flow.Transaction(flow.Func(obj.run), flow.Func(obj.close), true)
 		// close is a just func `close` from interface
@@ -73,9 +73,10 @@ func run(ctx context.Context, objs ...Exec) error {
 	}
 
 	return flow.Group(
+		nil, // no limits on workers
 		// First step, prepare all layers (prepare, down only if error occured)
-		flow.Transaction(flow.Concurrent(prerun...), flow.Concurrent(close...), false),
+		flow.Transaction(flow.Concurrent(nil, prerun...), flow.Concurrent(nil, close...), false),
 		// Second step, execute all layers concurrently (run, close anyway)
-		flow.Concurrent(run...),
+		flow.Concurrent(nil, run...),
 	).Run(ctx)
 }
