@@ -35,7 +35,7 @@ func (ss *steps) Pop() interface{} {
 	n := len(old)
 
 	if n == 0 {
-		ss.items = make([]Step, 0) // NOTE: here realloc (bad or good?)
+		// nothing to fetch6 empty heap
 		return nil
 	}
 
