@@ -1,6 +1,7 @@
 package flow
 
 import (
+	"container/heap"
 	"context"
 	"errors"
 	"os"
@@ -34,6 +35,18 @@ type Step interface {
 	Run(context.Context) error
 }
 
+// execute is a universal runnner for all objects implements Step interface
+// execute runs a step on behalf of a available worker
+func execute(workers heap.Interface, ctx context.Context, step Step) error {
+	if workers != nil {
+		heap.Pop(workers)             // wait for available worker
+		defer heap.Push(workers, nil) // return worker after a step is finished
+	}
+
+	// run the step
+	return step.Run(ctx)
+}
+
 // Execute is universal runnner for all objects implements Step interface
 // Main idea is creating shared context with timeout and cancel functionality
 // NOTE: context cancellation support parent closing therefore nested .WithCancel() - normal
@@ -53,7 +66,7 @@ func Execute(step Step) error {
 	defer cancel()
 
 	// run the step
-	return step.Run(ctx)
+	return execute(nil, ctx, step)
 }
 
 // ExecuteWithContext is universal runnner for all objects implements Step interface
@@ -64,5 +77,5 @@ func ExecuteWithContext(ctx context.Context, step Step) error {
 		return nil
 	}
 
-	return step.Run(ctx)
+	return execute(nil, ctx, step)
 }

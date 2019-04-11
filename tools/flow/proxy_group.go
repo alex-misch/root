@@ -17,6 +17,12 @@ func GroupHeap(workers, steps heap.Interface) Step {
 // Group returns group of steps running step-by-step
 // as steps receives as slice of steps
 func Group(workers heap.Interface, steps ...Step) Step {
+	// since there are a finite number of steps here
+	// we can check some situations
+	// where we don’t need to create a group
+	//
+	// TODO: need to create ability to run Step with workers logic (without group wrapper)
+	//
 	return newGroup(
 		StepsHeap(steps...),
 		workers,
