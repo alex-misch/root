@@ -7,6 +7,8 @@ import (
 	"sync"
 )
 
+// BUG: if group in group - one worker will reserved by proxy step
+
 const (
 	R_CONCURRENT uint8 = 1 << iota // should we run each step in their own goroutine
 	W_DELAY                        // should we return control before everything is done
@@ -110,20 +112,25 @@ func (g *group) has(bit uint8) bool {
 }
 
 // closeStep releases all resources occupied by the `Step` object
-func (g *group) closeStep() {
-	// Phase 1. Return worker
-	// worker's heap might be nil
-	if g.workers != nil {
-		heap.Push(g.workers, nil)
-	}
+func (g *group) closeStep(step Step) {
+	g.mutex.Lock()
+	defer g.mutex.Unlock()
+
+	// Phase 1. Brodcast step subscribers
+	Broadcast(step)
 
 	// Phase 2. Decrement waiting counter
 	g.wg.Done()
+
+	// Phase 3. Return worker
+	if g.workers != nil { // worker's heap might be nil
+		heap.Push(g.workers, nil)
+	}
 }
 
 // runStep just simple run `Step` object
 func (g *group) runStep(ctx context.Context, step Step) error {
-	defer g.closeStep()
+	defer g.closeStep(step)
 
 	// check the relevance of the data being run
 	select {

@@ -101,7 +101,7 @@ func TestGroupPrivate(t *testing.T) {
 		g.wg.Add(1)
 
 		// check worker returned and waiting count decreased
-		g.closeStep()
+		g.closeStep(Func(nil))
 		if l := workers.Len(); l != 2 {
 			t.Fatalf("Expected %q, got %q", 2, l)
 		}

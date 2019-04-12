@@ -2,6 +2,8 @@ package server
 
 import (
 	"errors"
+	"net"
+	"syscall"
 
 	"github.com/boomfunc/root/base/server/context"
 	"github.com/boomfunc/root/base/server/flow"
@@ -17,7 +19,22 @@ type Task struct {
 // and will be run at parallel
 func (task Task) Solve() {
 	// socket should be closed in any way
-	defer task.flow.RWC.Close()
+	// defer task.flow.RWC.Close()
+	defer func() {
+		c, ok := task.flow.RWC.(*net.TCPConn)
+		if !ok {
+			return
+		}
+
+		f, err := c.File()
+		if err != nil {
+			return
+		}
+
+		if err := syscall.Shutdown(int(f.Fd()), syscall.SHUT_RDWR); err == nil {
+			task.flow.RWC.Close()
+		}
+	}()
 
 	// we need some context from global env to know how to solve this task
 	srvInterface, err := context.GetMeta(task.flow.Ctx, "srv")
