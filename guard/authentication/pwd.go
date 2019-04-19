@@ -1,5 +1,13 @@
 package authentication
 
+import (
+	"errors"
+)
+
+var (
+	ErrWrongPassword = errors.New("Wrong password")
+)
+
 // PwdChallenge is simplest challenge based on login-password pair
 type PwdChallenge struct {
 	login string
@@ -30,8 +38,12 @@ func (ch *PwdChallenge) Ask(channel Channel) error {
 func (ch *PwdChallenge) Check(aswer interface{}) (string, error) {
 	// Phase 1. Check password from db
 	// login in challenge struct
-	// password raw came from answer (TODO)
-	// fetch from db
+	// password raw came from answer
+	if password, ok := aswer.(string); !ok {
+		return "", ErrWrongPassword
+	} else if password != "foobar" {
+		return "", ErrWrongPassword
+	}
 
 	// Phase 2. Session marker
 	return "session", nil

@@ -44,7 +44,10 @@ func TestChallenges(t *testing.T) {
 	})
 }
 
-// func TestDo(t *testing.T) {
+func TestDo(t *testing.T) {
+
+}
+
 // 	tableTests := []struct {
 // 		flow Challenges
 // 		markers Markers
