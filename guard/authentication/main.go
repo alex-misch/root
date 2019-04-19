@@ -6,8 +6,11 @@ import (
 
 var (
 	ErrWrongMarkers = errors.New("guard/authentication: Wrong `markers` provided")
-	// ErrWrongChallenges = errors.New("guard/authentication: Wrong `challenges` in authentication flow")
 )
+
+// Marker is token means that the user finished some challenge
+// achievement
+type Marker string
 
 // Markers is access control tokens
 // Used for access to User or Challenge
@@ -23,6 +26,7 @@ type Challenge interface {
 }
 
 // Challenges describes yout own authentication flow
+// Tournament
 type Challenges []Challenge
 
 // Get returns nearest non passed challenge

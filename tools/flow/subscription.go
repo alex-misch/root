@@ -34,7 +34,10 @@ func (s *subscription) waitFor(step Step) {
 }
 
 func (s *subscription) broadcast(step Step) {
-	// also check for pending
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	// check for pending
 	if cond, ok := s.pending[step]; ok && cond != nil {
 		// unfreeze all waiters
 		cond.Broadcast()
