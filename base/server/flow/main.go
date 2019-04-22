@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -17,10 +18,10 @@ type Stat struct {
 
 type Data struct {
 	UUID        uuid.UUID
-	RWC         io.ReadWriteCloser
-	Ctx         context.Context
+	RWC         io.ReadWriteCloser `json:"-"`
+	Ctx         context.Context    `json:"-"`
+	Stat        Stat               `json:"-"`
 	Chronometer *chronometer.Chronometer
-	Stat        Stat
 }
 
 func New(rwc io.ReadWriteCloser) *Data {
@@ -39,4 +40,36 @@ func (d Data) Successful() bool {
 // Error implements error interface
 func (d Data) Error() string {
 	return fmt.Sprintf("%s\t-\t%s", d.UUID.String(), d.Stat.Err)
+}
+
+// MarshalJSON implements json.Marshaler interface
+// because we need dynamic fields not declared on structure
+func (d Data) MarshalJSON() ([]byte, error) {
+	type alias Data // to prevent infinity loop
+
+	var status, url string
+
+	if d.Successful() {
+		status = "SUCCESS"
+	} else {
+		status = "ERROR"
+	}
+
+	// Request might be nil if err while parsing incoming message
+	if d.Stat.Req != nil {
+		url = d.Stat.Req.Url.RequestURI()
+	} else {
+		url = "/XXX/XXX/XXX"
+	}
+
+	return json.Marshal(&struct {
+		Url    string
+		Status string
+		alias
+	}{
+		// TODO: paths from router dynamically
+		Url:    url,
+		Status: status,
+		alias:  alias(d),
+	})
 }
