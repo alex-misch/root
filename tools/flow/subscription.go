@@ -17,7 +17,12 @@ type subscription struct {
 func (s *subscription) waitFor(step Step) {
 	s.mutex.Lock()
 
-	cond := s.pending[step]
+	cond, ok := s.pending[step]
+	if ok && cond == nil {
+		s.mutex.Unlock()
+		// step already finished
+		return
+	}
 
 	if cond == nil { // check for existing waiting condition in pending
 		// condition not exists, or no wait invokes before - create new cond
@@ -41,9 +46,10 @@ func (s *subscription) broadcast(step Step) {
 	if cond, ok := s.pending[step]; ok && cond != nil {
 		// unfreeze all waiters
 		cond.Broadcast()
-		// garbage
-		delete(s.pending, step)
 	}
+
+	// garbage
+	s.pending[step] = nil
 }
 
 // WaitFor locks until the step is completed
@@ -60,8 +66,9 @@ func WaitFor(step Step) {
 // Broadcast unlocks all step's subscribers
 func Broadcast(step Step) {
 	if subscribers == nil {
-		// no waiters
-		return
+		subscribers = &subscription{
+			pending: make(map[Step]*sync.Cond, 0),
+		}
 	}
 
 	subscribers.broadcast(step)

@@ -43,6 +43,10 @@ func execute(workers heap.Interface, ctx context.Context, step Step) error {
 		defer heap.Push(workers, nil) // return worker after a step is finished
 	}
 
+	// broadcast waiting steps
+	// at inner subscription system
+	defer Broadcast(step)
+
 	// run the step
 	return step.Run(ctx)
 }
