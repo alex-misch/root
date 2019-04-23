@@ -27,7 +27,7 @@ func TestChallenges(t *testing.T) {
 			{flow, nil, ch1},
 			{flow, nil, ch1},
 			{flow, []Marker{}, ch1},
-			{flow, []Marker{NewMarker([]byte("session"), "foobar")}, ch2},
+			{flow, []Marker{[]byte("session")}, ch2},
 			{flow, []Marker{[]byte("wrong")}, ch1},
 			{flow, []Marker{[]byte("wrong"), []byte("session")}, ch1},
 			{flow, []Marker{[]byte("session"), []byte("wrong")}, ch2},

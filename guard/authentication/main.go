@@ -5,6 +5,7 @@ import (
 )
 
 // Challenge is the way to achieve Marker
+// used as a part of authentication flow (tournament)
 type Challenge interface {
 	Passed(marker Marker) error
 
@@ -15,7 +16,6 @@ type Challenge interface {
 }
 
 // Challenges describes your own authentication flow
-// Tournament
 type Challenges []Challenge
 
 // Get returns nearest non passed challenge
@@ -30,7 +30,6 @@ func (chs Challenges) Get(markers []Marker) Challenge {
 	// index of current active challenge
 	var i int
 
-	// TODO: iterate over challenges
 	// iterate over markers and chain of challenges
 	for ; i < len(chs); i++ {
 		// Phase 1. Check does i marker exists
@@ -51,13 +50,7 @@ func (chs Challenges) Get(markers []Marker) Challenge {
 	return chs[i]
 }
 
-// Channel is the direct communication between Server and User
-// transport layer used for providing Challenge .Ask() part
-type Channel interface {
-	Send() error
-}
-
-func do(flow Challenges, markers []Marker) error {
+func get(flow Challenges, markers []Marker) error {
 	// Phase 1. Try to get nearest undone challenge
 	if challenge := flow.Get(markers); challenge != nil {
 		// challenge accepted, ask user for answer
@@ -68,6 +61,6 @@ func do(flow Challenges, markers []Marker) error {
 	return nil
 }
 
-func Do(markers []Marker) error {
-	return do(flow, markers)
+func Get(markers []Marker) error {
+	return get(flow, markers)
 }
