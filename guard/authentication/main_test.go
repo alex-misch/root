@@ -15,23 +15,23 @@ func TestChallenges(t *testing.T) {
 	t.Run("Get", func(t *testing.T) {
 		tableTests := []struct {
 			flow      Challenges
-			markers   Markers
+			markers   []Marker
 			challenge Challenge
 		}{
 			{nil, nil, nil},
-			{nil, Markers(nil), nil},
-			{nil, Markers([]string{}), nil},
-			{nil, Markers([]string{"session"}), nil},
-			{nil, Markers([]string{"session", "session"}), nil},
+			{nil, nil, nil},
+			{nil, []Marker{}, nil},
+			{nil, []Marker{[]byte("session")}, nil},
+			{nil, []Marker{[]byte("session"), []byte("session")}, nil},
 
 			{flow, nil, ch1},
-			{flow, Markers(nil), ch1},
-			{flow, Markers([]string{}), ch1},
-			{flow, Markers([]string{"session"}), ch2},
-			{flow, Markers([]string{"wrong"}), ch1},
-			{flow, Markers([]string{"wrong", "session"}), ch1},
-			{flow, Markers([]string{"session", "wrong"}), ch2},
-			{flow, Markers([]string{"session", "session"}), nil},
+			{flow, nil, ch1},
+			{flow, []Marker{}, ch1},
+			{flow, []Marker{NewMarker([]byte("session"), "foobar")}, ch2},
+			{flow, []Marker{[]byte("wrong")}, ch1},
+			{flow, []Marker{[]byte("wrong"), []byte("session")}, ch1},
+			{flow, []Marker{[]byte("session"), []byte("wrong")}, ch2},
+			{flow, []Marker{[]byte("session"), []byte("session")}, nil},
 		}
 
 		for i, tt := range tableTests {
