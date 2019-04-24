@@ -32,10 +32,10 @@ func TestTournament(t *testing.T) {
 		hookSuccess := func(n trust.Node) (trust.Node, error) { return n, nil }
 		hookError := func(n trust.Node) (trust.Node, error) { return nil, errors.New("OOPS") }
 
-		ch1n1, _ := trust.Create(ch1, node("1")) // marker for 1 challenge for 1 node
-		ch1n2, _ := trust.Create(ch1, node("2")) // marker for 1 challenge for 2 node
-		ch2n1, _ := trust.Create(ch2, node("1")) // marker for 2 challenge for 1 node
-		ch2n2, _ := trust.Create(ch2, node("2")) // marker for 2 challenge for 2 node
+		ch1n1, _ := NewMarker(ch1, node("1")) // marker for 1 challenge for 1 node
+		ch1n2, _ := NewMarker(ch1, node("2")) // marker for 1 challenge for 2 node
+		ch2n1, _ := NewMarker(ch2, node("1")) // marker for 2 challenge for 1 node
+		ch2n2, _ := NewMarker(ch2, node("2")) // marker for 2 challenge for 2 node
 
 		tableTests := []struct {
 			// initialization
