@@ -2,31 +2,25 @@ package authentication
 
 import (
 	"errors"
+
+	"github.com/boomfunc/root/guard/trust"
 )
 
 var (
 	ErrWrongPassword = errors.New("Wrong password")
 )
 
-// PwdChallenge is simplest challenge based on login-password pair
-type PwdChallenge struct {
-	login string
+// LoginPwdChallenge is simplest challenge based on login-password pair
+type LoginPwdChallenge struct {
+	// something like algoritms
+	// common challenge data
 }
 
-func (ch *PwdChallenge) Allowed(marker string) error {
-	// always accessible
-	return nil
+func (ch LoginPwdChallenge) Fingerprint() []byte {
+	return []byte("PwdChallenge")
 }
 
-func (ch *PwdChallenge) Passed(marker string) error {
-	if marker == "session" {
-		return nil
-	}
-
-	return ErrWrongMarkers
-}
-
-func (ch *PwdChallenge) Ask(channel Channel) error {
+func (ch *LoginPwdChallenge) Ask(channel Channel) error {
 	// Phase 1. Generate question
 	// TODO??????
 
@@ -35,16 +29,15 @@ func (ch *PwdChallenge) Ask(channel Channel) error {
 	return nil
 }
 
-func (ch *PwdChallenge) Check(aswer interface{}) (string, error) {
+func (ch *LoginPwdChallenge) Check(node trust.Node, aswer interface{}) (Marker, error) {
 	// Phase 1. Check password from db
-	// login in challenge struct
 	// password raw came from answer
 	if password, ok := aswer.(string); !ok {
-		return "", ErrWrongPassword
-	} else if password != "foobar" {
-		return "", ErrWrongPassword
+		return nil, ErrWrongPassword
+	} else if password != "rootpwd" {
+		return nil, ErrWrongPassword
 	}
 
 	// Phase 2. Session marker
-	return "session", nil
+	return NewMarker(ch, node)
 }

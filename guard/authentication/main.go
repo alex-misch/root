@@ -8,7 +8,7 @@ import (
 // used as a part of authentication flow (tournament)
 type Challenge interface {
 	Ask(Channel) error
-	Check(interface{}) (Marker, error)
+	Check(trust.Node, interface{}) (Marker, error)
 	trust.Node
 }
 
