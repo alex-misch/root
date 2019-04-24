@@ -18,6 +18,9 @@ type Node interface {
 	Fingerprint() []byte
 }
 
+// NodeHook is some kind of intermediate hook for validating node
+type NodeHook func(Node) (Node, error)
+
 // Open decrypt marker and return inner fingerprint as Node interface
 func Open(marker []byte, from Node) (Node, error) {
 	// Prephase. checks
