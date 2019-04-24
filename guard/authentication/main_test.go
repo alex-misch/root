@@ -9,19 +9,25 @@ import (
 	"github.com/boomfunc/root/guard/trust"
 )
 
-var (
-	ch1  Challenge   = &LoginPwdChallenge{login: "gura"}
-	ch2  Challenge   = &LoginPwdChallenge{login: "gura2"}
-	flow []Challenge = []Challenge{ch1, ch2}
-)
-
+// dummy types for tests
+//
+// node is the dummy node that tries to authenticate
 type node int
 
-func (n node) Fingerprint() []byte {
-	return []byte{byte(n)}
-}
+func (n node) Fingerprint() []byte { return []byte(fmt.Sprintf("node%d", n)) }
+
+// chall is dummy challenge
+type chall int
+
+func (ch chall) Fingerprint() []byte                     { return []byte(fmt.Sprintf("challenge%d", ch)) }
+func (ch chall) Ask(channel Channel) error               { return nil }
+func (ch chall) Check(aswer interface{}) (Marker, error) { return nil, nil }
 
 func TestTournament(t *testing.T) {
+	var ch1 Challenge = chall(1)
+	var ch2 Challenge = chall(2)
+	var flow []Challenge = []Challenge{ch1, ch2}
+
 	t.Run("Get", func(t *testing.T) {
 		hookSuccess := func(n trust.Node) (trust.Node, error) { return n, nil }
 		hookError := func(n trust.Node) (trust.Node, error) { return nil, errors.New("OOPS") }

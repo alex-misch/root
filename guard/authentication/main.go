@@ -95,5 +95,5 @@ func do(flow []Challenge, markers []Marker) error {
 
 // Do goes to nearest undone authentication challenge and ask node for answer
 func Do(markers []Marker) error {
-	return do(flow, markers)
+	return do(nil, markers)
 }
