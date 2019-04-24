@@ -6,13 +6,14 @@ import (
 	"crypto/md5"
 	"crypto/rand"
 	"encoding/hex"
-	"errors"
 	"io"
 )
 
-var (
-	ErrWrongData = errors.New("guard/trust: Wrong `data` provided")
-)
+type dummy []byte
+
+func (d dummy) Fingerprint() []byte {
+	return d
+}
 
 // createPassphrase create and returns 32 byte passphrase
 // based on provided fingerprint
@@ -64,7 +65,7 @@ func decrypt(data, key []byte) ([]byte, error) {
 	// also we need check does out data appropriate to block size
 	nonceSize := gcm.NonceSize()
 	if len(data) < nonceSize {
-		return nil, ErrWrongData
+		return nil, ErrWrongMarker
 	}
 
 	nonce, ciphertext := data[:nonceSize], data[nonceSize:]

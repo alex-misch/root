@@ -18,14 +18,11 @@ type Node interface {
 	Fingerprint() []byte
 }
 
-// Check checks the marker for the existence of a trust relationship
-func Check(marker []byte, from, to Node) bool {
+// Open decrypt marker and return inner fingerprint as Node interface
+func Open(marker []byte, from Node) (Node, error) {
 	// Prephase. checks
 	if from == nil {
-		return false
-	}
-	if to == nil {
-		return false
+		return nil, ErrWrongNode
 	}
 
 	// Phase 1. Try to decrypt marker
@@ -35,11 +32,39 @@ func Check(marker []byte, from, to Node) bool {
 	)
 
 	if err != nil {
-		return false
+		return nil, ErrWrongMarker
+	}
+
+	// Phase 2. Raw fingerprint exists, return dummy interface type
+	return dummy(raw), nil
+}
+
+// Check checks the marker for the existence of a trust relationship
+func Check(marker []byte, from, to Node) error {
+	// Prephase. checks
+	if from == nil {
+		return ErrWrongNode
+	}
+	if to == nil {
+		return ErrWrongNode
+	}
+
+	// Phase 1. Try to decrypt marker
+	raw, err := decrypt(
+		marker,                               // encrypted marker to check
+		createPassphrase(from.Fingerprint()), // create passphrase as crypto key
+	)
+
+	if err != nil {
+		return ErrWrongMarker
 	}
 
 	// Phase 2. Check raw data
-	return bytes.Equal(raw, to.Fingerprint())
+	if !bytes.Equal(raw, to.Fingerprint()) {
+		return ErrWrongMarker
+	}
+
+	return nil
 }
 
 // Create creates trust relationship between two nodes

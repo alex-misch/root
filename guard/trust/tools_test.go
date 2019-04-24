@@ -69,8 +69,8 @@ func TestDecrypt(t *testing.T) {
 		err error
 	}{
 		{nil, nil, nil, aes.KeySizeError(0)},
-		{nil, []byte("d41d8cd98f00b204e9800998ecf8427e"), nil, ErrWrongData},
-		{[]byte("DKDKD"), []byte("d41d8cd98f00b204e9800998ecf8427e"), nil, ErrWrongData},
+		{nil, []byte("d41d8cd98f00b204e9800998ecf8427e"), nil, ErrWrongMarker},
+		{[]byte("DKDKD"), []byte("d41d8cd98f00b204e9800998ecf8427e"), nil, ErrWrongMarker},
 		{data, []byte("52609e00b7ee307e79eb100099b9a8bf"), nil, errors.New("cipher: message authentication failed")},
 		{data, key, []byte("raw"), nil},
 	}

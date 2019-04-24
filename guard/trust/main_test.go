@@ -52,26 +52,62 @@ func TestCheck(t *testing.T) {
 		from   Node
 		to     Node
 		// output
-		condition bool
+		err error
 	}{
-		{nil, nil, nil, false},
-		{nil, node(1), nil, false},
-		{nil, nil, node(2), false},
-		{[]byte("wrong"), node(1), nil, false},     // wrong marker
-		{[]byte("wrong"), nil, node(2), false},     // wrong marker
-		{[]byte("wrong"), node(1), node(2), false}, // wrong marker
+		{nil, nil, nil, ErrWrongNode},
+		{nil, node(1), nil, ErrWrongNode},
+		{nil, nil, node(2), ErrWrongNode},
+		{[]byte("wrong"), node(1), nil, ErrWrongNode},
+		{[]byte("wrong"), nil, node(2), ErrWrongNode},
 
-		{remarker, node(1), node(2), false}, // wrong marker, existing relation
-		{marker, node(1), node(2), true},    // wright direction, existing relation
+		{[]byte("wrong"), node(1), node(2), ErrWrongMarker}, // wrong marker
 
-		{marker, node(2), node(1), false},  // relation are not vise versa
-		{remarker, node(2), node(1), true}, // relation are not vise versa
+		{remarker, node(1), node(2), ErrWrongMarker}, // wrong marker, existing relation
+		{marker, node(1), node(2), nil},              // wright direction, existing relation
+
+		{marker, node(2), node(1), ErrWrongMarker}, // relation are not vise versa (marker wrong)
+		{remarker, node(2), node(1), nil},          // wright direction, existing relation
 	}
 
 	for i, tt := range tableTests {
 		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-			if condition := Check(tt.marker, tt.from, tt.to); condition != tt.condition {
-				t.Fatalf("Expected \"%t\", got \"%t\"", tt.condition, condition)
+			if err := Check(tt.marker, tt.from, tt.to); !reflect.DeepEqual(err, tt.err) {
+				t.Fatalf("Expected %q, got %q", tt.err, err)
+			}
+		})
+	}
+}
+
+func TestOpen(t *testing.T) {
+	from := dummy([]byte{1})
+	to := dummy([]byte{2})
+	marker, err := Create(from, to)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tableTests := []struct {
+		// input
+		marker []byte
+		from   Node
+		// output
+		to  Node
+		err error
+	}{
+		{nil, nil, nil, ErrWrongNode},
+		{nil, from, nil, ErrWrongMarker},
+		{marker, nil, nil, ErrWrongNode},
+		{marker, from, to, nil},
+	}
+
+	for i, tt := range tableTests {
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+			to, err := Open(tt.marker, tt.from)
+			if !reflect.DeepEqual(err, tt.err) {
+				t.Fatalf("Expected %q, got %q", tt.err, err)
+			}
+			if !reflect.DeepEqual(to, tt.to) {
+				t.Fatalf("Expected %q, got %q", tt.to, to)
 			}
 		})
 	}
