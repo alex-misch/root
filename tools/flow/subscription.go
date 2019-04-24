@@ -73,3 +73,9 @@ func Broadcast(step Step) {
 
 	subscribers.broadcast(step)
 }
+
+// Clear clears all subscriber relations
+func Clear(step Step) {
+	// TODO: maybe broadcast current pending?
+	subscribers = nil
+}

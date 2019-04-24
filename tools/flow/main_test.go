@@ -9,6 +9,32 @@ import (
 	"testing"
 )
 
+// func TestCircleHanging(t *testing.T) {
+// 	workers := WorkersHeap(3) // only 3 workers across all nested groups
+// 	step := Func(func(ctx context.Context) error { return nil })
+//
+// 	var step1 Step = Group(workers, step, step)
+// 	var step2 Step = Func(func(ctx context.Context) error {
+// 		WaitFor(step1)
+// 		return nil
+// 	})
+// 	var step3 Step = Func(func(ctx context.Context) error {
+// 		WaitFor(step2)
+// 		return nil
+// 	})
+//
+// 	// total flow
+// 	var flow Step = Concurrent(
+// 		workers,
+// 		step1, step2, step3,
+// 	)
+//
+// 	// with proper way of fetching workers this method must not hung!
+// 	if err := Execute(flow); err != nil {
+// 		t.Fatal(err)
+// 	}
+// }
+
 func TestMain(t *testing.T) {
 	var err error = errors.New("Some error")
 	var stepSuccess Step = Func(func(ctx context.Context) error { return nil })
