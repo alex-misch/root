@@ -19,9 +19,9 @@ func (n node) Fingerprint() []byte { return []byte(fmt.Sprintf("node.%s", n)) }
 // chall is dummy challenge
 type chall int
 
-func (ch chall) Fingerprint() []byte                                      { return []byte(fmt.Sprintf("challenge%d", ch)) }
-func (ch chall) Ask(channel Channel) error                                { return nil }
-func (ch chall) Check(node trust.Node, aswer interface{}) (Marker, error) { return nil, nil }
+func (ch chall) Fingerprint() []byte                            { return []byte(fmt.Sprintf("challenge%d", ch)) }
+func (ch chall) Ask(channel Channel) error                      { return nil }
+func (ch chall) Check(node trust.Node, aswer interface{}) error { return nil }
 
 func TestTournament(t *testing.T) {
 	var ch1 Challenge = chall(1)
