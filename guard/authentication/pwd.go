@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	ErrWrongPassword = errors.New("Wrong password")
+	ErrWrongPassword = errors.New("guard/authentication: Wrong `password` provided")
 )
 
 // LoginPwdChallenge is simplest challenge based on login-password pair
@@ -16,6 +16,7 @@ type LoginPwdChallenge struct {
 	// common challenge data
 }
 
+// Fingerprint implements trust.Node interface
 func (ch LoginPwdChallenge) Fingerprint() []byte {
 	return []byte("PwdChallenge")
 }
@@ -31,12 +32,14 @@ func (ch *LoginPwdChallenge) Ask(channel Channel) error {
 
 func (ch *LoginPwdChallenge) Check(node trust.Node, aswer interface{}) error {
 	// Phase 1. Check password from db
-	// password raw came from answer
-	if password, ok := aswer.(string); !ok {
-		return ErrWrongPassword
-	} else if password != "rootpwd" {
-		return ErrWrongPassword
+	if node == nil {
+		// we have not detected the node, nothing to check
+		return ErrChallengeFailed
 	}
 
-	return nil
+	if password, ok := aswer.(string); ok && password == "rootpwd" {
+		return nil
+	}
+
+	return ErrWrongPassword
 }

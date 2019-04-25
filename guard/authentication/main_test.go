@@ -116,3 +116,21 @@ func TestTournament(t *testing.T) {
 		}
 	})
 }
+
+func TestSignIn(t *testing.T) {
+	// describe per project authentication flow
+	flow := []Challenge{
+		&LoginPwdChallenge{},
+		&PinChallenge{},
+	}
+
+	// in view create per user tournament
+	tournament := Tournament(flow, nil)
+
+	// Ask without any markers (sign in)
+	t.Error(tournament.Ask(nil))
+
+	// Close 1 challenge
+	marker, err := tournament.Check(nil, "rootpwd")
+	t.Error(marker, err)
+}

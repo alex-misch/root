@@ -1,7 +1,13 @@
 package authentication
 
 import (
+	"errors"
+
 	"github.com/boomfunc/root/guard/trust"
+)
+
+var (
+	ErrChallengeFailed = errors.New("guard/authentication: Challenge lifecycle failed")
 )
 
 // Challenge is the way to achieve Marker
@@ -81,19 +87,33 @@ func (t *tournament) Get(markers []Marker) Challenge {
 	return t.chs[i]
 }
 
-func do(flow []Challenge, markers []Marker) error {
-	tournament := Tournament(flow, nil)
+// Ask is the first part of the challenge - ask node for some answer
+func (t *tournament) Ask(markers []Marker) error {
 	// Phase 1. Try to get nearest undone challenge
-	if challenge := tournament.Get(markers); challenge != nil {
+	if challenge := t.Get(markers); challenge != nil {
 		// challenge accepted, ask user for answer
 		return challenge.Ask(nil)
 	}
 
 	// user authenticated without any challenges
+	// nothing to ask
 	return nil
 }
 
-// Do goes to nearest undone authentication challenge and ask node for answer
-func Do(markers []Marker) error {
-	return do(nil, markers)
+// Check is the second part of the challenge - check answer from node
+func (t *tournament) Check(markers []Marker, answer interface{}) (Marker, error) {
+	if challenge := t.Get(markers); challenge != nil {
+		// undone challenge found, let's check node answer
+		// NOTE: answer will be checked by nearest undone challenge
+		if err := challenge.Check(t.node, answer); err != nil {
+			// wrong answer
+			return nil, err
+		}
+
+		// check was successful, challenge passed, return marker
+		return NewMarker(challenge, t.node)
+	}
+
+	// user authenticated without any challenges
+	return nil, nil
 }
