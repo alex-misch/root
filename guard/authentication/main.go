@@ -9,6 +9,9 @@ import (
 var (
 	// ErrChallengeFailed is common error for fail cases in challenges
 	ErrChallengeFailed = errors.New("guard/authentication: Challenge lifecycle failed")
+	// Complete means that authentication tournament complete
+	// we can use tournament.node for authorization part
+	Complete = errors.New("guard/authentication: Tournament (authentication flow) complete")
 )
 
 // Challenge is the way to achieve Marker
@@ -16,21 +19,23 @@ var (
 type Challenge interface {
 	Ask(Channel) error
 	Check(trust.Node, interface{}) error
+	// We advise that only information about encryption-decryption mechanics be included into the fingerprint.
+	// And not specific runtime generated values.
 	trust.Node
 }
 
 // tournament describes your own authentication flow
 type tournament struct {
-	chs  []Challenge    // set of challenges node must pass to be marked as 'authenticated'
-	node trust.Node     // node which tries to authenticate
-	hook trust.NodeHook // hook for validating inner trust node
+	chs    []Challenge    // set of challenges node must pass to be marked as 'authenticated'
+	node   trust.Node     // node which tries to authenticate
+	getter trust.NodeHook // hook for getting node by orphan node's fingerprint
 }
 
 // Tournament creates and returns new authentication tournament
-func Tournament(flow []Challenge, hook trust.NodeHook) *tournament {
+func Tournament(flow []Challenge, getter trust.NodeHook) *tournament {
 	return &tournament{
-		chs:  flow,
-		hook: hook,
+		chs:    flow,
+		getter: getter,
 	}
 }
 
@@ -54,27 +59,39 @@ func (t *tournament) Get(markers []Marker) Challenge {
 			break
 		}
 
-		// Phase 2. Try to get node that wants to authenticate
-		// or check that marker is valid for current existing node
+		// Phase 2.
+		// there may be 2 states:
+		// 1. We know for which node the tournament is running
+		// 2. The opposite
+		//
+		// Anyway we need to try to fetch this node.
+		// Case when it is impossible: no markers provided (initial sign-in state)
+		//
+		// Anyway if node unfetchable - no merkers will be generated
+		// But first Challenge must ALWAYS able to fetch node by answer as a last resort
 		if t.node != nil {
-			// Check i marker valid (challenge passed)
+			// Case 1. Check i marker valid (challenge passed)
 			// try to encode by i challenge (check existence trusting relation)
 			if err := trust.Check(markers[i], t.chs[i], t.node); err != nil {
 				// wrong marker, this challenge undone
 				break
 			}
 		} else {
-			// try to get node by challenge's fingerprint
+			// Case 2. Use the `getter` hook for fetch real node by orphan node
+			// try to get orphan node by challenge's fingerprint
 			node, err := trust.Open(markers[i], t.chs[i])
 			if err != nil {
 				break
 			}
-			if t.hook != nil {
-				node, err = t.hook(node)
+			if t.getter != nil {
+				node, err = t.getter(node)
 				if err != nil {
 					break
 				}
 			}
+
+			// We did everything we can to get the node.
+			// At least an orphan node is always here
 			t.node = node
 		}
 	}
@@ -91,30 +108,34 @@ func (t *tournament) Get(markers []Marker) Challenge {
 // Ask is the first part of the challenge - ask node for some answer
 func (t *tournament) Ask(markers []Marker) error {
 	// Phase 1. Try to get nearest undone challenge
-	if challenge := t.Get(markers); challenge != nil {
-		// challenge accepted, ask user for answer
-		return challenge.Ask(nil)
+	challenge := t.Get(markers)
+	if challenge == nil {
+		// user authenticated without any challenges
+		// nothing to do
+		return Complete
 	}
 
-	// user authenticated without any challenges
-	// nothing to ask
-	return nil
+	// Phase 2. Undone challenge found, let's ask node for answer
+	return challenge.Ask(nil)
 }
 
 // Check is the second part of the challenge - check answer from node
 func (t *tournament) Check(markers []Marker, answer interface{}) (Marker, error) {
-	if challenge := t.Get(markers); challenge != nil {
-		// undone challenge found, let's check node answer
-		// NOTE: answer will be checked by nearest undone challenge
-		if err := challenge.Check(t.node, answer); err != nil {
-			// wrong answer
-			return nil, err
-		}
-
-		// check was successful, challenge passed, return marker
-		return NewMarker(challenge, t.node)
+	// Phase 1. Try to get nearest undone challenge
+	challenge := t.Get(markers)
+	if challenge == nil {
+		// user authenticated without any challenges
+		// nothing to do
+		return nil, Complete
 	}
 
-	// user authenticated without any challenges
-	return nil, nil
+	// Phase 2. Undone challenge found, let's check node answer
+	// NOTE: be careful: answer will be checked by nearest undone challenge
+	if err := challenge.Check(t.node, answer); err != nil {
+		// wrong answer
+		return nil, err
+	}
+
+	// check was successful, challenge passed, return marker
+	return NewMarker(challenge, t.node)
 }

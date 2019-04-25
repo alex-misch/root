@@ -39,9 +39,9 @@ func TestTournament(t *testing.T) {
 
 		tableTests := []struct {
 			// initialization
-			flow []Challenge
-			node trust.Node
-			hook trust.NodeHook
+			flow   []Challenge
+			node   trust.Node
+			getter trust.NodeHook
 			// input
 			markers []Marker
 			// output
@@ -83,16 +83,16 @@ func TestTournament(t *testing.T) {
 
 			// cases with hooks
 			// get some case above and test it for two variants: with error or none
-			{flow, nil, hookSuccess, []Marker{ch1n2, ch2n2}, nil, node("2")}, // wright chain, all passed, hook returns sucess
-			{flow, nil, hookError, []Marker{ch1n2, ch2n2}, ch1, nil},         // wright chain, all passed, but hook returns error, node invalid, begin all
+			{flow, nil, hookSuccess, []Marker{ch1n2, ch2n2}, nil, node("2")}, // wright chain, all passed, `getter` hook returns sucess
+			{flow, nil, hookError, []Marker{ch1n2, ch2n2}, ch1, nil},         // wright chain, all passed, but `getter` hook returns error, node invalid, begin all
 		}
 
 		for i, tt := range tableTests {
 			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
 				tournament := tournament{
-					chs:  tt.flow,
-					node: tt.node,
-					hook: tt.hook,
+					chs:    tt.flow,
+					node:   tt.node,
+					getter: tt.getter,
 				}
 
 				// check returned challenge
@@ -125,12 +125,42 @@ func TestSignIn(t *testing.T) {
 	}
 
 	// in view create per user tournament
-	tournament := Tournament(flow, nil)
+	tournament := Tournament(
+		flow,
+		func(node trust.Node) (trust.Node, error) { return nil, ErrChallengeFailed },
+	)
+	markers := []Marker{}
+	answers := []interface{}{"rootpwd", 1234}
 
-	// Ask without any markers (sign in)
-	t.Error(tournament.Ask(nil))
+	for i := 0; ; i++ {
+		// Phase 1. Ask for pass challenge
+		if err := tournament.Ask(markers); err != nil {
+			if err == Complete {
+				break
+			}
+			t.Fatal(err)
+		}
 
-	// Close 1 challenge
-	marker, err := tournament.Check(nil, "rootpwd")
-	t.Error(marker, err)
+		// TODO: workaround
+		if tournament.node == nil {
+			tournament.node = node("1") // TMP workaround
+		}
+		// TODO: workaround
+
+		// Phase 2. Close challenge
+		marker, err := tournament.Check(markers, answers[i])
+		if err != nil {
+			if err == Complete {
+				break
+			}
+			t.Fatal(err)
+		}
+		markers = append(markers, marker)
+	}
+
+	// Check output
+	t.Error("=====")
+	for i, marker := range markers {
+		t.Logf("Marker %d : %x", i, marker)
+	}
 }
