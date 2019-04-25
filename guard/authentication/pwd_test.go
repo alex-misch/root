@@ -9,8 +9,8 @@ import (
 )
 
 func TestLoginPwdChallenge(t *testing.T) {
-	user := node("root")
-	ch := &LoginPwdChallenge{}
+	var user trust.Node = node("root")
+	var ch Challenge = &LoginPwdChallenge{}
 
 	t.Run("Check", func(t *testing.T) {
 		tableTests := []struct {
@@ -27,17 +27,9 @@ func TestLoginPwdChallenge(t *testing.T) {
 
 		for i, tt := range tableTests {
 			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-				marker, err := ch.Check(user, tt.answer)
-				if err != tt.err {
+				err := ch.Check(user, tt.answer)
+				if !reflect.DeepEqual(err, tt.err) {
 					t.Fatalf("Expected %q, got %q", tt.err, err)
-				} else if err == nil {
-					node, err := trust.Open(marker, ch)
-					if err != nil {
-						t.Fatal(err)
-					}
-					if !reflect.DeepEqual(node.Fingerprint(), tt.node.Fingerprint()) {
-						t.Fatalf("Expected %q, got %q", tt.node.Fingerprint(), node.Fingerprint())
-					}
 				}
 			})
 		}

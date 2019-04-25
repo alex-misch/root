@@ -29,15 +29,14 @@ func (ch *LoginPwdChallenge) Ask(channel Channel) error {
 	return nil
 }
 
-func (ch *LoginPwdChallenge) Check(node trust.Node, aswer interface{}) (Marker, error) {
+func (ch *LoginPwdChallenge) Check(node trust.Node, aswer interface{}) error {
 	// Phase 1. Check password from db
 	// password raw came from answer
 	if password, ok := aswer.(string); !ok {
-		return nil, ErrWrongPassword
+		return ErrWrongPassword
 	} else if password != "rootpwd" {
-		return nil, ErrWrongPassword
+		return ErrWrongPassword
 	}
 
-	// Phase 2. Session marker
-	return NewMarker(ch, node)
+	return nil
 }
