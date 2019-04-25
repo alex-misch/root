@@ -12,11 +12,11 @@ var (
 
 // pin is simple pin code verification
 type pin struct {
-	length int // length of the pin code
+	length uint // length of the pin code
 }
 
 // PinChallenge returns challenge based on random pin code generation
-func PinChallenge(length int) Challenge {
+func PinChallenge(length uint) Challenge {
 	return &pin{
 		length: length,
 	}
@@ -28,6 +28,8 @@ func (ch pin) Fingerprint() []byte {
 }
 
 func (ch *pin) Ask(channel Channel) error {
+	// https://stackoverflow.com/questions/22892120/how-to-generate-a-random-string-of-a-fixed-length-in-go
+
 	// Phase 1. Generate question
 	// pin := 1234
 

@@ -15,12 +15,21 @@ func TestCookie(t *testing.T) {
 	})
 	hex := "7639ea8bfb67ee8b1345924b18b4bb4b551e70f8576b451bdca3f3ba7cce9cd18814f9e5ecc4bd"
 
-	// expected cookie as string
-	expected := "X-Bmp-Auth=7639ea8bfb67ee8b1345924b18b4bb4b551e70f8576b451bdca3f3ba7cce9cd18814f9e5ecc4bd; HttpOnly; Secure; SameSite=Strict"
-
 	t.Run("ToCookie", func(t *testing.T) {
-		if cookie := marker.ToCookie().String(); cookie != expected {
-			t.Fatalf("Expected %q, got %q", expected, cookie)
+		tableTests := []struct {
+			i uint
+			s string
+		}{
+			{0, "X-Bmp-Auth-Marker-0=7639ea8bfb67ee8b1345924b18b4bb4b551e70f8576b451bdca3f3ba7cce9cd18814f9e5ecc4bd; HttpOnly; Secure; SameSite=Strict"},
+			{1, "X-Bmp-Auth-Marker-1=7639ea8bfb67ee8b1345924b18b4bb4b551e70f8576b451bdca3f3ba7cce9cd18814f9e5ecc4bd; HttpOnly; Secure; SameSite=Strict"},
+		}
+
+		for i, tt := range tableTests {
+			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+				if s := marker.ToCookie(tt.i).String(); s != tt.s {
+					t.Fatalf("Expected %q, got %q", tt.s, s)
+				}
+			})
 		}
 	})
 
@@ -32,10 +41,11 @@ func TestCookie(t *testing.T) {
 		}{
 			{nil, nil, ErrWrongCookie},
 			{&http.Cookie{Name: "foobar"}, nil, ErrWrongCookie},
-			{&http.Cookie{Name: "X-Bmp-Auth"}, nil, ErrWrongCookie},
-			{&http.Cookie{Name: "X-Bmp-Auth", HttpOnly: true}, nil, ErrWrongCookie},
-			{&http.Cookie{Name: "X-Bmp-Auth", HttpOnly: true, Value: "48656c6c6f20476f7068657221"}, Marker([]byte("Hello Gopher!")), nil},
-			{&http.Cookie{Name: "X-Bmp-Auth", HttpOnly: true, Value: hex}, marker, nil},
+			{&http.Cookie{Name: "X-Bmp-Auth-Marker"}, nil, ErrWrongCookie},
+			{&http.Cookie{Name: "X-Bmp-Auth-Marker", HttpOnly: true}, nil, ErrWrongCookie},
+			{&http.Cookie{Name: "X-Bmp-Auth-Marker", HttpOnly: true, Value: "48656c6c6f20476f7068657221"}, Marker([]byte("Hello Gopher!")), nil},
+			{&http.Cookie{Name: "X-Bmp-Auth", HttpOnly: true, Value: hex}, nil, ErrWrongCookie},
+			{&http.Cookie{Name: "X-Bmp-Auth-Marker", HttpOnly: true, Value: hex}, marker, nil},
 		}
 
 		for i, tt := range tableTests {

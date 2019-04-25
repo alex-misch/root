@@ -3,18 +3,20 @@ package authentication
 import (
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"net/http"
+	"strings"
 )
 
 var (
-	CookieName     = "X-Bmp-Auth"
-	ErrWrongCookie = errors.New("guard/authentication: Wrong `cookie` provided")
+	CookieNamePrefix = "X-Bmp-Auth-Marker"
+	ErrWrongCookie   = errors.New("guard/authentication: Wrong `cookie` provided")
 )
 
 // ToCookie helper function for sending marker throw http application layer
-func (m Marker) ToCookie() *http.Cookie {
+func (m Marker) ToCookie(i uint) *http.Cookie {
 	return &http.Cookie{
-		Name:     CookieName,
+		Name:     fmt.Sprintf("%s-%d", CookieNamePrefix, i),
 		Value:    hex.EncodeToString(m),
 		HttpOnly: true,                    // no access through browser API (https://developer.mozilla.org/en-US/docs/Glossary/Cross-site_scripting)
 		Secure:   true,                    // cookie transmitted over HTTPS only
@@ -28,7 +30,7 @@ func MarkerFromCookie(cookie *http.Cookie) (Marker, error) {
 		return nil, ErrWrongCookie
 	}
 
-	if cookie.Name != CookieName {
+	if !strings.HasPrefix(cookie.Name, CookieNamePrefix) {
 		return nil, ErrWrongCookie
 	}
 
