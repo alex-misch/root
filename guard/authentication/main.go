@@ -7,6 +7,7 @@ import (
 )
 
 var (
+	// ErrChallengeFailed is common error for fail cases in challenges
 	ErrChallengeFailed = errors.New("guard/authentication: Challenge lifecycle failed")
 )
 

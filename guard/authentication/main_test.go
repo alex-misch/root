@@ -121,7 +121,7 @@ func TestSignIn(t *testing.T) {
 	// describe per project authentication flow
 	flow := []Challenge{
 		&LoginPwdChallenge{},
-		&PinChallenge{},
+		PinChallenge(4),
 	}
 
 	// in view create per user tournament
