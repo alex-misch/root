@@ -15,15 +15,11 @@ func TestCookie(t *testing.T) {
 	})
 	hex := "7639ea8bfb67ee8b1345924b18b4bb4b551e70f8576b451bdca3f3ba7cce9cd18814f9e5ecc4bd"
 
-	// expected cookie
-	expected := &http.Cookie{
-		Name:     "X-Bmp-Auth",
-		Value:    hex,
-		HttpOnly: true,
-	}
+	// expected cookie as string
+	expected := "X-Bmp-Auth=7639ea8bfb67ee8b1345924b18b4bb4b551e70f8576b451bdca3f3ba7cce9cd18814f9e5ecc4bd; HttpOnly; Secure; SameSite=Strict"
 
 	t.Run("ToCookie", func(t *testing.T) {
-		if cookie := marker.ToCookie(); !reflect.DeepEqual(cookie, expected) {
+		if cookie := marker.ToCookie().String(); cookie != expected {
 			t.Fatalf("Expected %q, got %q", expected, cookie)
 		}
 	})
