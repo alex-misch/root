@@ -1,13 +1,7 @@
 package authentication
 
 import (
-	"errors"
-
 	"github.com/boomfunc/root/guard/trust"
-)
-
-var (
-	ErrWrongMarker = errors.New("guard/authentication: Wrong `marker` provided")
 )
 
 // Marker is token
