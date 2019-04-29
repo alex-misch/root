@@ -38,10 +38,10 @@ func (ch *pin) Ask(channel Channel) error {
 	// return channel.Send(1234)
 }
 
-func (ch *pin) Check(node trust.Node, aswer interface{}) error {
-	if pin, ok := aswer.(int); ok && pin == 1234 {
-		return nil
+func (ch *pin) Check(n trust.Node, answer interface{}) (trust.Node, error) {
+	if pin, ok := answer.(int); ok && pin == 1234 {
+		return node("1"), nil
 	}
 
-	return ErrWrongPin
+	return nil, ErrWrongPin
 }

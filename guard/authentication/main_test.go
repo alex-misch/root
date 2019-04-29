@@ -1,6 +1,7 @@
 package authentication
 
 import (
+	// "encoding/hex"
 	"errors"
 	"fmt"
 	"reflect"
@@ -19,9 +20,9 @@ func (n node) Fingerprint() []byte { return []byte(fmt.Sprintf("node.%s", n)) }
 // chall is dummy challenge
 type chall int
 
-func (ch chall) Fingerprint() []byte                     { return []byte(fmt.Sprintf("challenge%d", ch)) }
-func (ch chall) Ask(_ Channel) error                     { return nil }
-func (ch chall) Check(_ trust.Node, _ interface{}) error { return nil }
+func (ch chall) Fingerprint() []byte                                   { return []byte(fmt.Sprintf("challenge.%d", ch)) }
+func (ch chall) Ask(_ Channel) error                                   { return nil }
+func (ch chall) Check(_ trust.Node, _ interface{}) (trust.Node, error) { return node("1"), nil }
 
 func TestTournament(t *testing.T) {
 	var ch1 Challenge = chall(1)
@@ -96,7 +97,7 @@ func TestTournament(t *testing.T) {
 				}
 
 				// check returned challenge
-				if challenge := tournament.Get(tt.markers); challenge != tt.challenge {
+				if challenge := tournament.get(tt.markers); challenge != tt.challenge {
 					t.Fatalf("Expected %q, got %q", tt.challenge, challenge)
 				}
 
@@ -127,8 +128,16 @@ func TestSignIn(t *testing.T) {
 	// in view create per user tournament
 	tournament := Tournament(
 		flow,
-		func(node trust.Node) (trust.Node, error) { return nil, ErrChallengeFailed },
+		nil,
+		// func(node trust.Node) (trust.Node, error) { return nil, ErrChallengeFailed },
 	)
+	// m1, _ := hex.DecodeString("3c2882744633325901b3af4c14bcc27485e1406b85af67668600dcd6e24ca3f16f81")
+	// m2, _ := hex.DecodeString("c69c719fcd1751573c20ac8b9fa6547b10b217027af2796aa81e95825c490425a84b")
+
+	// m1, _ := hex.DecodeString("1e9c5bb1d4d3b93005486d80b4cac1b12c69676477da2d2940a1305c5ca4545e7e4e")
+	// m2, _ := hex.DecodeString("2163890d2ad93cdca2389f847072c83a132519593bf31357a4b17a09900d6c4ee7af")
+
+	// markers := []Marker{m1, m2}
 	markers := []Marker{}
 	answers := []interface{}{"rootpwd", 1234}
 
@@ -140,12 +149,6 @@ func TestSignIn(t *testing.T) {
 			}
 			t.Fatal(err)
 		}
-
-		// TODO: workaround
-		if tournament.node == nil {
-			tournament.node = node("1") // TMP workaround
-		}
-		// TODO: workaround
 
 		// Phase 2. Close challenge
 		marker, err := tournament.Check(markers, answers[i])
@@ -159,8 +162,9 @@ func TestSignIn(t *testing.T) {
 	}
 
 	// Check output
-	t.Error("=====")
+	t.Error("=====", string(tournament.node.Fingerprint()))
 	for i, marker := range markers {
 		t.Logf("Marker %d : %x", i, marker)
 	}
+	t.Error("=====")
 }

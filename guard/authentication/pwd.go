@@ -18,7 +18,7 @@ type LoginPwdChallenge struct {
 
 // Fingerprint implements trust.Node interface
 func (ch LoginPwdChallenge) Fingerprint() []byte {
-	return []byte("PwdChallenge")
+	return []byte("LoginPwdChallenge")
 }
 
 func (ch *LoginPwdChallenge) Ask(channel Channel) error {
@@ -30,16 +30,17 @@ func (ch *LoginPwdChallenge) Ask(channel Channel) error {
 	return nil
 }
 
-func (ch *LoginPwdChallenge) Check(node trust.Node, aswer interface{}) error {
+// Check checks user input for this type of challenge
+// In fact, check does in storage exists row with provided username and password
+func (ch *LoginPwdChallenge) Check(n trust.Node, answer interface{}) (trust.Node, error) {
 	// Phase 1. Check password from db
-	if node == nil {
-		// we have not detected the node, nothing to check
-		return ErrChallengeFailed
+	// for fetching from db
+	// username = node.Fingerprint()
+	// password = answer
+
+	if password, ok := answer.(string); ok && password == "rootpwd" {
+		return node("1"), nil
 	}
 
-	if password, ok := aswer.(string); ok && password == "rootpwd" {
-		return nil
-	}
-
-	return ErrWrongPassword
+	return nil, ErrWrongPassword
 }
