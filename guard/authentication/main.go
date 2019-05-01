@@ -13,13 +13,15 @@ var (
 	// Complete means that authentication tournament complete
 	// we can use tournament.node for authorization part
 	Complete = errors.New("guard/authentication: Tournament (authentication flow) complete")
+	// Failed means that tournament requires some challenges to be completed
+	Failed = errors.New("guard/authentication: Tournament (authentication flow) failed")
 )
 
 // Challenge is the way to achieve Marker
 // used as a part of authentication flow (tournament)
 type Challenge interface {
 	Ask(Channel) error
-	Check(trust.Node, interface{}) (trust.Node, error)
+	Answer(trust.Node, interface{}) (trust.Node, error)
 	// We advise that only information about encryption-decryption mechanics be included into the fingerprint.
 	// And not specific runtime generated values.
 	trust.Node
@@ -121,8 +123,8 @@ func (t *tournament) Ask(markers []Marker) error {
 	return challenge.Ask(nil)
 }
 
-// Check is the second part of the challenge - check answer from node
-func (t *tournament) Check(markers []Marker, answer interface{}) (Marker, error) {
+// Answer is the second part of the challenge - check answer from node
+func (t *tournament) Answer(markers []Marker, answer interface{}) (Marker, error) {
 	// Phase 1. Try to get nearest undone challenge
 	challenge := t.get(markers)
 	if challenge == nil {
@@ -133,7 +135,7 @@ func (t *tournament) Check(markers []Marker, answer interface{}) (Marker, error)
 
 	// Phase 2. Undone challenge found, let's check node answer
 	// NOTE: be careful: answer will be checked by nearest undone challenge
-	node, err := challenge.Check(t.node, answer)
+	node, err := challenge.Answer(t.node, answer)
 	if err != nil {
 		// wrong answer
 		return nil, err
@@ -141,6 +143,9 @@ func (t *tournament) Check(markers []Marker, answer interface{}) (Marker, error)
 
 	// Phase 3. Check modified node with in-session node
 	if t.node == nil {
+		if node == nil {
+			return nil, ErrChallengeFailed
+		}
 		t.node = node
 	} else {
 		// here node already in tournament, we can only check
@@ -151,4 +156,14 @@ func (t *tournament) Check(markers []Marker, answer interface{}) (Marker, error)
 
 	// check was successful, challenge passed, return marker
 	return NewMarker(challenge, t.node)
+}
+
+func (t *tournament) Check(markers []Marker) (trust.Node, error) {
+	if challenge := t.get(markers); challenge == nil {
+		// node authenticated without any challenges
+		// nothing to do
+		return t.node, nil
+	}
+
+	return nil, Failed
 }

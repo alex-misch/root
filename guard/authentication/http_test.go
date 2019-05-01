@@ -17,11 +17,12 @@ func TestCookie(t *testing.T) {
 
 	t.Run("ToCookie", func(t *testing.T) {
 		tableTests := []struct {
-			i uint
+			i int
 			s string
 		}{
 			{0, "X-Bmp-Auth-Marker-0=7639ea8bfb67ee8b1345924b18b4bb4b551e70f8576b451bdca3f3ba7cce9cd18814f9e5ecc4bd; HttpOnly; Secure; SameSite=Strict"},
 			{1, "X-Bmp-Auth-Marker-1=7639ea8bfb67ee8b1345924b18b4bb4b551e70f8576b451bdca3f3ba7cce9cd18814f9e5ecc4bd; HttpOnly; Secure; SameSite=Strict"},
+			{10, "X-Bmp-Auth-Marker-10=7639ea8bfb67ee8b1345924b18b4bb4b551e70f8576b451bdca3f3ba7cce9cd18814f9e5ecc4bd; HttpOnly; Secure; SameSite=Strict"},
 		}
 
 		for i, tt := range tableTests {
@@ -36,26 +37,71 @@ func TestCookie(t *testing.T) {
 	t.Run("MarkerFromCookie", func(t *testing.T) {
 		tableTests := []struct {
 			cookie *http.Cookie
+			i      int
 			marker Marker
-			err    error
 		}{
-			{nil, nil, ErrWrongCookie},
-			{&http.Cookie{Name: "foobar"}, nil, ErrWrongCookie},
-			{&http.Cookie{Name: "X-Bmp-Auth-Marker"}, nil, ErrWrongCookie},
-			{&http.Cookie{Name: "X-Bmp-Auth-Marker", HttpOnly: true}, nil, ErrWrongCookie},
-			{&http.Cookie{Name: "X-Bmp-Auth-Marker", HttpOnly: true, Value: "48656c6c6f20476f7068657221"}, Marker([]byte("Hello Gopher!")), nil},
-			{&http.Cookie{Name: "X-Bmp-Auth", HttpOnly: true, Value: hex}, nil, ErrWrongCookie},
-			{&http.Cookie{Name: "X-Bmp-Auth-Marker", HttpOnly: true, Value: hex}, marker, nil},
+			{nil, 0, nil},
+			{&http.Cookie{Name: "foobar"}, 0, nil},            // wrong name
+			{&http.Cookie{Name: "X-Bmp-Auth-Marker"}, 0, nil}, // empty value
+
+			{&http.Cookie{Name: "X-Bmp-Auth-Marker", Value: hex}, 0, nil},      // name without index
+			{&http.Cookie{Name: "X-Bmp-Auth-Marker-ss", Value: hex}, 0, nil},   // name index is not a int
+			{&http.Cookie{Name: "X-Bmp-Auth-SHMarker-10", Value: hex}, 0, nil}, //invalid prefix
+
+			{&http.Cookie{Name: "X-Bmp-Auth-Marker-10", Value: hex}, 10, marker}, // wright
+			{&http.Cookie{Name: "X-Bmp-Auth-Marker-0", Value: hex}, 0, marker},   // wright
 		}
 
 		for i, tt := range tableTests {
 			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-				marker, err := MarkerFromCookie(tt.cookie)
-				if !reflect.DeepEqual(err, tt.err) {
-					t.Fatalf("Expected %q, got %q", tt.err, err)
+				i, marker := MarkerFromCookie(tt.cookie)
+				if i != tt.i {
+					t.Fatalf("Expected %q, got %q", tt.i, i)
 				}
 				if !reflect.DeepEqual(marker, tt.marker) {
 					t.Fatalf("Expected %q, got %q", tt.marker, marker)
+				}
+			})
+		}
+	})
+
+	t.Run("MarkersFromCookies", func(t *testing.T) {
+		tableTests := []struct {
+			cookies []*http.Cookie
+			markers []Marker
+		}{
+			{nil, nil},
+			{[]*http.Cookie{nil, nil}, nil},
+			{[]*http.Cookie{&http.Cookie{Name: "foobar"}, nil}, nil},
+
+			{[]*http.Cookie{
+				&http.Cookie{Name: "foobar"},
+				&http.Cookie{Name: "X-Bmp-Auth-Marker-10", Value: hex},
+			}, []Marker{
+				marker,
+			}},
+
+			// complex case
+			{[]*http.Cookie{
+				&http.Cookie{Name: "X-Bmp-Auth-Marker-10", Value: "7468697264"}, // third
+				&http.Cookie{Name: "foobar"},
+				&http.Cookie{Name: "X-Bmp-Auth-Marker-11", Value: "666f75727468"}, // fourth
+				&http.Cookie{Name: "foobar2"},
+				&http.Cookie{Name: "X-Bmp-Auth-Marker-3", Value: "7365636f6e64"}, // second
+				&http.Cookie{Name: "X-Bmp-Auth-Marker-0", Value: "6669727374"},   // first
+			}, []Marker{
+				[]byte("first"),
+				[]byte("second"),
+				[]byte("third"),
+				[]byte("fourth"),
+			}},
+		}
+
+		for i, tt := range tableTests {
+			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+				markers := MarkersFromCookies(tt.cookies)
+				if !reflect.DeepEqual(markers, tt.markers) {
+					t.Fatalf("Expected %q, got %q", tt.markers, markers)
 				}
 			})
 		}

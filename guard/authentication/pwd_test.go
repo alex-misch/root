@@ -12,7 +12,7 @@ func TestLoginPwdChallenge(t *testing.T) {
 	var user trust.Node = node("root")
 	var ch Challenge = &LoginPwdChallenge{}
 
-	t.Run("Check", func(t *testing.T) {
+	t.Run("Answer", func(t *testing.T) {
 		tableTests := []struct {
 			node   trust.Node
 			answer interface{}
@@ -27,7 +27,7 @@ func TestLoginPwdChallenge(t *testing.T) {
 
 		for i, tt := range tableTests {
 			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-				_, err := ch.Check(user, tt.answer)
+				_, err := ch.Answer(user, tt.answer)
 				if !reflect.DeepEqual(err, tt.err) {
 					t.Fatalf("Expected %q, got %q", tt.err, err)
 				}

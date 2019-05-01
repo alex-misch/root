@@ -2,6 +2,7 @@ package authentication
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/boomfunc/root/guard/trust"
 )
@@ -9,6 +10,10 @@ import (
 var (
 	ErrWrongPassword = errors.New("guard/authentication: Wrong `password` provided")
 )
+
+type nnode string
+
+func (n nnode) Fingerprint() []byte { return []byte(fmt.Sprintf("node.%s", n)) }
 
 // LoginPwdChallenge is simplest challenge based on login-password pair
 type LoginPwdChallenge struct {
@@ -21,7 +26,7 @@ func (ch LoginPwdChallenge) Fingerprint() []byte {
 	return []byte("LoginPwdChallenge")
 }
 
-func (ch *LoginPwdChallenge) Ask(channel Channel) error {
+func (ch LoginPwdChallenge) Ask(channel Channel) error {
 	// Phase 1. Generate question
 	// TODO??????
 
@@ -30,16 +35,16 @@ func (ch *LoginPwdChallenge) Ask(channel Channel) error {
 	return nil
 }
 
-// Check checks user input for this type of challenge
+// Answer checks user input for this type of challenge
 // In fact, check does in storage exists row with provided username and password
-func (ch *LoginPwdChallenge) Check(n trust.Node, answer interface{}) (trust.Node, error) {
+func (ch LoginPwdChallenge) Answer(node trust.Node, answer interface{}) (trust.Node, error) {
 	// Phase 1. Check password from db
 	// for fetching from db
 	// username = node.Fingerprint()
 	// password = answer
 
 	if password, ok := answer.(string); ok && password == "rootpwd" {
-		return node("1"), nil
+		return nnode("1"), nil
 	}
 
 	return nil, ErrWrongPassword
