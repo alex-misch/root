@@ -15,14 +15,14 @@ func TestLoginPwdChallenge(t *testing.T) {
 	t.Run("Answer", func(t *testing.T) {
 		tableTests := []struct {
 			node   trust.Node
-			answer interface{}
+			answer []byte
 			err    error
 		}{
-			{nil, nil, ErrWrongPassword},
-			{nil, 8, ErrWrongPassword},
-			{nil, "wrong", ErrWrongPassword},
-			{user, "wrong", ErrWrongPassword},
-			{user, "rootpwd", nil},
+			{nil, nil, ErrChallengeFailed},
+			{nil, []byte("8"), ErrChallengeFailed},
+			{nil, []byte("wrong"), ErrChallengeFailed},
+			{user, []byte("wrong"), ErrChallengeFailed},
+			{user, []byte("rootpwd"), nil},
 		}
 
 		for i, tt := range tableTests {

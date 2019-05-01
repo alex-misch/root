@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 
+	"github.com/boomfunc/root/guard/authentication/channel"
 	"github.com/boomfunc/root/guard/trust"
 )
 
@@ -20,8 +21,8 @@ var (
 // Challenge is the way to achieve Marker
 // used as a part of authentication flow (tournament)
 type Challenge interface {
-	Ask(Channel) error
-	Answer(trust.Node, interface{}) (trust.Node, error)
+	Ask(channel.Interface) error
+	Answer(trust.Node, []byte) (trust.Node, error)
 	// We advise that only information about encryption-decryption mechanics be included into the fingerprint.
 	// And not specific runtime generated values.
 	trust.Node
@@ -120,11 +121,14 @@ func (t *tournament) Ask(markers []Marker) error {
 	}
 
 	// Phase 2. Undone challenge found, let's ask node for answer
-	return challenge.Ask(nil)
+	// TODO: here is no node - what channel??
+	return challenge.Ask(
+		channel.SMTP(),
+	)
 }
 
 // Answer is the second part of the challenge - check answer from node
-func (t *tournament) Answer(markers []Marker, answer interface{}) (Marker, error) {
+func (t *tournament) Answer(markers []Marker, answer []byte) (Marker, error) {
 	// Phase 1. Try to get nearest undone challenge
 	challenge := t.get(markers)
 	if challenge == nil {

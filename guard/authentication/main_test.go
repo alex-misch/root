@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/boomfunc/root/guard/authentication/channel"
 	"github.com/boomfunc/root/guard/trust"
 )
 
@@ -20,9 +21,9 @@ func (n node) Fingerprint() []byte { return []byte(fmt.Sprintf("node.%s", n)) }
 // chall is dummy challenge
 type chall int
 
-func (ch chall) Fingerprint() []byte                                   { return []byte(fmt.Sprintf("challenge.%d", ch)) }
-func (ch chall) Ask(_ Channel) error                                   { return nil }
-func (ch chall) Check(_ trust.Node, _ interface{}) (trust.Node, error) { return node("1"), nil }
+func (ch chall) Fingerprint() []byte                               { return []byte(fmt.Sprintf("challenge.%d", ch)) }
+func (ch chall) Ask(_ channel.Interface) error                     { return nil }
+func (ch chall) Answer(_ trust.Node, _ []byte) (trust.Node, error) { return node("1"), nil }
 
 func TestTournament(t *testing.T) {
 	var ch1 Challenge = chall(1)
@@ -139,7 +140,10 @@ func TestSignIn(t *testing.T) {
 
 	// markers := []Marker{m1, m2}
 	markers := []Marker{}
-	answers := []interface{}{"rootpwd", 1234}
+	answers := [][]byte{
+		[]byte("rootpwd"),
+		[]byte("1234"),
+	}
 
 	for i := 0; ; i++ {
 		// Phase 1. Ask for pass challenge
@@ -151,20 +155,25 @@ func TestSignIn(t *testing.T) {
 		}
 
 		// Phase 2. Close challenge
-		marker, err := tournament.Check(markers, answers[i])
+		marker, err := tournament.Answer(markers, answers[i])
 		if err != nil {
 			if err == Complete {
 				break
 			}
 			t.Fatal(err)
 		}
-		markers = append(markers, marker)
+		// update marker state
+		if len(markers) < i+1 {
+			markers = append(markers, marker)
+		} else {
+			markers[i] = marker
+		}
 	}
 
 	// Check output
-	t.Error("=====", string(tournament.node.Fingerprint()))
+	// t.Error("=====", string(tournament.node.Fingerprint()))
 	for i, marker := range markers {
-		t.Logf("Marker %d : %x", i, marker)
+		t.Log(marker.ToCookie(i).String())
 	}
-	t.Error("=====")
+	// t.Error("=====")
 }
