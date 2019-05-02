@@ -9,10 +9,13 @@ import (
 	"io"
 )
 
-type dummy []byte
+// Abstract represents raw fingerprint as interface
+// represents unverified node from marker (just access to fingerprint through interface)
+type Abstract []byte
 
-func (d dummy) Fingerprint() []byte {
-	return d
+// Fingerprint implements Node interface
+func (raw Abstract) Fingerprint() []byte {
+	return raw
 }
 
 // createPassphrase create and returns 32 byte passphrase

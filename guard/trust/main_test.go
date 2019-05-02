@@ -6,12 +6,6 @@ import (
 	"testing"
 )
 
-type node int
-
-func (n node) Fingerprint() []byte {
-	return []byte{byte(n)}
-}
-
 func TestCreate(t *testing.T) {
 	tableTests := []struct {
 		// input
@@ -21,9 +15,9 @@ func TestCreate(t *testing.T) {
 		err error
 	}{
 		{nil, nil, ErrWrongNode},
-		{node(1), nil, ErrWrongNode},
-		{nil, node(2), ErrWrongNode},
-		{node(1), node(2), nil},
+		{Abstract([]byte{1}), nil, ErrWrongNode},
+		{nil, Abstract([]byte{2}), ErrWrongNode},
+		{Abstract([]byte{1}), Abstract([]byte{2}), nil},
 	}
 
 	for i, tt := range tableTests {
@@ -37,11 +31,11 @@ func TestCreate(t *testing.T) {
 }
 
 func TestCheck(t *testing.T) {
-	marker, err := Create(node(1), node(2))
+	marker, err := Create(Abstract([]byte{1}), Abstract([]byte{2}))
 	if err != nil {
 		t.Fatal(err)
 	}
-	remarker, err := Create(node(2), node(1))
+	remarker, err := Create(Abstract([]byte{2}), Abstract([]byte{1}))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -55,18 +49,18 @@ func TestCheck(t *testing.T) {
 		err error
 	}{
 		{nil, nil, nil, ErrWrongNode},
-		{nil, node(1), nil, ErrWrongNode},
-		{nil, nil, node(2), ErrWrongNode},
-		{[]byte("wrong"), node(1), nil, ErrWrongNode},
-		{[]byte("wrong"), nil, node(2), ErrWrongNode},
+		{nil, Abstract([]byte{1}), nil, ErrWrongNode},
+		{nil, nil, Abstract([]byte{2}), ErrWrongNode},
+		{[]byte("wrong"), Abstract([]byte{1}), nil, ErrWrongNode},
+		{[]byte("wrong"), nil, Abstract([]byte{2}), ErrWrongNode},
 
-		{[]byte("wrong"), node(1), node(2), ErrWrongMarker}, // wrong marker
+		{[]byte("wrong"), Abstract([]byte{1}), Abstract([]byte{2}), ErrWrongMarker}, // wrong marker
 
-		{remarker, node(1), node(2), ErrWrongMarker}, // wrong marker, existing relation
-		{marker, node(1), node(2), nil},              // wright direction, existing relation
+		{remarker, Abstract([]byte{1}), Abstract([]byte{2}), ErrWrongMarker}, // wrong marker, existing relation
+		{marker, Abstract([]byte{1}), Abstract([]byte{2}), nil},              // wright direction, existing relation
 
-		{marker, node(2), node(1), ErrWrongMarker}, // relation are not vise versa (marker wrong)
-		{remarker, node(2), node(1), nil},          // wright direction, existing relation
+		{marker, Abstract([]byte{2}), Abstract([]byte{1}), ErrWrongMarker}, // relation are not vise versa (marker wrong)
+		{remarker, Abstract([]byte{2}), Abstract([]byte{1}), nil},          // wright direction, existing relation
 	}
 
 	for i, tt := range tableTests {
@@ -79,8 +73,8 @@ func TestCheck(t *testing.T) {
 }
 
 func TestOpen(t *testing.T) {
-	from := dummy([]byte{1})
-	to := dummy([]byte{2})
+	from := Abstract([]byte{1})
+	to := Abstract([]byte{2})
 	marker, err := Create(from, to)
 	if err != nil {
 		t.Fatal(err)

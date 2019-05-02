@@ -1,6 +1,7 @@
 package authentication
 
 // set of tools for random generating payload
+// generator is the base randomizer challenge
 // used for second authentication factor such as pin code, one time password
 
 import (
@@ -9,7 +10,6 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/boomfunc/root/guard/authentication/channel"
 	"github.com/boomfunc/root/guard/trust"
 )
 
@@ -30,7 +30,7 @@ func (gen generator) Fingerprint() []byte {
 func (gen generator) generate() ([]byte, error) {
 	b := make([]byte, gen.length)
 
-	if _, err := io.ReadAtLeast(rand.Reader, b, gen.length); err != nil {
+	if _, err := io.ReadFull(rand.Reader, b); err != nil {
 		return nil, err
 	}
 	for i := 0; i < len(b); i++ {
@@ -40,11 +40,16 @@ func (gen generator) generate() ([]byte, error) {
 	return b, nil
 }
 
-func (gen generator) Ask(c channel.Interface) error {
-	// https://stackoverflow.com/questions/22892120/how-to-generate-a-random-string-of-a-fixed-length-in-go
+// Ask creates pin code and send it to the node's channel
+// implies that the node exists
+func (gen generator) Ask(node trust.Node) error {
+	// no one to ask
+	if node == nil {
+		return ErrChallengeFailed
+	}
 
-	// Phase 1. Generate pin
-	pin, err := gen.generate()
+	// Phase 1. Generate random bytes according to rules
+	_, err := gen.generate()
 	if err != nil {
 		return err
 	}
@@ -55,7 +60,11 @@ func (gen generator) Ask(c channel.Interface) error {
 	// }
 
 	// Phase 3. Send pin code to channel
-	return c.Send(pin)
+	// if err := c.Send(pin); err != nil {
+	// 	return nil, err
+	// }
+
+	return nil
 }
 
 func (gen generator) Answer(node trust.Node, answer []byte) (trust.Node, error) {

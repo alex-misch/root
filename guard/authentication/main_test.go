@@ -7,7 +7,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/boomfunc/root/guard/authentication/channel"
 	"github.com/boomfunc/root/guard/trust"
 )
 
@@ -22,7 +21,7 @@ func (n node) Fingerprint() []byte { return []byte(fmt.Sprintf("node.%s", n)) }
 type chall int
 
 func (ch chall) Fingerprint() []byte                               { return []byte(fmt.Sprintf("challenge.%d", ch)) }
-func (ch chall) Ask(_ channel.Interface) error                     { return nil }
+func (ch chall) Ask(_ trust.Node) error                            { return nil }
 func (ch chall) Answer(_ trust.Node, _ []byte) (trust.Node, error) { return node("1"), nil }
 
 func TestTournament(t *testing.T) {
@@ -113,6 +112,65 @@ func TestTournament(t *testing.T) {
 					} else if !reflect.DeepEqual(tournament.node.Fingerprint(), tt.outnode.Fingerprint()) {
 						t.Fatalf("Expected %q, got %q", tt.outnode.Fingerprint(), tournament.node.Fingerprint())
 					}
+				}
+			})
+		}
+	})
+
+	t.Run("setNode", func(t *testing.T) {
+		real := node("real")
+		abstract := trust.Abstract([]byte("node.real"))
+		getter := func(node trust.Node) (trust.Node, error) { return real, nil }
+
+		tableTests := []struct {
+			initial trust.Node
+			getter  trust.NodeHook
+			set     trust.Node
+			// output
+			node trust.Node
+			err  error
+		}{
+			// if we setting empty node - no care about getter and existing node
+			{nil, nil, nil, nil, trust.ErrWrongNode},
+			{real, nil, nil, real, trust.ErrWrongNode},
+			{abstract, nil, nil, abstract, trust.ErrWrongNode},
+			{nil, getter, nil, nil, trust.ErrWrongNode},
+			{real, getter, nil, real, trust.ErrWrongNode},
+			{abstract, getter, nil, abstract, trust.ErrWrongNode},
+
+			// if node already in tournament - means that it is real and confirmed
+			// just check fingerprint
+			{real, nil, real, real, nil},
+			{real, nil, abstract, real, nil},
+			{abstract, nil, real, abstract, nil},
+			{abstract, nil, abstract, abstract, nil},
+			{real, getter, real, real, nil},
+			{real, getter, abstract, real, nil},
+			{abstract, getter, real, abstract, nil},
+			{abstract, getter, abstract, abstract, nil},
+
+			// without getter
+			{nil, nil, real, real, nil},
+			{nil, nil, abstract, abstract, nil},
+
+			// with getter
+			{nil, getter, real, real, nil},
+			{nil, getter, abstract, real, nil},
+		}
+
+		for i, tt := range tableTests {
+			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+				trnmnt := &tournament{
+					node:   tt.initial,
+					getter: tt.getter,
+				}
+
+				if err := trnmnt.setNode(tt.set); !reflect.DeepEqual(err, tt.err) {
+					t.Errorf("Expected %q, got %q", tt.err, err)
+				}
+
+				if !reflect.DeepEqual(trnmnt.node, tt.node) {
+					t.Errorf("Expected %v, got %v", tt.node, trnmnt.node)
 				}
 			})
 		}

@@ -39,31 +39,24 @@ func Open(marker []byte, from Node) (Node, error) {
 	}
 
 	// Phase 2. Raw fingerprint exists, return dummy interface type
-	return dummy(raw), nil
+	return Abstract(raw), nil
 }
 
 // Check checks the marker for the existence of a trust relationship
 func Check(marker []byte, from, to Node) error {
 	// Prephase. checks
-	if from == nil {
-		return ErrWrongNode
-	}
 	if to == nil {
 		return ErrWrongNode
 	}
 
-	// Phase 1. Try to decrypt marker
-	raw, err := decrypt(
-		marker,                               // encrypted marker to check
-		createPassphrase(from.Fingerprint()), // create passphrase as crypto key
-	)
-
+	// Phase 1. Try to open the marker
+	orphan, err := Open(marker, from)
 	if err != nil {
-		return ErrWrongMarker
+		return err
 	}
 
 	// Phase 2. Check raw data
-	if !bytes.Equal(raw, to.Fingerprint()) {
+	if !bytes.Equal(orphan.Fingerprint(), to.Fingerprint()) {
 		return ErrWrongMarker
 	}
 
