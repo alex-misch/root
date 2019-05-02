@@ -7,6 +7,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"io"
+	"bytes"
 )
 
 // Abstract represents raw fingerprint as interface
@@ -16,6 +17,16 @@ type Abstract []byte
 // Fingerprint implements Node interface
 func (raw Abstract) Fingerprint() []byte {
 	return raw
+}
+
+// SameNodes compare nodes fingerprints
+func SameNodes(a, b Node) error {
+	// compare nodes means check fingerprint identity
+	if !bytes.Equal(a.Fingerprint(), b.Fingerprint()) {
+		return ErrWrongMarker
+	}
+
+	return nil
 }
 
 // createPassphrase create and returns 32 byte passphrase

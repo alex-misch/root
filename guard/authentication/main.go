@@ -1,7 +1,6 @@
 package authentication
 
 import (
-	"bytes"
 	"errors"
 
 	"github.com/boomfunc/root/guard/trust"
@@ -147,13 +146,8 @@ func (t *tournament) setNode(node trust.Node) error {
 		return nil
 	}
 
-	// TODO: maybe replace? if fingerprint equal real node may be different with absract
 	// Another case, node already in tournament, check for fingerprint identity
-	if !bytes.Equal(t.node.Fingerprint(), node.Fingerprint()) {
-		return trust.ErrWrongMarker
-	}
-
-	return nil
+	return trust.SameNodes(t.node, node)
 }
 
 // Ask is the first part of the challenge - ask node for some answer

@@ -1,7 +1,6 @@
 package trust
 
 import (
-	"bytes"
 	"errors"
 )
 
@@ -33,7 +32,6 @@ func Open(marker []byte, from Node) (Node, error) {
 		marker,                               // encrypted marker to check
 		createPassphrase(from.Fingerprint()), // create passphrase as crypto key
 	)
-
 	if err != nil {
 		return nil, ErrWrongMarker
 	}
@@ -50,17 +48,13 @@ func Check(marker []byte, from, to Node) error {
 	}
 
 	// Phase 1. Try to open the marker
-	orphan, err := Open(marker, from)
+	abstract, err := Open(marker, from)
 	if err != nil {
 		return err
 	}
 
 	// Phase 2. Check raw data
-	if !bytes.Equal(orphan.Fingerprint(), to.Fingerprint()) {
-		return ErrWrongMarker
-	}
-
-	return nil
+	return SameNodes(abstract, to)
 }
 
 // Create creates trust relationship between two nodes
