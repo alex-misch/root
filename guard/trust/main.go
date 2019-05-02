@@ -9,7 +9,7 @@ var (
 	// ErrWrongMarker describes something went wrong during decrypting data
 	ErrWrongMarker = errors.New("guard/trust: Wrong `marker` provided")
 	// ErrWrongNode describes situation where node cannot be a part of the relation
-	ErrWrongNode = errors.New("guard/trust: Wrong `node` provided for trust relation")
+	ErrWrongNode = errors.New("guard/trust: Wrong `node` provided")
 )
 
 // Node describs object who can trust another same object
