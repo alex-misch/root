@@ -117,7 +117,7 @@ func TestTournament(t *testing.T) {
 		}
 	})
 
-	t.Run("setNode", func(t *testing.T) {
+	t.Run("chown", func(t *testing.T) {
 		real := node("real")
 		abstract := trust.Abstract([]byte("node.real"))
 		getter := func(node trust.Node) (trust.Node, error) { return real, nil }
@@ -165,7 +165,7 @@ func TestTournament(t *testing.T) {
 					getter: tt.getter,
 				}
 
-				if err := trnmnt.setNode(tt.set); !reflect.DeepEqual(err, tt.err) {
+				if err := trnmnt.chown(tt.set); !reflect.DeepEqual(err, tt.err) {
 					t.Errorf("Expected %q, got %q", tt.err, err)
 				}
 

@@ -55,59 +55,24 @@ func (t *tournament) get(markers []Marker) Challenge {
 
 	// iterate over markers and chain of challenges
 	for ; i < len(t.chs); i++ {
-		// Phase 1. Check does i marker exists
+		// Phase 1. Check does i's marker exists
 		if len(markers) < i+1 {
-			// i marker does not exists, current challenge undone
+			// i's marker does not exists, current challenge undone
 			break
 		}
 
 		// Phase 2.
-		// there may be 2 states:
-		// 1. We know for which node the tournament is running
-		// 2. The opposite
-		//
-		// Anyway we need to try to fetch this node.
-		// Case when it is impossible: no markers provided (initial sign-in state)
-		//
-		// Anyway if node unfetchable - no markers will be generated
-		// But first Challenge must ALWAYS able to fetch node by answer as a last resort
-
+		// Parse marker and get node's fingerprint
 		abstract, err := trust.Open(markers[i], t.chs[i])
 		if err != nil {
 			break
 		}
 
-		if err := t.setNode(abstract); err != nil {
+		// Set node as owner of the tournament
+		// If tournament already attached to node - only fingerprint identity will be checked
+		if err := t.chown(abstract); err != nil {
 			break
 		}
-
-		// if t.node != nil {
-		// 	// Case 1. Check i marker valid (challenge passed)
-		// 	// try to encode by i challenge (check existence trusting relation)
-		// 	// Valid if and only if current tournament's node relates to provided marker
-		// 	if err := trust.Check(markers[i], t.chs[i], t.node); err != nil {
-		// 		// wrong marker, this challenge undone
-		// 		break
-		// 	}
-		// } else {
-		// 	// Case 2. Use the `getter` hook for fetch real node by orphan node
-		// 	// try to get orphan node by challenge's fingerprint
-		// 	node, err := trust.Open(markers[i], t.chs[i])
-		// 	if err != nil {
-		// 		break
-		// 	}
-		// 	if t.getter != nil {
-		// 		node, err = t.getter(node)
-		// 		if err != nil {
-		// 			break
-		// 		}
-		// 	}
-		//
-		// 	// We did everything we can to get the node.
-		// 	// At least an orphan node is always here
-		// 	t.node = node
-		// }
-
 	}
 
 	// check for case `node` has passed all challenges
@@ -119,21 +84,21 @@ func (t *tournament) get(markers []Marker) Challenge {
 	return t.chs[i]
 }
 
-// setNode trying to update node in tournament
+// chown trying to update node in tournament
 // there is some cases when it is impossible
-func (t *tournament) setNode(node trust.Node) error {
-	// The main idea is that it is possible to set an updated node
-	// only if it has the same fingerprint as the old.
-	// After the .Ask() or .Answer() operations the null node cannot be returned
+func (t *tournament) chown(node trust.Node) error {
+	// Two cases of chown: attach new node and try to update
+	// 1) Set aby non-nil, verified (throw getter) node
+	// 2) Only check the node in tournament and new one have same fingerprint
 	if node == nil {
 		return trust.ErrWrongNode
 	}
 
-	// The only way we can set node to authentication tournament - she was not there yet
 	if t.node == nil {
-		// we got abstract (not verified) non-nil node
-		// try to get real verified node via getter hook
+		// Case 1. The only way we can set node to authentication tournament - she was not there yet.
+		// We got abstract (not verified) non-nil node.
 		if t.getter != nil {
+			// Try to get real verified node via getter hook.
 			real, err := t.getter(node)
 			if err != nil {
 				return err
@@ -141,12 +106,12 @@ func (t *tournament) setNode(node trust.Node) error {
 			node = real
 		}
 
-		// set ONLY verified node to tournament
+		// Set ONLY verified node to tournament.
 		t.node = node
 		return nil
 	}
 
-	// Another case, node already in tournament, check for fingerprint identity
+	// Case 2. Node already in tournament, check for fingerprint identity.
 	return trust.SameNodes(t.node, node)
 }
 
@@ -185,9 +150,8 @@ func (t *tournament) Answer(markers []Marker, answer []byte) (Marker, error) {
 		return nil, err
 	}
 
-	// Phase 3. Check modified node with in-session node
-	// second opportunity to update node in session
-	if err := t.setNode(node); err != nil {
+	// Phase 3. Node answer was wright, but is this node reak owner of tournament?
+	if err := t.chown(node); err != nil {
 		return nil, err
 	}
 
