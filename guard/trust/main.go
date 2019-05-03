@@ -17,8 +17,12 @@ type Node interface {
 	Fingerprint() []byte
 }
 
-// NodeHook is some kind of intermediate hook for validating node
+// NodeHook is some kind of intermediate hook for [validating/verification/updating] node
 type NodeHook func(Node) (Node, error)
+
+// ArtifactHook is the operation on artifact related to some nodes.
+// Artifact means some sensitive information between nodes on which we can build the trust relation
+type ArtifactHook func([]byte, Node, Node) error
 
 // Open decrypt marker and return inner fingerprint as Node interface
 func Open(marker []byte, from Node) (Node, error) {
@@ -40,7 +44,7 @@ func Open(marker []byte, from Node) (Node, error) {
 	return Abstract(raw), nil
 }
 
-// Check checks the marker for the existence of a trust relationship
+// Check checks the marker for the existence of the trust relationship
 func Check(marker []byte, from, to Node) error {
 	// Prephase. checks
 	if to == nil {
@@ -57,7 +61,7 @@ func Check(marker []byte, from, to Node) error {
 	return SameNodes(abstract, to)
 }
 
-// Create creates trust relationship between two nodes
+// Create creates a trust relationship between two nodes
 // with `from -> to` direction
 func Create(from, to Node) ([]byte, error) {
 	// Prephase. checks

@@ -20,9 +20,11 @@ func (n node) Fingerprint() []byte { return []byte(fmt.Sprintf("node.%s", n)) }
 // chall is dummy challenge
 type chall int
 
-func (ch chall) Fingerprint() []byte                               { return []byte(fmt.Sprintf("challenge.%d", ch)) }
-func (ch chall) Ask(_ trust.Node) error                            { return nil }
-func (ch chall) Answer(_ trust.Node, _ []byte) (trust.Node, error) { return node("1"), nil }
+func (ch chall) Fingerprint() []byte                          { return []byte(fmt.Sprintf("challenge.%d", ch)) }
+func (ch chall) Ask(_ trust.ArtifactHook, _ trust.Node) error { return nil }
+func (ch chall) Answer(_ trust.ArtifactHook, _ trust.Node, _ []byte) (trust.Node, error) {
+	return node("1"), nil
+}
 
 func TestTournament(t *testing.T) {
 	var ch1 Challenge = chall(1)
@@ -187,7 +189,7 @@ func TestSignIn(t *testing.T) {
 	// in view create per user tournament
 	tournament := Tournament(
 		flow,
-		nil,
+		nil, nil, nil,
 		// func(node trust.Node) (trust.Node, error) { return nil, ErrChallengeFailed },
 	)
 	// m1, _ := hex.DecodeString("3c2882744633325901b3af4c14bcc27485e1406b85af67668600dcd6e24ca3f16f81")

@@ -19,8 +19,8 @@ var (
 // Challenge is the way to achieve Marker
 // used as a part of authentication flow (tournament)
 type Challenge interface {
-	Ask(trust.Node) error
-	Answer(trust.Node, []byte) (trust.Node, error)
+	Ask(trust.ArtifactHook, trust.Node) error
+	Answer(trust.ArtifactHook, trust.Node, []byte) (trust.Node, error)
 	// We advise that only information about encryption-decryption mechanics be included into the fingerprint.
 	// And not specific runtime generated values.
 	trust.Node
@@ -28,16 +28,20 @@ type Challenge interface {
 
 // tournament describes your own authentication flow
 type tournament struct {
-	chs    []Challenge    // set of challenges node must pass to be marked as 'authenticated'
-	node   trust.Node     // node which tries to authenticate
-	getter trust.NodeHook // hook for getting node by `Abstract` node's fingerprint
+	chs    []Challenge        // set of challenges node must pass to be marked as 'authenticated'
+	node   trust.Node         // node which tries to authenticate
+	getter trust.NodeHook     // hook for getting node by `Abstract` node's fingerprint
+	save   trust.ArtifactHook // hook for saving artifact to some storage
+	fetch  trust.ArtifactHook // hook for fetching artifact from storage
 }
 
 // Tournament creates and returns new authentication tournament
-func Tournament(flow []Challenge, getter trust.NodeHook) *tournament {
+func Tournament(flow []Challenge, getter trust.NodeHook, save trust.ArtifactHook, fetch trust.ArtifactHook) *tournament {
 	return &tournament{
 		chs:    flow,
 		getter: getter,
+		save:   save,
+		fetch:  fetch,
 	}
 }
 
@@ -128,7 +132,7 @@ func (t *tournament) Ask(markers []Marker) error {
 
 	// Phase 2. Undone challenge found, let's ask node for answer
 	// NOTE: be careful: asks for answer from nearest undone challenge
-	return challenge.Ask(t.node)
+	return challenge.Ask(t.save, t.node)
 }
 
 // Answer is the second part of the challenge - check answer from node
@@ -144,7 +148,7 @@ func (t *tournament) Answer(markers []Marker, answer []byte) (Marker, error) {
 
 	// Phase 2. Undone challenge found, let's check node answer
 	// NOTE: be careful: answer will be checked by nearest undone challenge
-	node, err := challenge.Answer(t.node, answer)
+	node, err := challenge.Answer(t.fetch, t.node, answer)
 	if err != nil {
 		// wrong answer
 		return nil, err

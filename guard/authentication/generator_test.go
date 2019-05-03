@@ -14,8 +14,8 @@ func TestGenerator(t *testing.T) {
 			gen         trust.Node
 			fingerprint string // check as string (for readability)
 		}{
-			{generator{2, []byte{'0', '1'}}, "Generator(length=2, allowed=[01])"},
-			{generator{3, []byte{'0', '1', 'a'}}, "Generator(length=3, allowed=[01a])"},
+			{generator{length: 2, allowed: []byte{'0', '1'}}, "Generator(length=2, allowed=[01])"},
+			{generator{length: 3, allowed: []byte{'0', '1', 'a'}}, "Generator(length=3, allowed=[01a])"},
 		}
 
 		for i, tt := range tableTests {
@@ -32,9 +32,9 @@ func TestGenerator(t *testing.T) {
 			gen generator
 			len int
 		}{
-			{generator{2, []byte{'0', '1'}}, 2},
-			{generator{3, []byte{'0', '1', 'a'}}, 3},
-			{generator{6, []byte{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}}, 6},
+			{generator{length: 2, allowed: []byte{'0', '1'}}, 2},
+			{generator{length: 3, allowed: []byte{'0', '1', 'a'}}, 3},
+			{generator{length: 6, allowed: []byte{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}}, 6},
 		}
 
 		for i, tt := range tableTests {

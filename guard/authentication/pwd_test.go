@@ -27,7 +27,7 @@ func TestLoginPwdChallenge(t *testing.T) {
 
 		for i, tt := range tableTests {
 			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-				_, err := ch.Answer(user, tt.answer)
+				_, err := ch.Answer(nil, user, tt.answer)
 				if !reflect.DeepEqual(err, tt.err) {
 					t.Fatalf("Expected %q, got %q", tt.err, err)
 				}

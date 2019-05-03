@@ -5,7 +5,6 @@ package authentication
 // used for second authentication factor such as pin code, one time password
 
 import (
-	"bytes"
 	"crypto/rand"
 	"fmt"
 	"io"
@@ -42,36 +41,55 @@ func (gen generator) generate() ([]byte, error) {
 
 // Ask creates pin code and send it to the node's channel
 // implies that the node exists
-func (gen generator) Ask(node trust.Node) error {
-	// no one to ask
+func (gen generator) Ask(save trust.ArtifactHook, node trust.Node) error {
+	// No one to ask
 	if node == nil {
 		return ErrChallengeFailed
 	}
 
 	// Phase 1. Generate random bytes according to rules
-	_, err := gen.generate()
+	generated, err := gen.generate()
 	if err != nil {
 		return err
 	}
 
-	// Phase 2. Run hook for generated pin
-	// if err := ch.save(pin); err != nil {
-	// 	return nil
-	// }
+	// Phase 2. Run hook for generated random bytes (save part)
+	if save == nil {
+		return ErrChallengeFailed
+	}
+
+	if err := save(generated, gen, node); err != nil {
+		return nil
+	}
 
 	// Phase 3. Send pin code to channel
+	// c, err := node.Channel()
+	// if err != nil {
+	// 	return err
+	// }
+	//
 	// if err := c.Send(pin); err != nil {
-	// 	return nil, err
+	// 	return err
 	// }
 
 	return nil
 }
 
-func (gen generator) Answer(node trust.Node, answer []byte) (trust.Node, error) {
-
-	if bytes.Equal(answer, []byte("1234")) {
-		return node, nil
+func (gen generator) Answer(fetch trust.ArtifactHook, node trust.Node, answer []byte) (trust.Node, error) {
+	// No one to check answer for
+	if node == nil {
+		return nil, ErrChallengeFailed
 	}
 
-	return nil, ErrChallengeFailed
+	// Phase 1. Run hook for generated random bytes (fetch part)
+	if fetch == nil {
+		return nil, ErrChallengeFailed
+	}
+
+	if err := fetch(answer, gen, node); err != nil {
+		return nil, err
+	}
+
+	// no errors
+	return node, nil
 }
