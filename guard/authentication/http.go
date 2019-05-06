@@ -1,6 +1,7 @@
 package authentication
 
 import (
+	"bytes"
 	"encoding/hex"
 	"fmt"
 	"net/http"
@@ -82,6 +83,7 @@ func MarkersFromCookies(cookies []*http.Cookie) []Marker {
 		return nil
 	}
 
+	// sort markers by i
 	sort.Sort(collection)
 
 	// Phase 2. get markers from ordered collection
@@ -92,4 +94,56 @@ func MarkersFromCookies(cookies []*http.Cookie) []Marker {
 	}
 
 	return markers
+}
+
+// MarkersDiff calculates difference between two markers set.
+// Returns actual cookies
+func MarkersDiff(from, to []Marker) []*http.Cookie {
+	lfrom := len(from)
+	lto := len(to)
+
+	max := lto // set initial max iteration loop
+	if lfrom > lto {
+		max = lfrom
+	}
+
+	// empty markers provided, nothing to do
+	if max == 0 {
+		return nil
+	}
+
+	cookies := make([]*http.Cookie, 0)
+
+	// iterate over biggest collection (because we must catch all actions with markers)
+	for i := 0; i < max; i++ {
+		var cookie *http.Cookie
+
+		switch {
+		case lfrom >= i+1 && lto >= i+1:
+			// the marker is still relevant (update or do nothing)
+			if !bytes.Equal(from[i], to[i]) {
+				// set update cookie
+				cookie = to[i].ToCookie(i)
+			}
+		case lto >= i+1:
+			// the marker is new
+			cookie = to[i].ToCookie(i)
+		case lfrom >= i+1:
+			// the marker was deleted
+			cookie = from[i].ToCookie(i)
+			// set the cookie expired
+			cookie.MaxAge = -1
+		}
+
+		// append cookie in any way
+		if cookie != nil {
+			cookies = append(cookies, cookie)
+		}
+	}
+
+	if len(cookies) == 0 {
+		return nil
+	}
+
+	return cookies
 }
