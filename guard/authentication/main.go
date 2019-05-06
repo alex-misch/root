@@ -47,13 +47,7 @@ func Tournament(flow []Challenge, getter trust.NodeHook, save trust.ArtifactHook
 
 // get returns nearest non passed challenge
 // by provided markers chain
-func (t *tournament) get(markers []Marker) Challenge {
-	// Prephase. Checks
-	if len(t.chs) == 0 {
-		// empty flow, no challenges for node
-		return nil
-	}
-
+func (t *tournament) get(markers []Marker) (int, Challenge) {
 	// index of current active challenge
 	var i int
 
@@ -81,11 +75,11 @@ func (t *tournament) get(markers []Marker) Challenge {
 
 	// check for case `node` has passed all challenges
 	if len(t.chs) < i+1 {
-		return nil
+		return 0, nil
 	}
 
 	// We calculated nearest undone challenge, return this
-	return t.chs[i]
+	return i, t.chs[i]
 }
 
 // chown trying to update node in tournament
@@ -123,7 +117,7 @@ func (t *tournament) chown(node trust.Node) error {
 // generate question, save it
 func (t *tournament) Ask(markers []Marker) error {
 	// Phase 1. Try to get nearest undone challenge
-	challenge := t.get(markers)
+	_, challenge := t.get(markers)
 	if challenge == nil {
 		// node authenticated without any challenges
 		// nothing to do
@@ -139,7 +133,7 @@ func (t *tournament) Ask(markers []Marker) error {
 // fetch question from .Ask() and validate it with answer
 func (t *tournament) Answer(markers []Marker, answer []byte) (Marker, error) {
 	// Phase 1. Try to get nearest undone challenge
-	challenge := t.get(markers)
+	_, challenge := t.get(markers)
 	if challenge == nil {
 		// node authenticated without any challenges
 		// nothing to do
@@ -169,7 +163,7 @@ func (t *tournament) Answer(markers []Marker, answer []byte) (Marker, error) {
 // Check try to authenticate the node by provided markers
 // returns authentication. Failed if this is not possible.
 func (t *tournament) Check(markers []Marker) (trust.Node, error) {
-	if challenge := t.get(markers); challenge == nil {
+	if _, challenge := t.get(markers); challenge == nil {
 		// node authenticated without any challenges
 		// nothing to do
 		return t.node, nil

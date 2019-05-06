@@ -48,46 +48,47 @@ func TestTournament(t *testing.T) {
 			// input
 			markers []Marker
 			// output
+			i         int // index or returned challenge
 			challenge Challenge
 			outnode   trust.Node // which node will be saved in tournament
 		}{
 			// nil values
-			{nil, nil, nil, nil, nil, nil},
-			{nil, nil, nil, []Marker{[]byte("wrong")}, nil, nil},
-			{[]Challenge{}, nil, nil, nil, nil, nil},
+			{nil, nil, nil, nil, 0, nil, nil},
+			{nil, nil, nil, []Marker{[]byte("wrong")}, 0, nil, nil},
+			{[]Challenge{}, nil, nil, nil, 0, nil, nil},
 
 			// wrong markers
-			{flow, nil, nil, nil, ch1, nil},
-			{flow, nil, nil, []Marker{}, ch1, nil},
-			{flow, nil, nil, []Marker{nil, nil}, ch1, nil},
-			{flow, nil, nil, []Marker{[]byte("wrong")}, ch1, nil}, // fake marker
+			{flow, nil, nil, nil, 0, ch1, nil},
+			{flow, nil, nil, []Marker{}, 0, ch1, nil},
+			{flow, nil, nil, []Marker{nil, nil}, 0, ch1, nil},
+			{flow, nil, nil, []Marker{[]byte("wrong")}, 0, ch1, nil}, // fake marker
 
 			// marker for 1 node and 1 challenge - must be returned second challenge
 			// also node("1") freezes as tournament.node
-			{flow, nil, nil, []Marker{ch1n1}, ch2, node("1")}, // marker for node1
-			{flow, nil, nil, []Marker{ch1n2}, ch2, node("2")}, // marker for node1
+			{flow, nil, nil, []Marker{ch1n1}, 1, ch2, node("1")}, // marker for node1
+			{flow, nil, nil, []Marker{ch1n2}, 1, ch2, node("2")}, // marker for node1
 
 			// wright markers for wrong nodes
-			{flow, node("2"), nil, []Marker{ch1n1}, ch1, node("2")}, // marker for `node1`, but tournament for `node2`
-			{flow, node("1"), nil, []Marker{ch1n2}, ch1, node("1")}, // marker for `node1`, but tournament for `node2`
+			{flow, node("2"), nil, []Marker{ch1n1}, 0, ch1, node("2")}, // marker for `node1`, but tournament for `node2`
+			{flow, node("1"), nil, []Marker{ch1n2}, 0, ch1, node("1")}, // marker for `node1`, but tournament for `node2`
 
 			// wright cases
-			{flow, nil, nil, []Marker{ch1n1, ch2n1}, nil, node("1")},       // wright chain, all passed
-			{flow, node("1"), nil, []Marker{ch1n1, ch2n1}, nil, node("1")}, // wright chain, all passed
-			{flow, nil, nil, []Marker{ch1n2, ch2n2}, nil, node("2")},       // wright chain, all passed
-			{flow, node("2"), nil, []Marker{ch1n2, ch2n2}, nil, node("2")}, // wright chain, all passed
+			{flow, nil, nil, []Marker{ch1n1, ch2n1}, 0, nil, node("1")},       // wright chain, all passed
+			{flow, node("1"), nil, []Marker{ch1n1, ch2n1}, 0, nil, node("1")}, // wright chain, all passed
+			{flow, nil, nil, []Marker{ch1n2, ch2n2}, 0, nil, node("2")},       // wright chain, all passed
+			{flow, node("2"), nil, []Marker{ch1n2, ch2n2}, 0, nil, node("2")}, // wright chain, all passed
 
 			// some cases with broken chains
-			{flow, node("2"), nil, []Marker{ch1n1, ch2n1}, ch1, node("2")}, // wright chain, but tournament for another user
-			{flow, node("2"), nil, []Marker{ch1n2, ch2n1}, ch2, node("2")}, // wrong chain, second challenge undone
-			{flow, node("1"), nil, []Marker{ch1n2, ch2n1}, ch1, node("1")}, // wrong chain, first challenge undone
-			{flow, node("1"), nil, []Marker{ch2n1, ch1n1}, ch1, node("1")}, // wrong chain, first challenge undone
-			{flow, nil, nil, []Marker{ch2n1, ch1n1}, ch1, nil},             // wrong chain, first challenge undone
+			{flow, node("2"), nil, []Marker{ch1n1, ch2n1}, 0, ch1, node("2")}, // wright chain, but tournament for another user
+			{flow, node("2"), nil, []Marker{ch1n2, ch2n1}, 1, ch2, node("2")}, // wrong chain, second challenge undone
+			{flow, node("1"), nil, []Marker{ch1n2, ch2n1}, 0, ch1, node("1")}, // wrong chain, first challenge undone
+			{flow, node("1"), nil, []Marker{ch2n1, ch1n1}, 0, ch1, node("1")}, // wrong chain, first challenge undone
+			{flow, nil, nil, []Marker{ch2n1, ch1n1}, 0, ch1, nil},             // wrong chain, first challenge undone
 
 			// cases with hooks
 			// get some case above and test it for two variants: with error or none
-			{flow, nil, hookSuccess, []Marker{ch1n2, ch2n2}, nil, node("2")}, // wright chain, all passed, `getter` hook returns sucess
-			{flow, nil, hookError, []Marker{ch1n2, ch2n2}, ch1, nil},         // wright chain, all passed, but `getter` hook returns error, node invalid, begin all
+			{flow, nil, hookSuccess, []Marker{ch1n2, ch2n2}, 0, nil, node("2")}, // wright chain, all passed, `getter` hook returns sucess
+			{flow, nil, hookError, []Marker{ch1n2, ch2n2}, 0, ch1, nil},         // wright chain, all passed, but `getter` hook returns error, node invalid, begin all
 		}
 
 		for i, tt := range tableTests {
@@ -99,7 +100,7 @@ func TestTournament(t *testing.T) {
 				}
 
 				// check returned challenge
-				if challenge := tournament.get(tt.markers); challenge != tt.challenge {
+				if _, challenge := tournament.get(tt.markers); challenge != tt.challenge {
 					t.Fatalf("Expected %q, got %q", tt.challenge, challenge)
 				}
 
