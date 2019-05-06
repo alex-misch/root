@@ -112,6 +112,10 @@ func TestCookie(t *testing.T) {
 		var m2 Marker = []byte("second") // hex: 7365636f6e64
 		var m3 Marker = []byte("third")  // hex: 7468697264
 		var m4 Marker = []byte("fourth") // hex: 666f75727468
+		var m5 Marker = []byte{
+			113, 45, 95, 109, 167, 255, 84, 135, 39, 81, 244, 63, 50, 174, 211, 250,
+			228, 65, 200, 139, 212, 87, 58, 239, 241, 108, 185, 178, 84, 7, 52, 34,
+		}
 
 		tableTests := []struct {
 			from []Marker
@@ -126,6 +130,13 @@ func TestCookie(t *testing.T) {
 				[]string{
 					"X-Bmp-Auth-Marker-1=7365636f6e64; Max-Age=0; HttpOnly; Secure; SameSite=Strict", // marker was deleted, expire cookie
 					"X-Bmp-Auth-Marker-2=7468697264; Max-Age=0; HttpOnly; Secure; SameSite=Strict",   // marker was deleted, expire cookie
+				},
+			},
+			{
+				[]Marker{m5},
+				[]Marker{},
+				[]string{
+					"X-Bmp-Auth-Marker-0=712d5f6da7ff54872751f43f32aed3fae441c88bd4573aeff16cb9b254073422; Max-Age=0; HttpOnly; Secure; SameSite=Strict", // marker was deleted, expire cookie
 				},
 			},
 			// from is shorter

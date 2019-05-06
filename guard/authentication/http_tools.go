@@ -19,8 +19,8 @@ func (m Marker) ToCookie(i int) *http.Cookie {
 	return &http.Cookie{
 		Name:     fmt.Sprintf("%s%d", CookieNamePrefix, i),
 		Value:    hex.EncodeToString(m),
-		HttpOnly: true,                    // no access through browser API (https://developer.mozilla.org/en-US/docs/Glossary/Cross-site_scripting)
-		Secure:   true,                    // cookie transmitted over HTTPS only
+		HttpOnly: true, // no access through browser API (https://developer.mozilla.org/en-US/docs/Glossary/Cross-site_scripting)
+		// Secure:   true,                    // cookie transmitted over HTTPS only
 		SameSite: http.SameSiteStrictMode, // https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site-00
 	}
 }

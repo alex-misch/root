@@ -115,49 +115,60 @@ func (t *tournament) chown(node trust.Node) error {
 
 // Ask is the first part of the challenge - ask node for some answer
 // generate question, save it
-func (t *tournament) Ask(markers []Marker) error {
+func (t *tournament) Ask(markers []Marker) ([]Marker, error) {
 	// Phase 1. Try to get nearest undone challenge
-	_, challenge := t.get(markers)
+	i, challenge := t.get(markers)
 	if challenge == nil {
 		// node authenticated without any challenges
 		// nothing to do
-		return Complete
+		return markers, Complete
 	}
 
-	// Phase 2. Undone challenge found, let's ask node for answer
+	// Phase 2. Actualize markers
+	new := append([]Marker(nil), markers[:i]...)
+
+	// Phase 3. Undone challenge found, let's ask node for answer
 	// NOTE: be careful: asks for answer from nearest undone challenge
-	return challenge.Ask(t.save, t.node)
+	return new, challenge.Ask(t.save, t.node)
 }
 
 // Answer is the second part of the challenge - check answer from node
 // fetch question from .Ask() and validate it with answer
-func (t *tournament) Answer(markers []Marker, answer []byte) (Marker, error) {
+func (t *tournament) Answer(markers []Marker, answer []byte) ([]Marker, error) {
 	// Phase 1. Try to get nearest undone challenge
-	_, challenge := t.get(markers)
+	i, challenge := t.get(markers)
 	if challenge == nil {
 		// node authenticated without any challenges
 		// nothing to do
-		return nil, Complete
+		return markers, Complete
 	}
 
-	// Phase 2. Undone challenge found, let's check node answer
+	// Phase 2. Actualize markers
+	new := append([]Marker(nil), markers[:i]...)
+
+	// Phase 3. Undone challenge found, let's check node answer
 	// NOTE: be careful: answer will be checked by nearest undone challenge
 	node, err := challenge.Answer(t.fetch, t.node, answer)
 	if err != nil {
 		// wrong answer
-		return nil, err
+		return new, err
 	}
 
 	// Phase 3. Node answer was wright, but is this node reak owner of tournament?
 	if err := t.chown(node); err != nil {
-		return nil, err
+		return new, err
 	}
 
 	// Phase 4.
 	// Answer was wright
 	// Challenge passed.
-	// Return marker as achievement.
-	return NewMarker(challenge, t.node)
+	// Append marker to actual authentication state.
+	marker, err := NewMarker(challenge, t.node)
+	if err != nil {
+		return new, err
+	}
+
+	return append(new, marker), nil
 }
 
 // Check try to authenticate the node by provided markers
