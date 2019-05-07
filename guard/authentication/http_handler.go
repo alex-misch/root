@@ -43,7 +43,7 @@ func (t *tournament) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// render form
-	fmt.Fprint(w, "<h1>Authentication challenge</h1>"+
+	fmt.Fprint(w, "<h1>SIGN IN</h1>"+
 		"<form method=\"POST\">"+
 		"<textarea name=\"answer\"></textarea><br>"+
 		"<input type=\"submit\" value=\"Save\">"+
