@@ -20,6 +20,14 @@ func (t *tournament) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		newMarkers = markers
+
+		// render form
+		fmt.Fprint(w, "<h1>SIGN IN</h1>"+
+			"<form method=\"POST\">"+
+			"<textarea name=\"answer\"></textarea><br>"+
+			"<input type=\"submit\" value=\"Save\">"+
+			"</form>")
+
 	} else {
 		// get value from form
 		if err := r.ParseForm(); err != nil {
@@ -34,6 +42,9 @@ func (t *tournament) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		newMarkers = markers
+
+		// ask completed successfully, redirect to same
+		defer http.Redirect(w, r, "/signin", http.StatusFound)
 	}
 
 	// next round
@@ -41,11 +52,4 @@ func (t *tournament) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	for _, cookie := range MarkersDiff(oldMarkers, newMarkers) {
 		http.SetCookie(w, cookie)
 	}
-
-	// render form
-	fmt.Fprint(w, "<h1>SIGN IN</h1>"+
-		"<form method=\"POST\">"+
-		"<textarea name=\"answer\"></textarea><br>"+
-		"<input type=\"submit\" value=\"Save\">"+
-		"</form>")
 }
