@@ -8,20 +8,26 @@ import (
 // ServeHTTP imaplements http.Handler interface
 func (t *tournament) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// get current auth state
-	var oldMarkers = MarkersFromCookies(r.Cookies())
-	var newMarkers []Marker
+	old := MarkersFromCookies(r.Cookies())
+
+	// cookie handler
+	auth := func(new []Marker) {
+		for _, cookie := range MarkersDiff(old, new) {
+			http.SetCookie(w, cookie)
+		}
+	}
 
 	// request action based on authenticated state
 	if r.Method == "GET" {
 		// ask
-		markers, err := t.Ask(oldMarkers)
+		markers, err := t.Ask(old)
+		auth(markers)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		newMarkers = markers
 
-		// render form
+		// Handler action - render form
 		fmt.Fprint(w, "<h1>SIGN IN</h1>"+
 			"<form method=\"POST\">"+
 			"<textarea name=\"answer\"></textarea><br>"+
@@ -36,20 +42,14 @@ func (t *tournament) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// answer
-		markers, err := t.Answer(oldMarkers, []byte(r.PostFormValue("answer")))
+		markers, err := t.Answer(old, []byte(r.PostFormValue("answer")))
+		auth(markers)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		newMarkers = markers
 
-		// ask completed successfully, redirect to same
-		defer http.Redirect(w, r, "/signin", http.StatusFound)
-	}
-
-	// next round
-	// update authentication cookies
-	for _, cookie := range MarkersDiff(oldMarkers, newMarkers) {
-		http.SetCookie(w, cookie)
+		// Handler action - redirect to next round
+		http.Redirect(w, r, "/signin", http.StatusFound)
 	}
 }
