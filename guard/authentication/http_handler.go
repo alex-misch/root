@@ -12,7 +12,9 @@ func (t *tournament) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// cookie handler
 	auth := func(new []Marker) {
-		for _, cookie := range MarkersDiff(old, new) {
+		to := MarkersFromSlice(new)
+
+		for _, cookie := range old.Diff(to) {
 			http.SetCookie(w, cookie)
 		}
 	}
@@ -20,11 +22,15 @@ func (t *tournament) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// request action based on authenticated state
 	if r.Method == "GET" {
 		// ask
-		markers, err := t.Ask(old)
+		markers, err := t.Ask(old.Slice())
 		auth(markers)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+			if err == Complete {
+				http.Redirect(w, r, "/", http.StatusFound)
+			} else {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 		}
 
 		// Handler action - render form
@@ -42,7 +48,7 @@ func (t *tournament) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// answer
-		markers, err := t.Answer(old, []byte(r.PostFormValue("answer")))
+		markers, err := t.Answer(old.Slice(), []byte(r.PostFormValue("answer")))
 		auth(markers)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

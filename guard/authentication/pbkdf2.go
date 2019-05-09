@@ -86,19 +86,24 @@ func (ch pbkdf2ch) Answer(fetch trust.ArtifactHook, node trust.Node, answer []by
 		return nil, ErrChallengeFailed
 	}
 
-	// Parse raw credentials to separarted values
-	credentials, err := Credentials(answer)
-	if err != nil {
-		return nil, err
-	}
-
+	// Phase 2. Parse answer.
+	// If node exists - we must use answer as raw data.
+	// Otherwise - try to parse it throw credentials separated values.
 	if node == nil {
+		// use special tool
+		credentials, err := Credentials(answer)
+		if err != nil {
+			return nil, err
+		}
 		// case when this challenge must set the new node
 		node = credentials.Abstract()
+		// also, answer to hash will be password part of the credentials
+		answer = credentials.Password
 	}
 
-	// Send to hook hashed artifact. It is the ain purpose of this type of challenge
-	artifact := ch.key(credentials.Password)
+	// Phase 3. Hash answer to artifact and send to hook.
+	// It is the main purpose of this type of challenge
+	artifact := ch.key(answer)
 	if err := fetch(artifact, ch, node); err != nil {
 		return nil, err
 	}
