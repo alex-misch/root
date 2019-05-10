@@ -41,8 +41,12 @@ func (ch generator) generate() ([]byte, error) {
 // Ask creates pin code and send it to the node's channel
 // implies that the node exists
 func (ch generator) Ask(save trust.ArtifactHook, node trust.Node) error {
+	// Prephase. Checks
 	// No one to ask
 	if node == nil {
+		return ErrChallengeFailed
+	}
+	if save == nil {
 		return ErrChallengeFailed
 	}
 
@@ -53,15 +57,11 @@ func (ch generator) Ask(save trust.ArtifactHook, node trust.Node) error {
 	}
 
 	// Phase 2. Run hook for generated artifact (save part)
-	if save == nil {
-		return ErrChallengeFailed
-	}
-
 	if err := save(artifact, ch, node); err != nil {
 		return err
 	}
 
-	// Phase 3. Send pin code to channel
+	// Phase 3. Send artifact to channel
 	// c, err := node.Channel()
 	// if err != nil {
 	// 	return err
@@ -75,16 +75,16 @@ func (ch generator) Ask(save trust.ArtifactHook, node trust.Node) error {
 }
 
 func (ch generator) Answer(fetch trust.ArtifactHook, node trust.Node, answer []byte) (trust.Node, error) {
+	// Prephase. Checks
 	// No one to check answer for
 	if node == nil {
 		return nil, ErrChallengeFailed
 	}
-
-	// Phase 1. Run hook for generated random bytes (fetch part)
 	if fetch == nil {
 		return nil, ErrChallengeFailed
 	}
 
+	// Phase 1. Run hook for generated random bytes (fetch part)
 	if err := fetch(answer, ch, node); err != nil {
 		return nil, err
 	}
