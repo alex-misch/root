@@ -4,7 +4,7 @@ set -eux
 # if first arg is node in monorepo graph - apply commands to this node (package),
 # otherwise - to root (all repo nodes)
 NODE=${1:-.}
-BASE=`basename "${NODE}"`
+BASE=`basename $(realpath "${NODE}")`
 
 ### PHASE 1. Preparing
 # install external dependencies on docker image

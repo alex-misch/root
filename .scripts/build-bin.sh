@@ -8,7 +8,7 @@ NODE=${1:-.}
 go get -d ./${NODE}/...
 
 # calculate base variables
-BASE=`basename "${NODE}"`
+BASE=`basename $(realpath "${NODE}")`
 TIMESTAMP=`date +%s`
 VERSION="${CIRCLE_TAG:=LOCAL}"
 
