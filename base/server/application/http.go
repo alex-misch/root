@@ -46,7 +46,13 @@ func (packer *httpPacker) Unpack(ctx context.Context, r io.Reader) (*flow.Reques
 	}
 	values.Q = httpRequest.URL.Query()
 
+	// save plain http request
 	packer.request = httpRequest
+	storage, ok := ctx.Value("db").(kvs.DB)
+	if !ok {
+		return nil, executor.ErrStepOrphan
+	}
+	storage.Set("http", "request", httpRequest)
 
 	return flow.NewRequest(
 		httpRequest.URL.RequestURI(),
