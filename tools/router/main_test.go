@@ -84,12 +84,12 @@ func TestRoute(t *testing.T) {
 	})
 }
 
-func TestRouter(t *testing.T) {
+func TestMux(t *testing.T) {
 	foo := Route{regexp.MustCompile("^foo"), nil}
 	foobar := Route{regexp.MustCompile("^foobar"), nil}
 	foobarbaz := Route{regexp.MustCompile("^foobarbaz"), nil}
 
-	router := Router([]Route{foo, foobar, foobarbaz})
+	router := Mux([]Route{foo, foobar, foobarbaz})
 
 	t.Run("Match", func(t *testing.T) {
 		tableTests := []struct {

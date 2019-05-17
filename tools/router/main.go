@@ -14,15 +14,12 @@ var (
 	ErrUriInappropriate = errors.New("tools/router: Inappropriate uri")
 )
 
-// Router is collection of endpoints in priority order
-type Router []Route
-
-// func New(uris steps ...string) Router {
-// 	// TODO TODO TODO
-// }
+// Mux is collection of endpoints in priority order.
+// Implements multiplexer logic.
+type Mux []Route
 
 // Match returns most priority route by pattern (look at ql subpackage)
-func (routes Router) Match(url *url.URL) (*Route, error) {
+func (routes Mux) Match(url *url.URL) (*Route, error) {
 	for _, route := range routes {
 		if route.Match(url.RequestURI()) {
 			return &route, nil
@@ -54,6 +51,6 @@ func (r *Route) MatchParams(uri string) (map[string]string, error) {
 
 // Run runs associted Step interface
 // implements implements `flow.Step` interface itself
-func (route *Route) Run(ctx context.Context) error {
-	return flow.ExecuteWithContext(ctx, route.Step)
+func (r *Route) Run(ctx context.Context) error {
+	return flow.ExecuteWithContext(ctx, r.Step)
 }
