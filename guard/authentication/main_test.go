@@ -180,61 +180,61 @@ func TestTournament(t *testing.T) {
 	})
 }
 
-func TestSignIn(t *testing.T) {
-	// describe per project authentication flow
-	flow := []Challenge{
-		&LoginPwdChallenge{},
-		PinChallenge(4),
-	}
-
-	// in view create per user tournament
-	tournament := Tournament(
-		flow,
-		nil, nil, nil,
-		// func(node trust.Node) (trust.Node, error) { return nil, ErrChallengeFailed },
-	)
-	// m1, _ := hex.DecodeString("3c2882744633325901b3af4c14bcc27485e1406b85af67668600dcd6e24ca3f16f81")
-	// m2, _ := hex.DecodeString("c69c719fcd1751573c20ac8b9fa6547b10b217027af2796aa81e95825c490425a84b")
-
-	// m1, _ := hex.DecodeString("1e9c5bb1d4d3b93005486d80b4cac1b12c69676477da2d2940a1305c5ca4545e7e4e")
-	// m2, _ := hex.DecodeString("2163890d2ad93cdca2389f847072c83a132519593bf31357a4b17a09900d6c4ee7af")
-
-	// markers := []Marker{m1, m2}
-	markers := []Marker{}
-	answers := [][]byte{
-		[]byte("rootpwd"),
-		[]byte("1234"),
-	}
-
-	for i := 0; ; i++ {
-		// Phase 1. Ask for pass challenge
-		if err := tournament.Ask(markers); err != nil {
-			if err == Complete {
-				break
-			}
-			t.Fatal(err)
-		}
-
-		// Phase 2. Close challenge
-		marker, err := tournament.Answer(markers, answers[i])
-		if err != nil {
-			if err == Complete {
-				break
-			}
-			t.Fatal(err)
-		}
-		// update marker state
-		if len(markers) < i+1 {
-			markers = append(markers, marker)
-		} else {
-			markers[i] = marker
-		}
-	}
-
-	// Check output
-	// t.Error("=====", string(tournament.node.Fingerprint()))
-	for i, marker := range markers {
-		t.Log(marker.ToCookie(i).String())
-	}
-	// t.Error("=====")
-}
+// func TestSignIn(t *testing.T) {
+// 	// describe per project authentication flow
+// 	flow := []Challenge{
+// 		&LoginPwdChallenge{},
+// 		PinChallenge(4),
+// 	}
+//
+// 	// in view create per user tournament
+// 	tournament := Tournament(
+// 		flow,
+// 		nil, nil, nil,
+// 		// func(node trust.Node) (trust.Node, error) { return nil, ErrChallengeFailed },
+// 	)
+// 	// m1, _ := hex.DecodeString("3c2882744633325901b3af4c14bcc27485e1406b85af67668600dcd6e24ca3f16f81")
+// 	// m2, _ := hex.DecodeString("c69c719fcd1751573c20ac8b9fa6547b10b217027af2796aa81e95825c490425a84b")
+//
+// 	// m1, _ := hex.DecodeString("1e9c5bb1d4d3b93005486d80b4cac1b12c69676477da2d2940a1305c5ca4545e7e4e")
+// 	// m2, _ := hex.DecodeString("2163890d2ad93cdca2389f847072c83a132519593bf31357a4b17a09900d6c4ee7af")
+//
+// 	// markers := []Marker{m1, m2}
+// 	markers := []Marker{}
+// 	answers := [][]byte{
+// 		[]byte("rootpwd"),
+// 		[]byte("1234"),
+// 	}
+//
+// 	for i := 0; ; i++ {
+// 		// Phase 1. Ask for pass challenge
+// 		if err := tournament.Ask(markers); err != nil {
+// 			if err == Complete {
+// 				break
+// 			}
+// 			t.Fatal(err)
+// 		}
+//
+// 		// Phase 2. Close challenge
+// 		marker, err := tournament.Answer(markers, answers[i])
+// 		if err != nil {
+// 			if err == Complete {
+// 				break
+// 			}
+// 			t.Fatal(err)
+// 		}
+// 		// update marker state
+// 		if len(markers) < i+1 {
+// 			markers = append(markers, marker)
+// 		} else {
+// 			markers[i] = marker
+// 		}
+// 	}
+//
+// 	// Check output
+// 	// t.Error("=====", string(tournament.node.Fingerprint()))
+// 	for i, marker := range markers {
+// 		t.Log(marker.ToCookie(i).String())
+// 	}
+// 	// t.Error("=====")
+// }

@@ -30,7 +30,7 @@ func SameNodes(a, b Node) error {
 }
 
 // createPassphrase create and returns 32 byte passphrase
-// based on provided fingerprint
+// based on provided fingerprint (md5)
 func createPassphrase(fingerprint []byte) []byte {
 	hasher := md5.New()
 	hasher.Write(fingerprint)
