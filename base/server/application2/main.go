@@ -2,19 +2,21 @@ package application2
 
 import (
 	"bufio"
+	"bytes"
 	"context"
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/url"
-	"bytes"
+	"strings"
 	"time"
 
 	"github.com/boomfunc/root/base/tools"
 	"github.com/boomfunc/root/tools/router"
 )
 
-// Application is the main type used as multiplexer
-type Application func(context.Context, io.Reader, io.Writer) error
+// Entrypoint is the main type used as multiplexer
+type Entrypoint func(context.Context, io.Reader, io.Writer) error
 
 // Router is type wrapper
 // Implements several application handlers
@@ -29,27 +31,43 @@ func (mux Router) serve(ctx context.Context, u *url.URL) error {
 	return route.Run(ctx)
 }
 
-// HTTP application entrypoint
-func (mux Router) HTTP(_ context.Context, r io.Reader, w io.Writer) error {
-	buf := bufio.NewReadWriter(
-		bufio.NewReader(r),
-		bufio.NewWriter(w),
-	)
+// JSON is the raw data handler enrtypoint
+func (mux Router) JSON(ctx context.Context, r io.Reader, w io.Writer) error {
+	intermediate := struct {
+		Url   string
+		Stdin string
+	}{}
 
+	decoder := json.NewDecoder(r)
+	if err := decoder.Decode(&intermediate); err != nil {
+		return err
+	}
+
+	u, err := url.Parse(intermediate.Url)
+	if err != nil {
+		return err
+	}
+
+	ctx = context.WithValue(ctx, "stdin", strings.NewReader(intermediate.Stdin))
+	ctx = context.WithValue(ctx, "stdout", w)
+
+	return mux.serve(ctx, u)
+}
+
+// HTTP is the http logic handler enrtypoint.
+// Parse request as http
+// Run http handler.
+// Pack response as http.
+func (mux Router) HTTP(_ context.Context, r io.Reader, w io.Writer) error {
 	// Phase 1. Parse http request from raw connection
-	req, err := http.ReadRequest(buf.Reader)
+	req, err := http.ReadRequest(bufio.NewReader(r))
 	if err != nil {
 		return err
 	}
 
 	// Phase 2. Create response writer
-
-
 	var b bytes.Buffer
-
-	rw := &httprw{
-		w: &b,
-	}
+	rw := &httprw{w: &b}
 
 	// Phase 3. Run HTTP handler
 	mux.ServeHTTP(rw, req)
@@ -88,8 +106,8 @@ func (mux Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Override headers that are immutable
 	defer func() {
-		w.Header().Set("Date", time.Now().Format(time.RFC1123))
 		w.Header().Set("Server", "base/3.0.0-rc6")
+		w.Header().Set("Date", time.Now().Format(time.RFC1123))
 	}()
 
 	// Fill the context for i/o piping
