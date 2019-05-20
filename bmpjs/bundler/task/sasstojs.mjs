@@ -12,12 +12,8 @@ const transformSassToJs = (filepath, options) => {
 			if (err) {
 				reject(err.formatted)
 			} else {
-				const result = await babel.transform( 'export default `'+sassresult.css+'`',  babeloptions )
-				console.log(result)
-				resolve({
-					code: result.code,
-					extension: 'js'
-				})
+				const { code } = await babel.transform( 'export default `'+sassresult.css+'`',  babeloptions )
+				resolve({ code, extension: 'js' })
 			}
 		});
 	})

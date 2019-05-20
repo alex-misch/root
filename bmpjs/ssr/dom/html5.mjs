@@ -12,21 +12,21 @@ import { timeStamp } from '../utils/timeline'
 
 /**
  * NodeJS doesn't support rewriting URL, but we are creating browser ENV
- * so add replace support
+ * so add replace mock
  */
 URL.prototype.replace = () => {}
 
-const appLogger = {
-	warn: (...args) => {}, //console.warn('[APP CONSOLE]',...args),
-	stdout: new Writable(),
-	stderr: new Writable()
-}
-
-appLogger.stdout.on('pipe', appLogger.warn)
-appLogger.stderr.on('pipe', appLogger.warn)
+const warn = (...args) => { global.console.warn('[APP CONSOLE]',...args) }
 
 const HTML5Api = ({ url, userAgent, baseURI }) => ({
-	console: new Console(appLogger),
+	console: {
+		debug: warn,
+		error: warn,
+		info: warn,
+		log: warn,
+		warn: warn,
+	},
+	// console: new Console(appLogger),
 	/** HTML5 Api */
 	HTMLElement,
 	Node: {
@@ -53,7 +53,7 @@ const HTML5Api = ({ url, userAgent, baseURI }) => ({
 	},
 	Element,
 	self: { DOMException },
-	navigator: Navigator(userAgent),
+	navigator: Navigator({ userAgent }),
 	document: new HTMLDocument(baseURI),
 	getComputedStyle: element => { return {} },
 	addEventListener: () => {},

@@ -15,7 +15,7 @@ const options = {
 	]
 }
 
-const transformBabel = (filepath, isFile) => {
+const transformBabel = filepath => {
 	return new Promise( (resolve, reject) => {
 		babel.transformFile( filepath , options, (err, result) => {
 			if ( err ) return reject(err)

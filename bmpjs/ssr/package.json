@@ -4,9 +4,9 @@
   "description": "run ECMA SCRIPT Modules on server",
   "main": "index.mjs",
   "scripts": {
-    "render": "node --experimental-modules --no-warnings --experimental-vm-modules render.mjs --url=/ --src=https://d35qz7xn7nfid5.cloudfront.net/ssr/index.es.js",
-    "_render": "node --experimental-modules --no-warnings --experimental-vm-modules render.mjs --url=/ --src=https://d35qz7xn7nfid5.cloudfront.net/ssr/index.es.js",
-    "sitemap": "node --experimental-modules --no-warnings --experimental-vm-modules sitemap.mjs --output=stdout --src=https://d35qz7xn7nfid5.cloudfront.net/ssr/index.es.js",
+    "render": "node --experimental-modules --no-warnings --experimental-vm-modules render.mjs --url=/ --src=https://dvgv0026dj58y.cloudfront.net/com/jetsmarter.biggame/index.es.js",
+    "_render": "node --experimental-modules --no-warnings --experimental-vm-modules render.mjs --url=/ --src=https://dvgv0026dj58y.cloudfront.net/com/jetsmarter.biggame/index.es.js",
+    "sitemap": "node --experimental-modules --no-warnings --experimental-vm-modules sitemap.mjs --output=stdout --src=https://dvgv0026dj58y.cloudfront.net/com/jetsmarter.biggame/index.es.js",
     "dockerstart": "docker-compose exec ssrbmp sh -c 'npm run render'",
     "test": "node --experimental-modules --no-warnings ./node_modules/.bin/jest --coverage"
   },
@@ -44,8 +44,10 @@
     }
   },
   "dependencies": {
-    "node-fetch-polyfill": "^2.0.6",
-    "elementtree": "^0.1.7"
+    "elementtree": "^0.1.7",
+    "express-useragent": "^1.0.12",
+    "fs-extra": "^8.0.1",
+    "node-fetch-polyfill": "^2.0.6"
   },
   "devDependencies": {
     "@babel/core": "^7.2.2",

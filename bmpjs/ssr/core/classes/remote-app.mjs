@@ -108,7 +108,7 @@ class BmpRemoteApp {
 		}
 
 		// get instances of application
-		const { Application, CssJS } = await this.execApp()
+		const { Application, css } = await this.execApp()
 		const { document } = this.vm.getContext()
 		try {
 			// createElement is static method, like VirtualDOMDriver.createElement
@@ -120,17 +120,13 @@ class BmpRemoteApp {
 			// By default it can supports HTML5 Api, so get outerHTML
 			result.html = appElement.outerHTML
 			// generate styles of document
-			if (CssJS) {
-				result.css = Object.keys( CssJS.componentsRegistry ).map( name => {
-					return CssJS.componentsRegistry[name].stringify()
-				}).join('')
-			}
+			if (css) result.css = css
 			result.head = document.head.innerHTML
 			// rewrite status code by application
 			result.statusCode = appElement.statusCode( this.clientRequest.uri )
 		} catch(e) {
 			console.error(e)
-			throw e
+			process.exit(1)
 		}
 
 		result.baseURI = this.clientRequest.origin

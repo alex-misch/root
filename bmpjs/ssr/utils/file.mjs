@@ -1,25 +1,44 @@
-import fs from 'fs';
+import fs from 'fs-extra';
 import path from 'path';
 
 const cache = {
 	// cache directory (using file driver)
-	dir: path.resolve('./cache'),
-	// base64 convert helper
-	toBase64: str => Buffer.from(str).toString('base64'),
+	dir: './cache',
 
-	get: key => {
-		const keyBase64 = cache.toBase64(key)
-		if (fs.readdirSync( cache.dir ).includes(keyBase64))
-			return fs.readFileSync( path.join(cache.dir, keyBase64) ).toString('UTF-8')
+	get: url => {
+		const cacheKey = cache.generateKey(url)
+		const cacheFilePath =  path.join(cache.dir, cacheKey)
+		if (fs.existsSync( cacheFilePath ) )
+			return fs.readFileSync( cacheFilePath ).toString('UTF-8')
+
+		return false
 	},
-	set: (key, content) => {
-		const keyBase64 = cache.toBase64(key)
+
+	generateKey(url) {
+		try {
+			// try to parse location as URL
+			const loc = (new URL(url))
+			return loc.pathname
+		} catch(e) {
+			console.error(e)
+			// simple base64 convertor
+			return  Buffer.from(url).toString('base64')
+		}
+	},
+
+	/**  */
+	set: (url, content) => {
+		// Urll should be like a pathname "/some/url/to/file.js"
+		const cacheKey = cache.generateKey(url)
+		const cacheFilePath =  path.join(cache.dir, cacheKey)
+
 		// write to file with named base64 of content key
-		fs.writeFileSync( path.join(cache.dir, keyBase64), Buffer.from(content) )
+		fs.outputFileSync( cacheFilePath, Buffer.from(content) )
 	}
 }
-if ( !fs.existsSync(cache.dir) )
+if ( !fs.existsSync(cache.dir) ) {
 	fs.mkdirSync(cache.dir)
+}
 
 
 /**

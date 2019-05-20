@@ -1,5 +1,5 @@
 
-import { Bundler } from './bmp_modules/bmpjs/bundler/core/bundler'
+import { Bundler, transformSassToJs } from './bmp_modules/bmpjs/bundler/core/bundler'
 import fs from 'fs'
 import rollup from "rollup"
 import babelPlugin from "rollup-plugin-babel"
@@ -18,7 +18,7 @@ if ( Object.entries(dependencies).length ) {
 	})
 }
 
-const sassResolver = () => ({ load: id => /\.css\.js$/.test(id) ? transpileSass(id) : null })
+const sassResolver = () => ({ load: id => /\.css\.js$/.test(id) ? transformSassToJs(id) : null })
 
 const jsplugins = [
 	bmpResolver(),

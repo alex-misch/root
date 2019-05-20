@@ -1,3 +1,5 @@
+
+
 collection:
 
   # Route
@@ -21,12 +23,16 @@ collection:
         name: JsonEntrypoint
 
 
-  - pattern: "/ssr/{url:*}"
+  # Clear cache
+  - pattern: "/{node:com/jetsmarter.charter}/cleanthisbitch"
     pipeline:
 
-      # - type: plugin
-      #   path: ./cache.so
-      #   name: Get
+      - type: process
+        cmd: rm -rf ./cache/data/{{url "node"}}
+
+  # Server side rendering for charter.jetsmarter.com
+  - pattern: "/{node:com/jetsmarter.charter}/{url:*}"
+    pipeline:
 
       - type: process
         cmd: >
@@ -38,27 +44,101 @@ collection:
           --url=/{{url "url"}}
           --ip={{meta "ip"}}
           --user-agent='{{meta "ua"}}'
-          --src=https://jetsmarter.com/data/jscomv5/index.es.js
-          --origin=https://jetsmarter.com/
-        # --origin=https://jetsmarter.com/
-        # --src=https://d35qz7xn7nfid5.cloudfront.net/ssr/index.es.js
-      # - type: process
-      # cmd: 'echo {"status": {{q "status"}}, "content": "URL: {{url "url"}}, IP: {{meta "ip"}}, UA: {{meta "ua"}}"}'
-
-      # - type: plugin
-      #   path: ./cache.so
-      #   name: Set
+          --src=https://jetsmarter.com/data/{{url "node"}}/index.es.js
+          --origin=https://charter.jetsmarter.com/
 
       - type: plugin
         path: ./ssr-Linux-x86_64.so
         name: JsonEntrypoint
 
-  # Route
-  - pattern: "/cleanthisbitch"
+
+  # Clear cache
+  - pattern: "/{node:com/jetsmarter}/cleanthisbitch"
     pipeline:
 
       - type: process
-        cmd: rm -rf ./cache
+        cmd: rm -rf ./cache/data/{{url "node"}}
+
+  # Server side rendering for jetsmarter.com
+  - pattern: "/{node:com/jetsmarter}/{url:*}"
+    pipeline:
+
+      - type: process
+        cmd: >
+          node
+          --experimental-modules
+          --no-warnings
+          --experimental-vm-modules
+          ./render.mjs
+          --url=/{{url "url"}}
+          --ip={{meta "ip"}}
+          --user-agent='{{meta "ua"}}'
+          --src=https://jetsmarter.com/data/{{url "node"}}/index.es.js
+          --origin=https://jetsmarter.com/
+
+      - type: plugin
+        path: ./ssr-Linux-x86_64.so
+        name: JsonEntrypoint
+
+
+
+  # Clear cache
+  - pattern: "/{node:com/jetsmarter.biggame}/cleanthisbitch"
+    pipeline:
+
+      - type: process
+        cmd: rm -rf ./cache/data/{{url "node"}}
+
+  # Server side rendering for biggame.jetsmarter.com
+  - pattern: "/{node:com/jetsmarter.biggame}/{url:*}"
+    pipeline:
+
+      - type: process
+        cmd: >
+          node
+          --experimental-modules
+          --no-warnings
+          --experimental-vm-modules
+          ./render.mjs
+          --url=/{{url "url"}}
+          --ip={{meta "ip"}}
+          --user-agent='{{meta "ua"}}'
+          --src=https://jetsmarter.com/data/{{url "node"}}/index.es.js
+          --origin=https://biggame.jetsmarter.com/
+
+      - type: plugin
+        path: ./ssr-Linux-x86_64.so
+        name: JsonEntrypoint
+
+
+
+  # Clear cache
+  - pattern: "/{node:com/jetsmarter.crowdfund}/cleanthisbitch"
+    pipeline:
+
+      - type: process
+        cmd: rm -rf ./cache/data/{{url "node"}}
+
+  # Server side rendering for crowdfund.jetsmarter.com
+  - pattern: "/{node:com/jetsmarter.crowdfund}/{url:*}"
+    pipeline:
+
+      - type: process
+        cmd: >
+          node
+          --experimental-modules
+          --no-warnings
+          --experimental-vm-modules
+          ./render.mjs
+          --url=/{{url "url"}}
+          --ip={{meta "ip"}}
+          --user-agent='{{meta "ua"}}'
+          --src=https://jetsmarter.com/data/{{url "node"}}/index.es.js
+          --origin=https://crowdfund.jetsmarter.com/
+
+      - type: plugin
+        path: ./ssr-Linux-x86_64.so
+        name: JsonEntrypoint
 
   # Route
   # AWS ECS ping
