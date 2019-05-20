@@ -24,7 +24,7 @@ collection:
 
 
   # Clear cache
-  - pattern: "/ssr/{node:com/jetsmarter.charter}/cleanthisbitch"
+  - pattern: "/{node:com/jetsmarter.charter}/cleanthisbitch"
     pipeline:
 
       - type: process
@@ -53,7 +53,7 @@ collection:
 
 
   # Clear cache
-  - pattern: "/ssr/{node:com/jetsmarter}/cleanthisbitch"
+  - pattern: "/{node:com/jetsmarter}/cleanthisbitch"
     pipeline:
 
       - type: process
@@ -83,7 +83,7 @@ collection:
 
 
   # Clear cache
-  - pattern: "/ssr/{node:com/jetsmarter.biggame}/cleanthisbitch"
+  - pattern: "/{node:com/jetsmarter.biggame}/cleanthisbitch"
     pipeline:
 
       - type: process
@@ -113,7 +113,7 @@ collection:
 
 
   # Clear cache
-  - pattern: "/ssr/{node:com/jetsmarter.crowdfund}/cleanthisbitch"
+  - pattern: "/{node:com/jetsmarter.crowdfund}/cleanthisbitch"
     pipeline:
 
       - type: process
