@@ -15,7 +15,9 @@ import (
 )
 
 // stdin imitates SSR cli response
-var stdin io.Reader = bytes.NewBufferString("{\"status\": 200, \"content\": \"<html></html\"}")
+func stdin() io.Reader {
+	return bytes.NewBufferString("{\"status\": 200, \"content\": \"<html></html\"}")
+}
 
 var ssr flow.Step = flow.Func(func(ctx context.Context) error {
 	// Phase 1. Get required context (pipe's ends)
@@ -31,8 +33,7 @@ var ssr flow.Step = flow.Func(func(ctx context.Context) error {
 		Mime    string
 	}{}
 
-	decoder := json.NewDecoder(stdin)
-	if err := decoder.Decode(&intermediate); err != nil {
+	if err := json.NewDecoder(stdin()).Decode(&intermediate); err != nil {
 		return fmt.Errorf("bmpjs/ssr: %s", err)
 	}
 
