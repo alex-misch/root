@@ -58,6 +58,7 @@ func (mux Router) JSON(ctx context.Context, r io.Reader, w io.Writer) error {
 // Parse request as http
 // Run http handler.
 // Pack response as http.
+// BUG: ctx is not visible in http.Handler, until we can set ctx to request
 func (mux Router) HTTP(_ context.Context, r io.Reader, w io.Writer) error {
 	// Phase 1. Parse http request from raw connection
 	req, err := http.ReadRequest(bufio.NewReader(r))

@@ -7,6 +7,7 @@ import (
 	"regexp"
 
 	"github.com/boomfunc/root/tools/flow"
+	"github.com/boomfunc/root/tools/router/ql"
 )
 
 var (
@@ -30,12 +31,33 @@ func (routes Mux) Match(url *url.URL) (*Route, error) {
 	return nil, ErrNotFound
 }
 
+// Serve is the default action
+// 1. Match valid Route
+// 2. Run them as s Step
+func (routes Mux) Serve(ctx context.Context, u *url.URL) error {
+	route, err := routes.Match(u)
+	if err != nil {
+		return err
+	}
+
+	return route.Run(ctx)
+}
+
 // Route is a single endpoint
 // loads from config
 // NOTE: implements `flow.Step` interface
 type Route struct {
 	Pattern *regexp.Regexp
 	Step    flow.Step
+}
+
+// NewRoute returns new instance of mux entry
+// from pattern the regexp will be generated
+func NewRoute(pattern string, step flow.Step) *Route {
+	return &Route{
+		Pattern: ql.Regexp(pattern),
+		Step:    step,
+	}
 }
 
 // Match return bool meaning this route is applicable to requested uri
