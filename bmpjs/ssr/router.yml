@@ -4,7 +4,7 @@ collection:
 
   # Route
   # AWS ECS ping
-  - pattern: "/ssr/sitemap.xml"
+  - pattern: "/ssr/{node:com/jetsmarter.charter}/sitemap.xml"
     pipeline:
       - type: process
         cmd: >
@@ -24,14 +24,14 @@ collection:
 
 
   # Clear cache
-  - pattern: "/{node:com/jetsmarter.charter}/cleanthisbitch"
+  - pattern: "/ssr/{node:com/jetsmarter.charter}/cleanthisbitch"
     pipeline:
 
       - type: process
         cmd: rm -rf ./cache/data/{{url "node"}}
 
   # Server side rendering for charter.jetsmarter.com
-  - pattern: "/{node:com/jetsmarter.charter}/{url:*}"
+  - pattern: "/ssr/{node:com/jetsmarter.charter}/{url:*}"
     pipeline:
 
       - type: process
@@ -53,14 +53,14 @@ collection:
 
 
   # Clear cache
-  - pattern: "/{node:com/jetsmarter}/cleanthisbitch"
+  - pattern: "/ssr/{node:com/jetsmarter}/cleanthisbitch"
     pipeline:
 
       - type: process
         cmd: rm -rf ./cache/data/{{url "node"}}
 
   # Server side rendering for jetsmarter.com
-  - pattern: "/{node:com/jetsmarter}/{url:*}"
+  - pattern: "/ssr/{node:com/jetsmarter}/{url:*}"
     pipeline:
 
       - type: process
@@ -83,14 +83,14 @@ collection:
 
 
   # Clear cache
-  - pattern: "/{node:com/jetsmarter.biggame}/cleanthisbitch"
+  - pattern: "/ssr/{node:com/jetsmarter.biggame}/cleanthisbitch"
     pipeline:
 
       - type: process
         cmd: rm -rf ./cache/data/{{url "node"}}
 
   # Server side rendering for biggame.jetsmarter.com
-  - pattern: "/{node:com/jetsmarter.biggame}/{url:*}"
+  - pattern: "/ssr/{node:com/jetsmarter.biggame}/{url:*}"
     pipeline:
 
       - type: process
@@ -113,14 +113,14 @@ collection:
 
 
   # Clear cache
-  - pattern: "/{node:com/jetsmarter.crowdfund}/cleanthisbitch"
+  - pattern: "/ssr/{node:com/jetsmarter.crowdfund}/cleanthisbitch"
     pipeline:
 
       - type: process
         cmd: rm -rf ./cache/data/{{url "node"}}
 
   # Server side rendering for crowdfund.jetsmarter.com
-  - pattern: "/{node:com/jetsmarter.crowdfund}/{url:*}"
+  - pattern: "/ssr/{node:com/jetsmarter.crowdfund}/{url:*}"
     pipeline:
 
       - type: process
