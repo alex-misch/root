@@ -1,4 +1,4 @@
-package application2
+package mux
 
 import (
 	"bytes"

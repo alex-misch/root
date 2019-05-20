@@ -1,38 +1,40 @@
-collection:
+# create new session and run in background
+- pattern: "/github"
+  pipeline:
 
-  # create new session and run in background
-  - pattern: "/github"
-    pipeline:
+    - type: plugin
+      path: ./ci-Linux-x86_64.so
+      name: SessionRun
 
-      - type: plugin
-        path: ./ci-Linux-x86_64.so
-        name: SessionRun
 
-  # session log by id
-  - pattern: "/sessions/{session:*}/log"
-    pipeline:
+# session log by id
+- pattern: "/sessions/{session:*}/log"
+  pipeline:
 
-      - type: process
-        cmd: cat /bmpci/sessions/{{url "session"}}/log
+    - type: process
+      cmd: cat /bmpci/sessions/{{url "session"}}/log
 
-  # containers map by session id
-  - pattern: "/sessions/{session:*}/graph"
-    pipeline:
 
-      - type: process
-        cmd: cat /bmpci/sessions/{{url "session"}}/graph
+# containers map by session id
+- pattern: "/sessions/{session:*}/graph"
+  pipeline:
 
-  # log by container id
-  - pattern: "/containers/{container:*}/log"
-    pipeline:
+    - type: process
+      cmd: cat /bmpci/sessions/{{url "session"}}/graph
 
-      - type: process
-        cmd: cat /bmpci/containers/{{url "container"}}.log
 
-  # Route
-  # AWS ECS ping
-  - pattern: "/ping"
-    pipeline:
+# log by container id
+- pattern: "/containers/{container:*}/log"
+  pipeline:
 
-      - type: process
-        cmd: echo pong
+    - type: process
+      cmd: cat /bmpci/containers/{{url "container"}}.log
+
+
+# Route
+# AWS ECS ping
+- pattern: "/ping"
+  pipeline:
+
+    - type: process
+      cmd: echo pong

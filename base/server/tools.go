@@ -4,10 +4,9 @@ import (
 	"errors"
 	"net"
 
-	"github.com/boomfunc/root/base/conf"
-	"github.com/boomfunc/root/base/server/application"
 	"github.com/boomfunc/root/base/server/dispatcher"
 	"github.com/boomfunc/root/base/server/flow"
+	"github.com/boomfunc/root/base/server/mux"
 	"github.com/boomfunc/root/base/server/transport"
 	"github.com/google/uuid"
 )
@@ -21,22 +20,21 @@ var (
 
 func New(transportName string, applicationName string, workers int, ip net.IP, port int, config string) (*Server, error) {
 	// Phase 1. Prepare light application layer things
-	// router
 	// TODO switch detect type
 	// router, err := conf.LoadExternalFile(config)
-	router, err := conf.LoadLocalFile(config)
+	m, err := mux.FromFile(config)
 	if err != nil {
 		// cannot load server config
 		return nil, err
 	}
 
 	// Phase 2. Prepare application layer
-	var app application.Interface
+	var step mux.Entrypoint
 	switch applicationName {
 	case "http":
-		app = application.HTTP(router)
+		step = m.HTTP
 	case "json":
-		app = application.JSON(router)
+		step = m.JSON
 	default:
 		return nil, ErrUnknownApplication
 	}
@@ -63,7 +61,7 @@ func New(transportName string, applicationName string, workers int, ip net.IP, p
 	srv.node = uuid.New()
 	// flow data
 	srv.transport = tr
-	srv.app = app
+	srv.step = step
 	srv.dispatcher = dispatcher.New(workers)
 	// channels and data storages
 	srv.errCh = errCh

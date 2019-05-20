@@ -1,4 +1,4 @@
-package application2
+package mux
 
 import (
 	"bufio"
@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/boomfunc/root/base/pipeline"
 	"github.com/boomfunc/root/base/tools"
 	"github.com/boomfunc/root/tools/router"
 )
@@ -22,16 +23,32 @@ type Entrypoint func(context.Context, io.Reader, io.Writer) error
 // Implements several application handlers
 type Router router.Mux
 
-func (mux Router) serve(ctx context.Context, u *url.URL) error {
-	route, err := router.Mux(mux).Match(u)
-	if err != nil {
+// UnmarshalYAML implements the yaml.Unmarshaller interface
+func (r *Router) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	// inner struct for accepting strings
+	var routes []struct {
+		Pattern  string
+		Pipeline pipeline.Pipeline
+	}
+
+	if err := unmarshal(&routes); err != nil {
 		return err
 	}
 
-	return route.Run(ctx)
+	// yaml valid, transform it
+	for _, route := range routes {
+		*r = append(
+			*r,
+			*router.NewRoute(route.Pattern, route.Pipeline),
+		)
+	}
+
+	return nil
 }
 
 // JSON is the raw data handler enrtypoint
+// Parse incoming data as json payload
+// Return data as raw
 func (mux Router) JSON(ctx context.Context, r io.Reader, w io.Writer) error {
 	intermediate := struct {
 		Url   string
@@ -51,7 +68,7 @@ func (mux Router) JSON(ctx context.Context, r io.Reader, w io.Writer) error {
 	ctx = context.WithValue(ctx, "stdin", strings.NewReader(intermediate.Stdin))
 	ctx = context.WithValue(ctx, "stdout", w)
 
-	return mux.serve(ctx, u)
+	return router.Mux(mux).Serve(ctx, u)
 }
 
 // HTTP is the http logic handler enrtypoint.
@@ -122,7 +139,7 @@ func (mux Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx = context.WithValue(ctx, "w", w)
 
 	// Generate body using route Step
-	if err := mux.serve(ctx, r.URL); err != nil {
+	if err := router.Mux(mux).Serve(ctx, r.URL); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }

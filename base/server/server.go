@@ -3,10 +3,10 @@ package server
 import (
 	"container/heap"
 
-	"github.com/boomfunc/root/base/server/application"
 	"github.com/boomfunc/root/base/server/context"
 	"github.com/boomfunc/root/base/server/dispatcher"
 	"github.com/boomfunc/root/base/server/flow"
+	"github.com/boomfunc/root/base/server/mux"
 	"github.com/boomfunc/root/base/server/transport"
 	"github.com/boomfunc/root/base/tools"
 	"github.com/boomfunc/root/tools/chronometer"
@@ -17,7 +17,7 @@ type Server struct {
 	node uuid.UUID
 
 	transport  transport.Interface
-	app        application.Interface
+	step       mux.Entrypoint // server entrypoint (in future - flow.Step intrrface)
 	dispatcher dispatcher.Dispatcher
 
 	errCh    chan error

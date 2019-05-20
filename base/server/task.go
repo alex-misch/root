@@ -64,7 +64,7 @@ func (task Task) Solve() {
 
 	// solve server task and measure time
 	task.flow.Chronometer.Enter("app")
-	srv.app.Handle(task.flow) // TODO hungs here
+	srv.step(task.flow.Ctx, task.flow.RWC, task.flow.RWC)
 	task.flow.Chronometer.Exit("app")
 
 	// log results
