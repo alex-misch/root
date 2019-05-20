@@ -38,7 +38,8 @@ var ssr flow.Step = flow.Func(func(ctx context.Context) error {
 	}
 
 	// Phase 3. If we have HTTP mode - set headers and status code
-	if w, ok := ctx.Value("w").(http.ResponseWriter); ok {
+	w, http := ctx.Value("w").(http.ResponseWriter)
+	if http {
 		w.Header().Set("Content-Type", intermediate.Mime)
 		w.WriteHeader(intermediate.Status)
 		w.Header().Set("FOO", "BAR")
