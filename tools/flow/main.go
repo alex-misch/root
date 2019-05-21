@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"os"
+	"io"
 )
 
 var (
@@ -31,6 +32,10 @@ type Filer interface {
 }
 
 // Step interface describes something that can be runned in some flow
+type SStep interface {
+	// stdin, stdout, stderr
+	Run(context.Context, io.Reader, io.Writer, io.Writer) error
+}
 type Step interface {
 	Run(context.Context) error
 }

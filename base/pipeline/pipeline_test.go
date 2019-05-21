@@ -4,11 +4,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"reflect"
 	"testing"
-
-	"github.com/boomfunc/root/base/tools"
-	"github.com/boomfunc/root/tools/flow"
 )
 
 func TestPipeline(t *testing.T) {
@@ -44,26 +42,28 @@ func TestPipelineRun(t *testing.T) {
 		)
 
 		tableTests := []struct {
-			ctx context.Context
-			err error
+			stdin  io.Reader
+			stdout io.Writer
+			stderr io.Writer
+			err    error
 		}{
 			// no input
-			{context.Background(), flow.ErrStepOrphan},                                                                            // - -
-			{context.WithValue(context.Background(), "output", 42), flow.ErrStepOrphan},                                           // - +(-)
-			{context.WithValue(context.Background(), "output", tools.WriteCloser(bytes.NewBuffer([]byte{}))), flow.ErrStepOrphan}, // - +(+)
-			// input wrong type
-			{context.WithValue(context.Background(), "input", 42), flow.ErrStepOrphan},                                                                            // +(-) -
-			{context.WithValue(context.WithValue(context.Background(), "input", 42), "output", 42), flow.ErrStepOrphan},                                           // +(-) +(-)
-			{context.WithValue(context.WithValue(context.Background(), "input", 42), "output", tools.WriteCloser(bytes.NewBuffer([]byte{}))), flow.ErrStepOrphan}, // +(-) +(+)
-			// input wright type
-			{context.WithValue(context.Background(), "input", tools.ReadCloser(bytes.NewBuffer([]byte{}))), flow.ErrStepOrphan},                                                             // +(+) -
-			{context.WithValue(context.WithValue(context.Background(), "input", tools.ReadCloser(bytes.NewBuffer([]byte{}))), "output", 42), flow.ErrStepOrphan},                            // +(+) +(-)
-			{context.WithValue(context.WithValue(context.Background(), "input", tools.ReadCloser(bytes.NewBuffer([]byte{}))), "output", tools.WriteCloser(bytes.NewBuffer([]byte{}))), nil}, // +(+) +(+)
+			{nil, nil, nil, nil}, // - -
+			// {context.WithValue(context.Background(), "output", 42), flow.ErrStepOrphan},                                           // - +(-)
+			// {context.WithValue(context.Background(), "output", tools.WriteCloser(bytes.NewBuffer([]byte{}))), flow.ErrStepOrphan}, // - +(+)
+			// // input wrong type
+			// {context.WithValue(context.Background(), "input", 42), flow.ErrStepOrphan},                                                                            // +(-) -
+			// {context.WithValue(context.WithValue(context.Background(), "input", 42), "output", 42), flow.ErrStepOrphan},                                           // +(-) +(-)
+			// {context.WithValue(context.WithValue(context.Background(), "input", 42), "output", tools.WriteCloser(bytes.NewBuffer([]byte{}))), flow.ErrStepOrphan}, // +(-) +(+)
+			// // input wright type
+			// {context.WithValue(context.Background(), "input", tools.ReadCloser(bytes.NewBuffer([]byte{}))), flow.ErrStepOrphan},                                                             // +(+) -
+			// {context.WithValue(context.WithValue(context.Background(), "input", tools.ReadCloser(bytes.NewBuffer([]byte{}))), "output", 42), flow.ErrStepOrphan},                            // +(+) +(-)
+			// {context.WithValue(context.WithValue(context.Background(), "input", tools.ReadCloser(bytes.NewBuffer([]byte{}))), "output", tools.WriteCloser(bytes.NewBuffer([]byte{}))), nil}, // +(+) +(+)
 		}
 
 		for i, tt := range tableTests {
 			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-				if err := pipeline.Run(tt.ctx); err != tt.err {
+				if err := pipeline.Run(context.Background(), tt.stdin, tt.stdout, tt.stderr); err != tt.err {
 					t.Fatalf("Expected %q, got %q", tt.err, err)
 				}
 			})
@@ -80,20 +80,16 @@ func TestPipelineRun(t *testing.T) {
 		)
 
 		// fill the context
-		input := bytes.NewBuffer([]byte("foobar"))
-		output := bytes.NewBuffer([]byte{})
+		stdin := bytes.NewBuffer([]byte("foobar"))
+		stdout := bytes.NewBuffer([]byte{})
 
-		ctx := context.Background()
-		ctx = context.WithValue(ctx, "input", tools.ReadCloser(input))
-		ctx = context.WithValue(ctx, "output", tools.WriteCloser(output))
-
-		if err := pipeline.Run(ctx); err != nil {
+		if err := pipeline.Run(context.Background(), stdin, stdout, nil); err != nil {
 			t.Fatal(err)
 		}
 
 		// check result
-		if outputString := output.String(); outputString != "1\n" {
-			t.Fatalf("Expected %q, got %q", "{1\n}", outputString)
+		if stdoutString := stdout.String(); stdoutString != "1\n" {
+			t.Fatalf("Expected %q, got %q", "{1\n}", stdoutString)
 		}
 	})
 
@@ -106,10 +102,10 @@ func TestPipelineRun(t *testing.T) {
 
 		// fill the context
 		ctx := context.Background()
-		ctx = context.WithValue(ctx, "input", tools.ReadCloser(bytes.NewBuffer([]byte("HEAD / HTTP/1.0\r\n\r\n"))))
-		ctx = context.WithValue(ctx, "output", tools.WriteCloser(bytes.NewBuffer([]byte{})))
+		stdin := bytes.NewBuffer([]byte("HEAD / HTTP/1.0\r\n\r\n"))
+		stdout := bytes.NewBuffer(nil)
 
-		if err := pipeline.Run(ctx); err != nil {
+		if err := pipeline.Run(ctx, stdin, stdout, nil); err != nil {
 			t.Fatal(err)
 		}
 

@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"os"
 	"testing"
-
-	"github.com/boomfunc/root/base/tools"
 )
 
 func BenchmarkPipeline(b *testing.B) {
@@ -28,10 +26,6 @@ func BenchmarkPipeline(b *testing.B) {
 			w1.Close()
 		}()
 
-		ctx := context.Background()
-		ctx = context.WithValue(ctx, "input", tools.ReadCloser(r1))
-		ctx = context.WithValue(ctx, "output", tools.WriteCloser(w2))
-
 		b.StartTimer()
 
 		New(
@@ -39,7 +33,7 @@ func BenchmarkPipeline(b *testing.B) {
 			NewProcess("/usr/bin/rev"),        // reverse -> raboof
 			NewProcess("/bin/grep -o raboof"), // grep reversed (must be 1 match)
 			NewProcess("/usr/bin/wc -l"),      // count matches
-		).Run(ctx)
+		).Run(context.Background(), r1, w2, nil)
 
 	}
 }

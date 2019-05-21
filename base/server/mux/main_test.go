@@ -9,31 +9,29 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/boomfunc/root/tools/flow"
 	"github.com/boomfunc/root/tools/router"
 	"github.com/boomfunc/root/tools/router/ql"
 )
 
 // stdin imitates SSR cli response
-func stdin() io.Reader {
+func payload() io.Reader {
 	return bytes.NewBufferString("{\"status\": 200, \"content\": \"<html></html\"}")
 }
 
-var ssr flow.Step = flow.Func(func(ctx context.Context) error {
-	// Phase 1. Get required context (pipe's ends)
-	stdout, ok := ctx.Value("stdout").(io.Writer)
-	if !ok {
-		return flow.ErrStepOrphan
-	}
+type ssr struct{}
 
-	// Phase 2. Parse json returned from ssr cli
+func (s ssr) Run(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer) error {
+	// Prephase.
+	stdin = payload()
+
+	// Phase 1. Parse json returned from ssr cli
 	intermediate := struct {
 		Status  int
 		Content string
 		Mime    string
 	}{}
 
-	if err := json.NewDecoder(stdin()).Decode(&intermediate); err != nil {
+	if err := json.NewDecoder(stdin).Decode(&intermediate); err != nil {
 		return fmt.Errorf("bmpjs/ssr: %s", err)
 	}
 
@@ -48,12 +46,12 @@ var ssr flow.Step = flow.Func(func(ctx context.Context) error {
 	// In any way - content must be written to pipe
 	_, err := fmt.Fprint(stdout, intermediate.Content)
 	return err
-})
+}
 
 var mux Router = []router.Route{
 	router.Route{
 		Pattern: ql.Regexp("/ssr"),
-		Step:    ssr,
+		Step:    ssr{},
 	},
 }
 
@@ -63,7 +61,7 @@ func TestHTTP(t *testing.T) {
 		// imitate request
 		socket := bytes.NewBufferString("GET /ssr HTTP/1.1\r\n\r\n")
 
-		if err := mux.HTTP(nil, socket, socket); err != nil {
+		if err := mux.HTTP(nil, socket, socket, nil); err != nil {
 			t.Fatal(err)
 		}
 
@@ -77,7 +75,7 @@ func TestHTTP(t *testing.T) {
 		// imitate request
 		socket := bytes.NewBufferString("HEAD /ssr HTTP/1.1\r\n\r\n")
 
-		if err := mux.HTTP(nil, socket, socket); err != nil {
+		if err := mux.HTTP(nil, socket, socket, nil); err != nil {
 			t.Fatal(err)
 		}
 
@@ -93,7 +91,7 @@ func TestJSON(t *testing.T) {
 	// imitate request
 	socket := bytes.NewBufferString("{\"url\":\"/ssr\"}")
 
-	if err := mux.JSON(context.Background(), socket, socket); err != nil {
+	if err := mux.JSON(context.Background(), socket, socket, nil); err != nil {
 		t.Fatal(err)
 	}
 

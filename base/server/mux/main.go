@@ -16,9 +16,6 @@ import (
 	"github.com/boomfunc/root/tools/router"
 )
 
-// Entrypoint is the main type used as multiplexer
-type Entrypoint func(context.Context, io.Reader, io.Writer) error
-
 // Router is type wrapper
 // Implements several application handlers
 type Router router.Mux
@@ -49,14 +46,13 @@ func (r *Router) UnmarshalYAML(unmarshal func(interface{}) error) error {
 // JSON is the raw data handler enrtypoint
 // Parse incoming data as json payload
 // Return data as raw
-func (mux Router) JSON(ctx context.Context, r io.Reader, w io.Writer) error {
+func (mux Router) JSON(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer) error {
+	// Phase 1. Parse payload as JSON
 	intermediate := struct {
 		Url   string
 		Stdin string
 	}{}
-
-	decoder := json.NewDecoder(r)
-	if err := decoder.Decode(&intermediate); err != nil {
+	if err := json.NewDecoder(stdin).Decode(&intermediate); err != nil {
 		return err
 	}
 
@@ -65,10 +61,8 @@ func (mux Router) JSON(ctx context.Context, r io.Reader, w io.Writer) error {
 		return err
 	}
 
-	ctx = context.WithValue(ctx, "stdin", strings.NewReader(intermediate.Stdin))
-	ctx = context.WithValue(ctx, "stdout", w)
-
-	return router.Mux(mux).Serve(ctx, u)
+	// NOTE: new stdin - Stdin from parsed json
+	return router.Mux(mux).MatchLax(u).Run(ctx, strings.NewReader(intermediate.Stdin), stdout, stderr)
 }
 
 // HTTP is the http logic handler enrtypoint.
@@ -76,9 +70,9 @@ func (mux Router) JSON(ctx context.Context, r io.Reader, w io.Writer) error {
 // Run http handler.
 // Pack response as http.
 // BUG: ctx is not visible in http.Handler, until we can set ctx to request
-func (mux Router) HTTP(_ context.Context, r io.Reader, w io.Writer) error {
+func (mux Router) HTTP(_ context.Context, stdin io.Reader, stdout, stderr io.Writer) error {
 	// Phase 1. Parse http request from raw connection
-	req, err := http.ReadRequest(bufio.NewReader(r))
+	req, err := http.ReadRequest(bufio.NewReader(stdin))
 	if err != nil {
 		return err
 	}
@@ -90,7 +84,7 @@ func (mux Router) HTTP(_ context.Context, r io.Reader, w io.Writer) error {
 	// Phase 3. Run HTTP handler
 	mux.ServeHTTP(rw, req)
 
-	// Phase 4. Generate response
+	// Phase 4. Generate plain response
 	response := http.Response{
 		Status:     http.StatusText(rw.Status()),
 		StatusCode: rw.Status(),
@@ -104,10 +98,13 @@ func (mux Router) HTTP(_ context.Context, r io.Reader, w io.Writer) error {
 
 	defer response.Body.Close()
 
-	return response.Write(w)
+	return response.Write(stdout)
 }
 
 // ServeHTTP implements http.Handler interfaces.
+// This is wrapper for Step interface.
+// This is http basic logic for base server
+// Also, can be used as handler to net/http
 func (mux Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Set the default headers
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
@@ -128,18 +125,14 @@ func (mux Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Date", time.Now().Format(time.RFC1123))
 	}()
 
-	// Fill the context for i/o piping
-	ctx := r.Context()
-	ctx = context.WithValue(ctx, "stdin", r.Body)
-	ctx = context.WithValue(ctx, "stdout", w)
-
 	// Fill the context for the layers that they could work as a handler.
 	// Provide to the flow ability to set cookies and etc.
+	ctx := r.Context()
 	ctx = context.WithValue(ctx, "r", r)
 	ctx = context.WithValue(ctx, "w", w)
 
 	// Generate body using route Step
-	if err := router.Mux(mux).Serve(ctx, r.URL); err != nil {
+	if err := router.Mux(mux).MatchLax(r.URL).Run(ctx, r.Body, w, nil); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }

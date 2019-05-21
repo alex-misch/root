@@ -8,6 +8,7 @@ import (
 	"github.com/boomfunc/root/base/server/flow"
 	"github.com/boomfunc/root/base/server/mux"
 	"github.com/boomfunc/root/base/server/transport"
+	executor "github.com/boomfunc/root/tools/flow"
 	"github.com/google/uuid"
 )
 
@@ -29,12 +30,12 @@ func New(transportName string, applicationName string, workers int, ip net.IP, p
 	}
 
 	// Phase 2. Prepare application layer
-	var step mux.Entrypoint
+	var step executor.SStep
 	switch applicationName {
 	case "http":
-		step = m.HTTP
+		step = executor.Func2(m.HTTP)
 	case "json":
-		step = m.JSON
+		step = executor.Func2(m.JSON)
 	default:
 		return nil, ErrUnknownApplication
 	}
