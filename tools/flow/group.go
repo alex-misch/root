@@ -29,6 +29,29 @@ type group struct {
 	doneCh chan struct{}      // channel indicates all groups step completes
 }
 
+// newGroup returns new group of steps
+// using flags for different running and waiting modifications
+func newGroup(steps, workers heap.Interface, flags uint8) *group {
+	g := &group{
+		flags:   flags,
+		workers: workers,
+		steps:   steps,
+		doneCh:  make(chan struct{}, 1),
+	}
+
+	// Create error channel for linking agent
+	// caveat: of not concurrent (just group) channel must be buffered
+	// otherwise deadlock in .runStep error case
+	if g.has(R_CONCURRENT) {
+		g.errCh = make(chan error) // NOTE: can hung if no receivers
+	} else {
+		g.errCh = make(chan error, 1)
+	}
+
+	// return created group
+	return g
+}
+
 // concurrent is a type of runner with own gorouitne for each step
 func (g *group) concurrent(ctx context.Context) {
 	for {
@@ -78,29 +101,6 @@ func (g *group) sequence(ctx context.Context) {
 			break
 		}
 	}
-}
-
-// newGroup returns new group of steps
-// using flags for different running and waiting modifications
-func newGroup(steps, workers heap.Interface, flags uint8) *group {
-	g := &group{
-		flags:   flags,
-		workers: workers,
-		steps:   steps,
-		doneCh:  make(chan struct{}, 1),
-	}
-
-	// Create error channel for linking agent
-	// caveat: of not concurrent (just group) channel must be buffered
-	// otherwise deadlock in .runStep error case
-	if g.has(R_CONCURRENT) {
-		g.errCh = make(chan error) // NOTE: can hung if no receivers
-	} else {
-		g.errCh = make(chan error, 1)
-	}
-
-	// return created group
-	return g
 }
 
 // has describes has the group's flags modification bit set

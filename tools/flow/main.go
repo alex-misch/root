@@ -4,8 +4,8 @@ import (
 	"container/heap"
 	"context"
 	"errors"
-	"os"
 	"io"
+	"os"
 )
 
 var (
