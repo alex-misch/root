@@ -1,9 +1,8 @@
 package flow
 
-// TODO: check for hasheable all builtin Step types
-
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"sync"
 	"testing"
@@ -13,6 +12,26 @@ func TestSubscription(t *testing.T) {
 	var a Step = Func(func(ctx context.Context) error { return nil })
 	var b Step = Func(func(ctx context.Context) error { return nil })
 	var c Step = Func(func(ctx context.Context) error { return nil })
+
+	t.Run("hasheable", func(t *testing.T) {
+		// main idea of this test - just add steps as key and get no errors
+		m := make(map[Step]struct{}, 0)
+
+		tableTests := []Step{
+			a,
+			Concurrent(nil, a, b, c),
+			DelayConcurrent(nil, a, b),
+			Group(nil, a, b, c),
+			DelayGroup(nil, b, c),
+			Transaction(a, b, false),
+		}
+
+		for i, tt := range tableTests {
+			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+				m[tt] = struct{}{}
+			})
+		}
+	})
 
 	ss := &subscription{
 		pending: make(map[Step]*sync.Cond, 0),

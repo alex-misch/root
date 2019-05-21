@@ -20,14 +20,7 @@ func Group(workers heap.Interface, steps ...Step) Step {
 	// since there are a finite number of steps here
 	// we can check some situations
 	// where we don’t need to create a group
-	//
-	// TODO: need to create ability to run Step with workers logic (without group wrapper)
-	//
-	return newGroup(
-		StepsHeap(steps...),
-		workers,
-		0,
-	)
+	return GroupHeap(workers, StepsHeap(steps...))
 }
 
 // DelayGroupHeap returns group of steps running step-by-step
@@ -45,9 +38,5 @@ func DelayGroupHeap(workers, steps heap.Interface) Step {
 // in background mode
 // as steps receives as slice of steps
 func DelayGroup(workers heap.Interface, steps ...Step) Step {
-	return newGroup(
-		StepsHeap(steps...),
-		workers,
-		W_DELAY|CTX_ORPHAN,
-	)
+	return DelayGroupHeap(workers, StepsHeap(steps...))
 }
