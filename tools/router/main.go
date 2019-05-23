@@ -43,18 +43,6 @@ func (routes Mux) Match(url *url.URL) (*Route, error) {
 	return nil, ErrNotFound
 }
 
-// Serve is the default action
-// 1. Match valid Route
-// 2. Run them as s Step
-func (routes Mux) Serve(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer, u *url.URL) error {
-	route, err := routes.Match(u)
-	if err != nil {
-		return err
-	}
-
-	return route.Run(ctx, stdin, stdout, stderr)
-}
-
 // Route is a single endpoint
 // loads from config
 // NOTE: implements `flow.Step` interface

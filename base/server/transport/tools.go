@@ -8,12 +8,12 @@ import (
 )
 
 func TCP(ip net.IP, port int) (Interface, error) {
-	tcpAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", ip, port))
+	addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", ip, port))
 	if err != nil {
 		return nil, err
 	}
 
-	tcpListener, err := net.ListenTCP("tcp", tcpAddr)
+	listener, err := net.ListenTCP("tcp", addr)
 	if err != nil {
 		return nil, err
 	}
@@ -24,8 +24,8 @@ func TCP(ip net.IP, port int) (Interface, error) {
 	}
 
 	tcp := &tcp{
-		listener: tcpListener,
-		heap:     heap,
+		listener: listener,
+		poller:   heap,
 	}
 	return tcp, nil
 }

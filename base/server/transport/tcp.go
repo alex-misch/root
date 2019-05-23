@@ -9,6 +9,8 @@ import (
 	"github.com/boomfunc/root/base/tools/poller"
 )
 
+// TODO: implement net.Listener interface
+
 var (
 	// TODO parametrize
 	readTimeout  = time.Second * 2

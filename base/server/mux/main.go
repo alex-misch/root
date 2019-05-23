@@ -43,7 +43,7 @@ func (r *Router) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-// JSON is the raw data handler enrtypoint
+// JSON is the raw data handler entrypoint
 // Parse incoming data as json payload
 // Return data as raw
 func (mux Router) JSON(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer) error {
@@ -65,7 +65,7 @@ func (mux Router) JSON(ctx context.Context, stdin io.Reader, stdout, stderr io.W
 	return router.Mux(mux).MatchLax(u).Run(ctx, strings.NewReader(intermediate.Stdin), stdout, stderr)
 }
 
-// HTTP is the http logic handler enrtypoint.
+// HTTP is the http logic handler entrypoint.
 // Parse request as http
 // Run http handler.
 // Pack response as http.
