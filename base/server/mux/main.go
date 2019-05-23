@@ -133,6 +133,16 @@ func (mux Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Generate body using route Step
 	if err := router.Mux(mux).MatchLax(r.URL).Run(ctx, r.Body, w, nil); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		// What is the error? We can imagine several situations.
+		status := http.StatusInternalServerError
+		message := err.Error()
+
+		// Ability to override messages and status for http response.
+		switch err {
+		case router.ErrNotFound:
+			status = http.StatusNotFound
+		}
+
+		http.Error(w, message, status)
 	}
 }

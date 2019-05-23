@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"regexp"
 	"testing"
+	"io"
 
 	"github.com/boomfunc/root/tools/flow"
 	"github.com/boomfunc/root/tools/router/ql"
@@ -17,7 +18,7 @@ func TestRoute(t *testing.T) {
 
 	route := Route{
 		Pattern: regexp.MustCompile("^foobar$"),
-		Step: flow.Func(func(ctx context.Context) error {
+		Step: flow.Func2(func(ctx context.Context, _ io.Reader, _, _ io.Writer) error {
 			i = 1
 			return nil
 		}),
@@ -72,14 +73,26 @@ func TestRoute(t *testing.T) {
 	})
 
 	t.Run("Run", func(t *testing.T) {
-		// run throw flow.Execute (ensures that `route` implements the interface)
-		if err := flow.Execute(&route); err != nil {
-			t.Fatalf("Unexpected error: %q", err)
+		tableTests := []struct {
+			route *Route
+			err error
+		}{
+			{nil, nil}, // TODO
 		}
 
-		// check result
-		if i != 1 {
-			t.Fatalf("Expected '1', got: '%d'", i)
+		for i, tt := range tableTests {
+			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+				// check error returned
+				// run throw flow.Execute (ensures that `route` implements the interface)
+				// if err := flow.Execute(tt.route); !reflect.DeepEqual(err, tt.err) {
+				if err := tt.route.Run(nil, nil, nil, nil); !reflect.DeepEqual(err, tt.err) {
+					t.Fatalf("Expected '%v', got '%v'", tt.err, err)
+				}
+				// check result
+				if i != 1 {
+					t.Fatalf("Expected '1', got: '%d'", i)
+				}
+			})
 		}
 	})
 }

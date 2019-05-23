@@ -74,6 +74,11 @@ func (r *Route) MatchParams(uri string) (map[string]string, error) {
 // Run runs associted Step interface
 // implements implements `flow.Step` interface itself
 func (r *Route) Run(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer) error {
+	// Case when we used MatchLax
+	if r == nil {
+		return ErrNotFound
+	}
+
 	return r.Step.Run(ctx, stdin, stdout, stderr)
 	// return flow.ExecuteWithContext(ctx, r.Step)
 }
