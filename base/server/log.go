@@ -19,7 +19,7 @@ func StartupLog(transportName, applicationName, addr, config string, srv *Server
 
 	log.Infof(
 		"server:\t%s",
-		log.Wrap(srv.node.String(), log.Bold),
+		log.Wrap(srv.uuid.String(), log.Bold),
 	)
 
 	log.Infof(

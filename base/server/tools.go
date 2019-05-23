@@ -4,11 +4,9 @@ import (
 	"errors"
 	"net"
 
-	"github.com/boomfunc/root/base/server/dispatcher"
-	"github.com/boomfunc/root/base/server/flow"
 	"github.com/boomfunc/root/base/server/mux"
 	"github.com/boomfunc/root/base/server/transport"
-	executor "github.com/boomfunc/root/tools/flow"
+	"github.com/boomfunc/root/tools/flow"
 	"github.com/google/uuid"
 )
 
@@ -30,12 +28,12 @@ func New(transportName string, applicationName string, workers int, ip net.IP, p
 	}
 
 	// Phase 2. Prepare application layer
-	var step executor.SStep
+	var application flow.SStep
 	switch applicationName {
 	case "http":
-		step = executor.Func2(m.HTTP)
+		application = flow.Func2(m.HTTP)
 	case "json":
-		step = executor.Func2(m.JSON)
+		application = flow.Func2(m.JSON)
 	default:
 		return nil, ErrUnknownApplication
 	}
@@ -52,21 +50,12 @@ func New(transportName string, applicationName string, workers int, ip net.IP, p
 		return nil, ErrUnknownTransport
 	}
 
-	// Phase 4. transport layer recognized, we can create support data for connection layers
-	errCh := make(chan error)
-	outputCh := make(chan *flow.Data)
-	tr.Connect(errCh)
-
-	// Phase 5. Create server
-	srv := new(Server)
-	srv.node = uuid.New()
-	// flow data
-	srv.transport = tr
-	srv.step = step
-	srv.dispatcher = dispatcher.New(workers)
-	// channels and data storages
-	srv.errCh = errCh
-	srv.outputCh = outputCh
+	// Phase 4. Create server
+	srv := &Server{
+		uuid:        uuid.New(),
+		transport:   tr,
+		application: application,
+	}
 
 	return srv, nil
 }
