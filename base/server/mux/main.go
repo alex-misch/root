@@ -69,34 +69,35 @@ func (mux Router) JSON(ctx context.Context, stdin io.Reader, stdout, stderr io.W
 // Parse request as http
 // Run http handler.
 // Pack response as http.
-// BUG: ctx is not visible in http.Handler, until we can set ctx to request
-func (mux Router) HTTP(_ context.Context, stdin io.Reader, stdout, stderr io.Writer) error {
+func (mux Router) HTTP(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer) error {
 	// Phase 1. Parse http request from raw connection
-	req, err := http.ReadRequest(bufio.NewReader(stdin))
+	r, err := http.ReadRequest(bufio.NewReader(stdin))
 	if err != nil {
 		return err
 	}
 
 	// Phase 2. Create response writer
 	var b bytes.Buffer
-	rw := &httprw{w: &b}
+	w := &httprw{w: &b}
 
-	// Phase 3. Run HTTP handler
-	mux.ServeHTTP(rw, req)
+	// Phase 3. Tranform request to use out cancellation context.
+	r = r.WithContext(ctx)
 
-	// Phase 4. Generate plain response
+	// Phase 4. Run HTTP handler
+	mux.ServeHTTP(w, r)
+
+	// Phase 5. Generate plain response
 	response := http.Response{
-		Status:     http.StatusText(rw.Status()),
-		StatusCode: rw.Status(),
-		Proto:      req.Proto,
-		ProtoMajor: req.ProtoMajor,
-		ProtoMinor: req.ProtoMinor,
-		Body:       tools.ReadCloser(&b),
-		Request:    req,
-		Header:     rw.h,
+		Status:        http.StatusText(w.Status()),
+		StatusCode:    w.Status(),
+		Proto:         r.Proto,
+		ProtoMajor:    r.ProtoMajor,
+		ProtoMinor:    r.ProtoMinor,
+		Body:          tools.ReadCloser(&b),
+		Request:       r,
+		Header:        w.Header(),
+		ContentLength: -1,
 	}
-
-	defer response.Body.Close()
 
 	return response.Write(stdout)
 }
@@ -125,7 +126,7 @@ func (mux Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Date", time.Now().Format(time.RFC1123))
 	}()
 
-	// Fill the context for the layers that they could work as a handler.
+	// Also, fill the context for the layers that they could work as a handler.
 	// Provide to the flow ability to set cookies and etc.
 	ctx := r.Context()
 	ctx = context.WithValue(ctx, "r", r)
