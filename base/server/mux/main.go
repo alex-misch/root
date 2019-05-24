@@ -2,7 +2,6 @@ package mux
 
 import (
 	"bufio"
-	"bytes"
 	"context"
 	"encoding/json"
 	"io"
@@ -12,7 +11,6 @@ import (
 	"time"
 
 	"github.com/boomfunc/root/base/pipeline"
-	"github.com/boomfunc/root/base/tools"
 	"github.com/boomfunc/root/tools/router"
 )
 
@@ -70,36 +68,21 @@ func (mux Router) JSON(ctx context.Context, stdin io.Reader, stdout, stderr io.W
 // Run http handler.
 // Pack response as http.
 func (mux Router) HTTP(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer) error {
-	// Phase 1. Parse http request from raw connection
+	// Phase 1. Parse payload as plain http request
 	r, err := http.ReadRequest(bufio.NewReader(stdin))
 	if err != nil {
 		return err
 	}
 
-	// Phase 2. Create response writer
-	var b bytes.Buffer
-	w := &httprw{w: &b}
-
-	// Phase 3. Tranform request to use out cancellation context.
+	// Phase 2. Run http.Handler
+	// 1. Create response writer
+	// 2. Tranform request to use out cancellation context.
+	w := NewHTTPResponseWriter()
 	r = r.WithContext(ctx)
-
-	// Phase 4. Run HTTP handler
 	mux.ServeHTTP(w, r)
 
-	// Phase 5. Generate plain response
-	response := http.Response{
-		Status:        http.StatusText(w.Status()),
-		StatusCode:    w.Status(),
-		Proto:         r.Proto,
-		ProtoMajor:    r.ProtoMajor,
-		ProtoMinor:    r.ProtoMinor,
-		Body:          tools.ReadCloser(&b),
-		Request:       r,
-		Header:        w.Header(),
-		ContentLength: -1,
-	}
-
-	return response.Write(stdout)
+	// Phase 3. Generate plain response
+	return w.Response(r).Write(stdout)
 }
 
 // ServeHTTP implements http.Handler interfaces.
@@ -129,14 +112,14 @@ func (mux Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Also, fill the context for the layers that they could work as a handler.
 	// Provide to the flow ability to set cookies and etc.
 	ctx := r.Context()
-	ctx = context.WithValue(ctx, "r", r)
 	ctx = context.WithValue(ctx, "w", w)
+	ctx = context.WithValue(ctx, "r", r)
 
 	// Generate body using route Step
 	if err := router.Mux(mux).MatchLax(r.URL).Run(ctx, r.Body, w, nil); err != nil {
 		// What is the error? We can imagine several situations.
-		status := http.StatusInternalServerError
-		message := err.Error()
+		var status int = http.StatusInternalServerError
+		var error string = err.Error()
 
 		// Ability to override messages and status for http response.
 		switch err {
@@ -144,6 +127,6 @@ func (mux Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			status = http.StatusNotFound
 		}
 
-		http.Error(w, message, status)
+		http.Error(w, error, status)
 	}
 }
