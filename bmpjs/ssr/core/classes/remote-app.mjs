@@ -6,7 +6,6 @@ import {
 	replaceDynamicParts,
 	hasDynamic
 } from '../../utils/uri.mjs';
-import { timeStamp } from '../../utils/timeline.mjs';
 
 class BmpRemoteApp {
 
@@ -17,8 +16,6 @@ class BmpRemoteApp {
 	 *
 	 */
 	constructor({ clientRequest, htmlDriver, entrypoint }) {
-		/** @param htmlDriver driver of html5 stringifier */
-		this.htmlDriver = htmlDriver
 		/** @param {String} entrypoint script URL  */
 		this.entrypoint = entrypoint
 		/** @param {Object} clientRequest key-value pair object with client request */
@@ -26,6 +23,8 @@ class BmpRemoteApp {
 
 		/** Create enviroment of vitrual machine and start it */
 
+		/** @param htmlDriver driver of html5 stringifier */
+		this.htmlDriver = htmlDriver
 		const vmContext = HTML5Api({
 			baseURI: clientRequest.origin,
 			url: (clientRequest.origin.replace(/https?:\/\/(.*)\/$/, '$1') + clientRequest.uri),

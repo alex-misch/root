@@ -2,13 +2,16 @@
 import fs from 'fs'
 import { getProcessArguments } from './utils/arguments.mjs'
 
+import VirtualDOMDriver from './drivers/html/virtual-dom'
 import BmpRemoteApp from './core/classes/remote-app.mjs'
 
-const args = getProcessArguments('output', 'src')
+const args = getProcessArguments('output', 'src', 'origin', 'user-agent')
 const remoteApp = new BmpRemoteApp({
 	entrypoint: args.src,
+	htmlDriver: new VirtualDOMDriver(),
 	clientRequest: {
-		origin: 'https://jetsmarter.com'
+		origin: args.origin,
+		userAgent: args['user-agent']
 	}
 })
 

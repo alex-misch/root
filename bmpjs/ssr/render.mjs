@@ -12,7 +12,7 @@ global.request = {
 	uri: args.url,
 	ip: args.ip,
 	origin: args.origin,
-	userAgent: args['user-agent'] || 'Google Chrome'
+	userAgent: args['user-agent']
 }
 
 const render = async (clientRequest, entrypoint) => {
