@@ -49,10 +49,10 @@ func TestWrapShortcuts(t *testing.T) {
 		shortcut string // shortcut for wrapping
 		expected string // wrapped
 	}{
-		{debugPrefix, "\x1b[1;37m[DEBUG]\x1b[0m\t"},
-		{errorPrefix, "\x1b[1;31;5m[ERROR]\x1b[0m\t"},
-		{infoPrefix, "\x1b[1;32m[INFO]\x1b[0m\t"},
-		{warningPrefix, "\x1b[1;33;5m[WARN]\x1b[0m\t"},
+		{DebugPrefix, "\x1b[1;37m[DEBUG]\x1b[0m\t"},
+		{ErrorPrefix, "\x1b[1;31;5m[ERROR]\x1b[0m\t"},
+		{InfoPrefix, "\x1b[1;32m[INFO]\x1b[0m\t"},
+		{WarningPrefix, "\x1b[1;33;5m[WARN]\x1b[0m\t"},
 	}
 
 	for i, tt := range tableTests {

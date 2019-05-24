@@ -7,28 +7,28 @@ import (
 )
 
 const (
-	modChar = "\x1b"
+	modChar = '\x1b'
 )
 
 var (
 	// just shortcuts for logger methods
-	debugPrefix   = Wrap("[DEBUG]", Bold, GrayChar) + "\t"
-	errorPrefix   = Wrap("[ERROR]", Bold, RedChar, Blink) + "\t"
-	infoPrefix    = Wrap("[INFO]", Bold, GreenChar) + "\t"
-	warningPrefix = Wrap("[WARN]", Bold, YellowChar, Blink) + "\t"
+	DebugPrefix   = Wrap("[DEBUG]", Bold, GrayChar) + "\t"
+	ErrorPrefix   = Wrap("[ERROR]", Bold, RedChar, Blink) + "\t"
+	InfoPrefix    = Wrap("[INFO]", Bold, GreenChar) + "\t"
+	WarningPrefix = Wrap("[WARN]", Bold, YellowChar, Blink) + "\t"
 )
 
 type Modification int
 type Modifications []Modification
 
 func (ms Modifications) String() string {
-	toString := make([]string, len(ms))
+	ss := make([]string, len(ms))
 
 	for i, v := range ms {
-		toString[i] = strconv.Itoa(int(v))
+		ss[i] = strconv.Itoa(int(v))
 	}
 
-	return fmt.Sprintf("%s[%sm", modChar, strings.Join(toString, ";"))
+	return fmt.Sprintf("%c[%sm", modChar, strings.Join(ss, ";"))
 }
 
 const (

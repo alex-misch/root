@@ -4,35 +4,28 @@ import (
 	"io"
 	"log"
 	"os"
-	// "sync"
 )
 
 // Logger represents simple logging object
 // calls underlying golang Logger write
-// Logger implements io.Writer interface - default behavior - write to out part
-// Logger implements io.Closer interface - default behavior - close associated resources
+// Logger implements io.Writer interface - default behavior - write to out with default prefix
 type Logger struct {
-	// mu    sync.Mutex // ensures atomic writes; protects the following fields
-	out   *log.Logger
-	err   *log.Logger
-	debug bool
+	out    *log.Logger
+	prefix string // default prefix
+	debug  bool
 }
 
 // NewLogger returns logger object associated with out and error writers
-// by default - os.Stdout and os.Stderr will be used
-func NewLogger(out, err io.Writer) *Logger {
+// by default - os.Stdout will be used
+func NewLogger(out io.Writer, prefix string) *Logger {
 	if out == nil {
 		out = os.Stdout
 	}
 
-	if err == nil {
-		err = os.Stderr
-	}
-
 	return &Logger{
-		out:   log.New(out, "", log.LstdFlags),
-		err:   log.New(err, "", log.LstdFlags),
-		debug: false,
+		out:    log.New(out, prefix, log.LstdFlags),
+		prefix: prefix,
+		debug:  false,
 	}
 }
 
@@ -63,16 +56,12 @@ func NewLogger(out, err io.Writer) *Logger {
 // 	return NewLogger(f, f), nil
 // }
 
-// Close implements io.Closer interface
-// func (l *Logger) Close() error {
-// 	return nil
-// }
-//
-// // Write implements io.Writer interface
-// func (l *Logger) Write(p []byte) (int, error) {
-// 	l.Info(p)
-// 	return len(p), nil
-// }
+// Write implements io.Writer interface
+func (l *Logger) Write(data []byte) (int, error) {
+	l.out.SetPrefix(l.prefix)
+	l.out.Printf("%s", data)
+	return len(data), nil
+}
 
 func (l *Logger) SetDebug(debug bool) {
 	l.debug = debug
@@ -80,44 +69,44 @@ func (l *Logger) SetDebug(debug bool) {
 
 func (l *Logger) Debug(args ...interface{}) {
 	if l.debug {
-		l.err.SetPrefix(debugPrefix)
-		l.err.Print(args...)
+		l.out.SetPrefix(DebugPrefix)
+		l.out.Print(args...)
 	}
 }
 
-func (l *Logger) Debugf(fmtString string, args ...interface{}) {
+func (l *Logger) Debugf(fmt string, args ...interface{}) {
 	if l.debug {
-		l.err.SetPrefix(debugPrefix)
-		l.err.Printf(fmtString+"\n", args...)
+		l.out.SetPrefix(DebugPrefix)
+		l.out.Printf(fmt+"\n", args...)
 	}
 }
 
 func (l *Logger) Error(args ...interface{}) {
-	l.err.SetPrefix(errorPrefix)
-	l.err.Print(args...)
-}
-
-func (l *Logger) Errorf(fmtString string, args ...interface{}) {
-	l.err.SetPrefix(errorPrefix)
-	l.err.Printf(fmtString+"\n", args...)
-}
-
-func (l *Logger) Info(args ...interface{}) {
-	l.out.SetPrefix(infoPrefix)
+	l.out.SetPrefix(ErrorPrefix)
 	l.out.Print(args...)
 }
 
-func (l *Logger) Infof(fmtString string, args ...interface{}) {
-	l.out.SetPrefix(infoPrefix)
-	l.out.Printf(fmtString+"\n", args...)
+func (l *Logger) Errorf(fmt string, args ...interface{}) {
+	l.out.SetPrefix(ErrorPrefix)
+	l.out.Printf(fmt+"\n", args...)
+}
+
+func (l *Logger) Info(args ...interface{}) {
+	l.out.SetPrefix(InfoPrefix)
+	l.out.Print(args...)
+}
+
+func (l *Logger) Infof(fmt string, args ...interface{}) {
+	l.out.SetPrefix(InfoPrefix)
+	l.out.Printf(fmt+"\n", args...)
 }
 
 func (l *Logger) Warn(args ...interface{}) {
-	l.err.SetPrefix(warningPrefix)
-	l.err.Print(args...)
+	l.out.SetPrefix(WarningPrefix)
+	l.out.Print(args...)
 }
 
-func (l *Logger) Warnf(fmtString string, args ...interface{}) {
-	l.err.SetPrefix(warningPrefix)
-	l.err.Printf(fmtString+"\n", args...)
+func (l *Logger) Warnf(fmt string, args ...interface{}) {
+	l.out.SetPrefix(WarningPrefix)
+	l.out.Printf(fmt+"\n", args...)
 }
