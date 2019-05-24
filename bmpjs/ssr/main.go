@@ -8,14 +8,12 @@ import (
 	"net/http"
 
 	"github.com/boomfunc/root/tools/flow"
-	"github.com/boomfunc/root/tools/kvs"
 )
 
 // JsonEntrypoint is shortcut for `base` which parses output from ssr in json format
 // fill `flow` context with status code and mimetype
-// TODO: make the layer more transparent -> http or not?, etc
 func JsonEntrypoint(ctx context.Context) error {
-	// get required context
+	// TODO: deprecated phase
 	stdin, ok := ctx.Value("stdin").(io.Reader)
 	if !ok {
 		return flow.ErrStepOrphan
@@ -24,32 +22,28 @@ func JsonEntrypoint(ctx context.Context) error {
 	if !ok {
 		return flow.ErrStepOrphan
 	}
-	storage, ok := ctx.Value("db").(kvs.DB)
-	if !ok {
-		return flow.ErrStepOrphan
-	}
+	// TODO: end of deprecated phase
 
-	// parse json
+
+	// Phase 1. Parse json returned from ssr cli
 	intermediate := struct {
 		Status  int
 		Content string
 		Mime    string
 	}{}
 
-	decoder := json.NewDecoder(stdin)
-	if err := decoder.Decode(&intermediate); err != nil {
+	if err := json.NewDecoder(stdin).Decode(&intermediate); err != nil {
 		return fmt.Errorf("bmpjs/ssr: %s", err)
 	}
 
-	// translate headers
-	headers := make(http.Header)
-	headers.Set("Content-Type", intermediate.Mime)
-	storage.Set("http", "headers", headers)
-	// translate status code
-	storage.Set("http", "status", intermediate.Status)
+	// Phase 3. If we have HTTP mode - set headers and status code
+	w, http := ctx.Value("w").(http.ResponseWriter)
+	if http {
+		w.Header().Set("Content-Type", intermediate.Mime)
+		w.WriteHeader(intermediate.Status)
+	}
 
-	// write content to next pipeline layer
+	// In any way - content must be written to pipe
 	_, err := fmt.Fprint(stdout, intermediate.Content)
-
 	return err
 }

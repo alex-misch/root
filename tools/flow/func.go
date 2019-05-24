@@ -3,9 +3,9 @@ package flow
 import (
 	"context"
 	"fmt"
+	"io"
 	"reflect"
 	"runtime"
-	"io"
 )
 
 // function is basic type of step (executable)

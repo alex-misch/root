@@ -7,16 +7,20 @@ import (
 	"testing"
 )
 
-func finner(ctx context.Context, opts Options) error {
+func finner(ctx context.Context) error {
+	return nil
+
+	// TODO:
+
 	// write hello world to stdout
-	_, err := fmt.Fprint(opts.Stdout(), "Hello world")
-	return err
+	// _, err := fmt.Fprint(opts.Stdout(), "Hello world")
+	// return err
 }
 
 func TestFunc(t *testing.T) {
 	t.Run("New", func(t *testing.T) {
 		tableTests := []struct {
-			inner StepFunc // raw function
+			inner func(context.Context) error // raw function
 			isNil bool
 		}{
 			{nil, true},
@@ -36,7 +40,7 @@ func TestFunc(t *testing.T) {
 
 	t.Run("Run", func(t *testing.T) {
 		stdout := bytes.NewBuffer(nil)
-		err := Func(finner).Run(context.Background(), Options{nil, stdout, nil})
+		err := Func(finner).Run(context.Background())
 
 		if err != nil {
 			t.Fatal(err)
