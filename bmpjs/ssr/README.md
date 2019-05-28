@@ -21,7 +21,7 @@ npm install
 
 * RUN render script:
 ```
-node --experimental-modules --no-warnings --experimental-vm-modules render.mjs --url=/
+node --experimental-modules --no-warnings --experimental-vm-modules render.mjs --url=/ --src=https://jetsmarter.com/data/com/jetsmarter.biggame/index.es.js
 ```
 **OR**
 ```

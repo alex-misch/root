@@ -22,45 +22,6 @@ collection:
 
 
   # Sitemap generator
-  - pattern: "/ssr/{node:com/jetsmarter.charter}/sitemap.xml"
-    pipeline:
-      - type: process
-        cmd: >
-          node
-          --experimental-modules
-          --no-warnings
-          --experimental-vm-modules
-          ./sitemap.mjs
-          --output=stdout
-          --user-agent='{{meta "ua"}}'
-          --origin=https://charter.jetsmarter.com
-          --src=https://jetsmarter.com/data/{{url "node"}}/index.es.js
-
-      - *jsonplugin
-
-  # Clear cache
-  - pattern: "/{node:com/jetsmarter.charter}/cleanthisbitch"
-    << : *clearcache
-
-  # Client app rendering
-  - pattern: "/ssr/{node:com/jetsmarter.charter}/{url:*}"
-    pipeline:
-      - type: process
-        cmd: >
-          node
-          --experimental-modules
-          --no-warnings
-          --experimental-vm-modules
-          ./render.mjs
-          --url=/{{url "url"}}
-          --ip={{meta "ip"}}
-          --user-agent='{{meta "ua"}}'
-          --src=https://jetsmarter.com/data/{{url "node"}}/index.es.js
-          --origin=https://charter.jetsmarter.com/
-
-      - *jsonplugin
-
-  # Sitemap generator
   - pattern: "/ssr/{node:com/jetsmarter}/sitemap.xml"
     pipeline:
       - type: process
@@ -100,6 +61,46 @@ collection:
 
       - *jsonplugin
 
+
+  # Sitemap generator
+  - pattern: "/ssr/{node:com/jetsmarter.charter}/sitemap.xml"
+    pipeline:
+      - type: process
+        cmd: >
+          node
+          --experimental-modules
+          --no-warnings
+          --experimental-vm-modules
+          ./sitemap.mjs
+          --output=stdout
+          --user-agent='{{meta "ua"}}'
+          --origin=https://charter.jetsmarter.com
+          --src=https://jetsmarter.com/data/{{url "node"}}/index.es.js
+      # --src=/Users/alexander/letsnet/jetsmarter.mono/dist/index.es.js
+
+      - *jsonplugin
+
+  # Clear cache
+  - pattern: "/{node:com/jetsmarter.charter}/cleanthisbitch"
+    << : *clearcache
+
+  # Client app rendering
+  - pattern: "/ssr/{node:com/jetsmarter.charter}/{url:*}"
+    pipeline:
+      - type: process
+        cmd: >
+          node
+          --experimental-modules
+          --no-warnings
+          --experimental-vm-modules
+          ./render.mjs
+          --url=/{{url "url"}}
+          --ip={{meta "ip"}}
+          --user-agent='{{meta "ua"}}'
+          --src=https://jetsmarter.com/data/{{url "node"}}/index.es.js
+          --origin=https://charter.jetsmarter.com/
+
+      - *jsonplugin
 
   - pattern: "/ssr/{node:com/jetsmarter.biggame}/sitemap.xml"
     pipeline:
