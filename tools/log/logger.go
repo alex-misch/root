@@ -15,9 +15,9 @@ type Logger struct {
 	debug  bool
 }
 
-// NewLogger returns logger object associated with out and error writers
+// New returns logger object associated with out and error writers
 // by default - os.Stdout will be used
-func NewLogger(out io.Writer, prefix string) *Logger {
+func New(out io.Writer, prefix string) *Logger {
 	if out == nil {
 		out = os.Stdout
 	}
