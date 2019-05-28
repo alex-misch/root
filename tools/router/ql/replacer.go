@@ -21,6 +21,18 @@ var (
 	// TODO: expand the list as you like
 	shortcuts = strings.NewReplacer(
 		"*", ".*", // {*} will be .* in context of using
+		// escape regex specials (exluding | - we use OR statement)
+		".", "\\.",
+		"+", "\\+",
+		"?", "\\?",
+		"(", "\\(",
+		")", "\\)",
+		"[", "\\[",
+		"]", "\\]",
+		"{", "\\{",
+		"}", "\\}",
+		"^", "\\^",
+		"$", "\\$",
 	)
 )
 

@@ -55,6 +55,6 @@ func (b Bracket) String() string {
 		replacer = groupReplacer(wrapper) // get replacer by group name (group name parsed from as `wrapper` variable)
 	}
 
-	// Phase 2. Get final regexp from parsed source accorfing to chosen wrapper
+	// Phase 2. Get final regexp from parsed source according to chosen wrapper
 	return replacer(source)
 }

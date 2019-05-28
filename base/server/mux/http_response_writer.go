@@ -1,5 +1,7 @@
 package mux
 
+// custom http.ResponseWriter. Beta version.
+
 import (
 	"bytes"
 	"net/http"
@@ -65,6 +67,6 @@ func (rw *httprw) Response(r *http.Request) *http.Response {
 		Body:          tools.ReadCloser(rw.body),
 		Request:       r,
 		Header:        rw.header, // NOTE: use attribute directly to avoid unnecessary creating map via .Header()
-		ContentLength: -1,
+		ContentLength: int64(rw.body.Len()),
 	}
 }

@@ -21,6 +21,7 @@ func TestBracket(t *testing.T) {
 			// real values
 			{"foo|bar|baz", "(?:foo|bar|baz)"},
 			{"foo|bar|*", "(?:foo|bar|.*)"},
+			{"fo.o|bar|*", "(?:fo\\.o|bar|.*)"},
 		}
 
 		for i, tt := range tableTests {

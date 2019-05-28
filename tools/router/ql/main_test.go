@@ -16,7 +16,8 @@ func TestRegexp(t *testing.T) {
 		{"/geo?{*}", "^/geo\\?(?:.*)$"},
 		{"/geo/{*}/foo/bar", "^/geo/(?:.*)/foo/bar$"},
 		{"/geo/my", "^/geo/my$"},
-		{"/foo/.+*?()|[]{}^$/bar", "^/foo/\\.\\+\\*\\?\\(\\)\\|\\[\\]\\^\\$/bar$"}, // all special chars (NOTE: without `{}` because it is out reserved chars)
+		{"/prefix/{url:domain.com/*}/{expr:jpg|jpg.bin}", "^/prefix/(?P<url>domain\\.com/.*)/(?P<expr>jpg|jpg\\.bin)$"}, // expression inside bracket that is not dynamic
+		{"/foo/.+*?()|[]{}^$/bar", "^/foo/\\.\\+\\*\\?\\(\\)\\|\\[\\]\\^\\$/bar$"},                                      // all special chars (NOTE: without `{}` because it is out reserved chars)
 		// regular cases
 		{"^/{data|static}/{*}.{jpg|png|jpeg}$", "^/(?:data|static)/(?:.*)\\.(?:jpg|png|jpeg)$"},
 		{"/{data|static}/{*}.{jpg|png|jpeg}", "^/(?:data|static)/(?:.*)\\.(?:jpg|png|jpeg)$"},
