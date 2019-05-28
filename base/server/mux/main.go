@@ -63,7 +63,7 @@ func (mux Router) JSON(ctx context.Context, stdin io.Reader, stdout, stderr io.W
 }
 
 // HTTP is the http logic handler entrypoint.
-// Parse request as http
+// Parse request as http payload.
 // Run http handler.
 // Pack response as http.
 func (mux Router) HTTP(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer) error {
@@ -76,9 +76,12 @@ func (mux Router) HTTP(ctx context.Context, stdin io.Reader, stdout, stderr io.W
 	// Phase 2. Run http.Handler
 	// 1. Create response writer
 	// 2. Tranform request to use out cancellation context.
+	// 3. Run via StepHandler
+	step := router.Mux(mux).MatchLax(r.URL)
 	w := NewHTTPResponseWriter()
 	r = r.WithContext(ctx)
-	mux.ServeHTTP(w, r)
+
+	StepHandler(step).ServeHTTP(w, r)
 
 	// Phase 3. Generate plain response
 	return w.Response(r).Write(stdout)

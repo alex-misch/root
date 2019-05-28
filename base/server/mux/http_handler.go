@@ -5,14 +5,17 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/boomfunc/root/tools/flow"
 	"github.com/boomfunc/root/tools/router"
 )
 
+type stepHandler struct {
+	step flow.SStep
+}
+
 // ServeHTTP implements http.Handler interfaces.
-// This is wrapper for Step interface.
-// This is http basic logic for base server
 // Also, can be used as handler to net/http
-func (mux Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (sh *stepHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Set the default headers
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
@@ -39,8 +42,9 @@ func (mux Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx = context.WithValue(ctx, "r", r)
 
 	// Generate body using route Step
-	if err := router.Mux(mux).MatchLax(r.URL).Run(ctx, r.Body, w, nil); err != nil {
+	if err := sh.step.Run(ctx, r.Body, w, nil); err != nil {
 		// What is the error? We can imagine several situations.
+		// By default - we translate error and text.
 		var status int = http.StatusInternalServerError
 		var error string = err.Error()
 
@@ -52,4 +56,11 @@ func (mux Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		http.Error(w, error, status)
 	}
+}
+
+// StepHandler returns a request handler that wraps flow.Step execution
+//
+// This is http basic logic for base server
+func StepHandler(step flow.SStep) http.Handler {
+	return &stepHandler{step}
 }
