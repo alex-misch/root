@@ -3,9 +3,11 @@ package server
 import (
 	"container/heap"
 	"context"
+	"os"
 
 	"github.com/boomfunc/root/base/server/transport"
 	"github.com/boomfunc/root/tools/flow"
+	"github.com/boomfunc/root/tools/log"
 	"github.com/google/uuid"
 )
 
@@ -48,7 +50,10 @@ func (srv *Server) Serve() error {
 
 	go srv.transport.Serve()
 
-	return flow.ConcurrentHeap(
+	stderr := log.New(os.Stderr, log.ErrorPrefix)
+	stderr.Write([]byte("OOOPS"))
+
+	return flow.ConcurrentServe(
 		flow.WorkersHeap(4), // number of workers (based on CPU)
 		srv.steps(),
 	).Run(context.Background())

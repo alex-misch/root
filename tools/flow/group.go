@@ -235,7 +235,7 @@ func (g *group) Run(ctx context.Context) error {
 	}
 }
 
-// Close implemtns io.Closer interface
+// Close implements the io.Closer interface
 // closes all group level resources
 func (g *group) Close() error {
 	g.mutex.Lock()

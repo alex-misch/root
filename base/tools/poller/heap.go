@@ -4,9 +4,6 @@ import (
 	"container/heap"
 	"fmt"
 	"sync"
-	"sync/atomic"
-
-	"github.com/boomfunc/root/base/tools"
 )
 
 type HeapItem struct {
@@ -21,15 +18,10 @@ func (item *HeapItem) String() string {
 }
 
 type pollerHeap struct {
-	// poller integration
-	// and sync locking section
-	poller  Interface
-	once    tools.Once // poller invoking only once per time
-	cond    *sync.Cond // poller ready (waiting) condition
-	waiting uint32     // special int indicating that now some routine is waiting for broadcasting from .Poll()
-
-	// mutex and state
 	mutex   sync.Mutex // this mutex guards variables below
+	poller  Interface  // poller intergration
+	ponce   *sync.Once // poller invoking only once per time
+	pcond   *sync.Cond // poller ready (waiting) condition
 	pending []*HeapItem
 }
 
@@ -38,7 +30,8 @@ type pollerHeap struct {
 func HeapWithPoller(poller Interface) (heap.Interface, error) {
 	h := new(pollerHeap)
 	h.poller = poller
-	h.cond = sync.NewCond(new(sync.Mutex))
+	h.ponce = new(sync.Once)
+	h.pcond = sync.NewCond(&h.mutex)
 	h.pending = make([]*HeapItem, 0)
 
 	heap.Init(h)
@@ -60,6 +53,7 @@ func (h *pollerHeap) len() int {
 	return len(h.pending)
 }
 
+// Len implements the sort.Interface
 func (h *pollerHeap) Len() int {
 	h.mutex.Lock()
 	n := h.len()
@@ -68,40 +62,18 @@ func (h *pollerHeap) Len() int {
 	return n
 }
 
-func (h *pollerHeap) less(i, j int) bool {
-	// Less reports whether the element with
-	// index i should sort before the element with index j.
-	if !h.pending[i].ready && h.pending[j].ready {
-		return true
-	}
-	return false
-}
-
+// Less implements the sort.Interface
 func (h *pollerHeap) Less(i, j int) bool {
 	return false
-	// h.mutex.RLock()
-	// b := h.less(i, j)
-	// h.mutex.RUnlock()
-	//
-	// return b
 }
 
-func (h *pollerHeap) swap(i, j int) {
-	if h.len() >= 2 {
-		// there is something to swap
-		h.pending[i], h.pending[j] = h.pending[j], h.pending[i]
-	}
-}
-
+// Swap implements the sort.Interface
 func (h *pollerHeap) Swap(i, j int) {
 	return
-	// h.mutex.Lock()
-	// h.swap(i, j)
-	// h.mutex.Unlock()
 }
 
-// Push implements heap.Interface
-// adds flow to poller
+// Push implements the heap.Interface
+// adds pollable element to poller
 func (h *pollerHeap) Push(x interface{}) {
 	if item, ok := x.(*HeapItem); ok {
 		h.mutex.Lock()
@@ -125,18 +97,21 @@ func (h *pollerHeap) Pop() interface{} {
 		// background poll refresh
 		go h.Poll()
 
-		// try to pop ready
-		h.mutex.Lock()
-		value := h.pop()
-		h.mutex.Unlock()
+		h.pcond.L.Lock()
 
-		// check for wait
-		if value != nil {
+		// Try to pop ready item and return it if nonnil.
+		if value := h.pop(); value != nil {
+			// found ready non nil item, return it
+			h.pcond.L.Unlock()
 			return value
 		}
 
-		// we checked fetched value and it is not valid -. we need to wait for nearest polling
-		h.Wait()
+		// no ready event found, wait for nearest polling
+		// create polling assistance and wait for it
+		go h.Poll()
+		h.pcond.Wait()
+
+		h.pcond.L.Unlock()
 	}
 }
 
@@ -179,60 +154,19 @@ func (h *pollerHeap) Poll() {
 		// events are received (and they are!)
 		h.mutex.Lock()
 		h.actualize(re, ce) // push ready, excluding closed
+		h.ponce = new(sync.Once)
+		h.pcond.Broadcast()
 		h.mutex.Unlock()
 	}
 
 	// f invokes with mutex locking on once.Do layer
 	// but once.m is a different mutex than h.mutex
 	// -> f() not thread safety
-	real := h.once.DoReset(f) // NOTE: if we move under h.mutex.Lock() inner f will block
-
-	// NOTE: only real invokes of .poll() (real Once.Do) can release waiting goroutines
 	h.mutex.Lock()
-	defer h.mutex.Unlock()
-
-	if real && atomic.LoadUint32(&h.waiting) == 1 {
-		// NOTE: and! only if some waiters exists
-		// set flag back to nonwait
-		atomic.StoreUint32(&h.waiting, 0)
-		// broadcasr waiters (all) (no care about multiple invokes)
-		h.cond.Broadcast()
-	}
-}
-
-// wait is private rool that enables waiting flag and runs Poll companion
-func (h *pollerHeap) wait() {
-	h.cond.L.Lock()   // NOTE: this will wait for h.cond.Wait()
-	h.cond.L.Unlock() // NOTE: return state to unlocked (concurrent .wait() will be passed and .Poll() will be faked instead waiting and invoke new real .Poll())
-
-	// we waiting broadcasting signal (signal wake up waiting)
-	h.mutex.Lock()
-	atomic.StoreUint32(&h.waiting, 1)
+	once := h.ponce
 	h.mutex.Unlock()
 
-	// run helper instance of polling (event if it will faked waiting flag set to 1)
-	// NOTE: it is just companion for case when now is no .Poll() is running
-	h.Poll()
-}
-
-// Wait is special tool ths will block until some instance of .Poll() wake up by throwing a broadcast signal
-func (h *pollerHeap) Wait() {
-	h.cond.L.Lock() // NOTE: this guarantees that h.cond.Wait() will be called before h.cond.Broadcast()
-	defer h.cond.L.Unlock()
-
-	go h.wait()
-
-	// // TODO: MAYBE run this goroutine only if no wait? because if wait - some Poll working and no broadcasted yet
-	// h.mutex.Lock()
-	// if atomic.LoadUint32(&h.waiting) == 0 {
-	// 	h.mutex.Unlock()
-	// 	go h.wait()
-	// } else {
-	// 	h.mutex.Unlock()
-	// }
-	// // TODO
-
-	h.cond.Wait() // NOTE: this unlocks .wait() invoked in goroutine above
+	once.Do(f)
 }
 
 // actualize called after success polling process finished
