@@ -6,6 +6,7 @@ import (
 	"sync"
 )
 
+// HeapItem describes simple pollable object
 type HeapItem struct {
 	Fd    uintptr
 	Value interface{}
@@ -13,8 +14,8 @@ type HeapItem struct {
 }
 
 // String implements fmt.Stringer interface
-func (item *HeapItem) String() string {
-	return fmt.Sprintf("HeapItem(fd: %d, value: %v, ready: %t)", item.Fd, item.Value, item.ready)
+func (item HeapItem) String() string {
+	return fmt.Sprintf("HeapItem(fd=%d, ready=%t)", item.Fd, item.ready)
 }
 
 type pollerHeap struct {
@@ -74,20 +75,26 @@ func (h *pollerHeap) Swap(i, j int) {
 
 // Push implements the heap.Interface
 // adds pollable element to poller
+//
+// TODO errors not visible to caller
 func (h *pollerHeap) Push(x interface{}) {
-	if item, ok := x.(*HeapItem); ok {
-		h.mutex.Lock()
-
-		// try to add to poller
-		if err := h.poller.Add(item.Fd); err == nil {
-			// fd in poller, store it for .Pop()
-			h.pending = append(h.pending, item)
-		} else {
-			// TODO error not visible! in transport layer
-		}
-
-		h.mutex.Unlock()
+	// Phase 1. Convert object to pollable itemю
+	fd, err := FD(x)
+	if err != nil {
+		return
 	}
+	item := &HeapItem{Fd: fd, Value: x}
+
+	// Phase 2. Received object is pollable - push it to the poller and heapю
+	h.mutex.Lock()
+
+	// try to add to poller
+	if err := h.poller.Add(item.Fd); err == nil {
+		// fd in poller, store it for .Pop()
+		h.pending = append(h.pending, item)
+	}
+
+	h.mutex.Unlock()
 }
 
 // Pop implements heap.Interface
@@ -141,11 +148,10 @@ func (h *pollerHeap) poll() ([]uintptr, []uintptr) {
 	}
 }
 
-// Poll is thread safety operation for waiting events from poller
-// and actualize heap data
+// Poll is thread safety operation for waiting events from poller and actualize heap data.
 // NOTE: Poll may be invoked as many times as wants - only one instance of this will be really invoked
 func (h *pollerHeap) Poll() {
-	// f is poll with actualizing heap data
+	// f is the polling process with actualizing heap data.
 	// Only one running instance of this function per time across all workers -> under Once.Do
 	f := func() {
 		// blocking mode operation !!
@@ -153,9 +159,9 @@ func (h *pollerHeap) Poll() {
 
 		// events are received (and they are!)
 		h.mutex.Lock()
-		h.actualize(re, ce) // push ready, excluding closed
-		h.ponce = new(sync.Once)
-		h.pcond.Broadcast()
+		h.actualize(re, ce)      // push ready, excluding closed
+		h.pcond.Broadcast()      // tell waiting to continue working with .Pop(0)
+		h.ponce = new(sync.Once) // reset once condition after successful polling
 		h.mutex.Unlock()
 	}
 
@@ -163,17 +169,17 @@ func (h *pollerHeap) Poll() {
 	// but once.m is a different mutex than h.mutex
 	// -> f() not thread safety
 	h.mutex.Lock()
-	once := h.ponce
+	ponce := h.ponce
 	h.mutex.Unlock()
 
-	once.Do(f)
+	ponce.Do(f)
 }
 
 // actualize called after success polling process finished
 // purpose: update state (add new ready, delete closed)
 func (h *pollerHeap) actualize(ready []uintptr, close []uintptr) {
-	filtered := pendingFilterClosed(h.pending, close)
-	mapped := pendingMapReady(filtered, ready)
+	filtered := exclude(h.pending, close)
+	mapped := setReady(filtered, ready)
 
 	h.pending = mapped
 }

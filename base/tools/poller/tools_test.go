@@ -2,6 +2,7 @@ package poller
 
 import (
 	"fmt"
+	"os"
 	"reflect"
 	"testing"
 )
@@ -32,10 +33,10 @@ func TestEventsToFds(t *testing.T) {
 	}
 }
 
-func TestPendingFilterClosed(t *testing.T) {
+func TestExclude(t *testing.T) {
 	tableTests := []struct {
 		pending []*HeapItem
-		close   []uintptr
+		exclude []uintptr
 		out     []*HeapItem
 	}{
 		// nil values
@@ -48,14 +49,14 @@ func TestPendingFilterClosed(t *testing.T) {
 
 	for i, tt := range tableTests {
 		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-			if out := pendingFilterClosed(tt.pending, tt.close); !reflect.DeepEqual(out, tt.out) {
+			if out := exclude(tt.pending, tt.exclude); !reflect.DeepEqual(out, tt.out) {
 				t.Fatalf("Expected %v, got %v", tt.out, out)
 			}
 		})
 	}
 }
 
-func TestPendingMapReady(t *testing.T) {
+func TestSetReady(t *testing.T) {
 	tableTests := []struct {
 		pending []*HeapItem
 		ready   []uintptr
@@ -70,8 +71,36 @@ func TestPendingMapReady(t *testing.T) {
 
 	for i, tt := range tableTests {
 		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-			if out := pendingMapReady(tt.pending, tt.ready); !reflect.DeepEqual(out, tt.out) {
+			if out := setReady(tt.pending, tt.ready); !reflect.DeepEqual(out, tt.out) {
 				t.Fatalf("Expected %v, got %v", tt.out, out)
+			}
+		})
+	}
+}
+
+func TestFD(t *testing.T) {
+	tableTests := []struct {
+		i   interface{}
+		fd  uintptr
+		err error
+	}{
+		{nil, 0, ErrNotPollable},
+		{"not pollable", 0, ErrNotPollable},
+		{os.Stdin, 0, nil},
+		{os.Stdout, 1, nil},
+		{os.Stderr, 2, nil},
+	}
+
+	for i, tt := range tableTests {
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+			fd, err := FD(tt.i)
+
+			if !reflect.DeepEqual(err, tt.err) {
+				t.Fatalf("Expected %v, got %v", tt.err, err)
+			}
+
+			if fd != tt.fd {
+				t.Fatalf("Expected %v, got %v", tt.fd, fd)
 			}
 		})
 	}

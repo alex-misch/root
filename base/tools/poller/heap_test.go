@@ -3,6 +3,7 @@ package poller
 import (
 	"container/heap"
 	"fmt"
+	"os"
 	"reflect"
 	"testing"
 )
@@ -136,16 +137,20 @@ func TestHeapPublic(t *testing.T) {
 	})
 
 	t.Run("Push", func(t *testing.T) {
+		// we will use mock poller because we will send os.Stdin as pollable element
+		heapInterface, _ := HeapWithPoller(MockPoller(nil, nil, false))
+		hp, _ := heapInterface.(*pollerHeap)
+
 		// clear
-		hp.pending = []*HeapItem{}
+		hp.pending = nil
 
 		t.Run("real", func(t *testing.T) {
-			heap.Push(hp, &HeapItem{Fd: uintptr(1), Value: "1"})
+			heap.Push(hp, os.Stdin)
 			pollerHeapState(t, hp, 1)
 		})
 
 		// clear
-		hp.pending = []*HeapItem{}
+		hp.pending = nil
 
 		t.Run("fake", func(t *testing.T) {
 			heap.Push(hp, "foobar")
@@ -155,8 +160,8 @@ func TestHeapPublic(t *testing.T) {
 		t.Run("poller/error", func(t *testing.T) {
 			heapInterface, _ := HeapWithPoller(MockPoller(nil, nil, true))
 			hp, _ := heapInterface.(*pollerHeap)
-			// real value, but error from poller -> 0
-			heap.Push(hp, &HeapItem{Fd: uintptr(1), Value: "foobar"})
+			// real value, but mock error from poller -> 0
+			heap.Push(hp, os.Stdin)
 			pollerHeapState(t, hp, 0)
 		})
 	})
