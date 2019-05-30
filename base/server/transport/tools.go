@@ -29,12 +29,3 @@ func TCP(ip net.IP, port int) (Interface, error) {
 	}
 	return tcp, nil
 }
-
-func tcpFD(conn *net.TCPConn) (uintptr, error) {
-	f, err := conn.File()
-	if err != nil {
-		return 0, err
-	}
-
-	return f.Fd(), nil
-}

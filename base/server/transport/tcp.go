@@ -4,8 +4,6 @@ import (
 	"container/heap"
 	"net"
 	"time"
-
-	"github.com/boomfunc/root/base/tools/poller"
 )
 
 // TODO: implement net.Listener interface
@@ -58,12 +56,6 @@ func (tr *tcp) Serve() {
 			continue
 		}
 
-		fd, err := tcpFD(conn)
-		if err != nil {
-			tr.errCh <- err
-			continue
-		}
-
 		// set timeouts
 		// if err := conn.SetReadDeadline(time.Now().Add(readTimeout)); err != nil {
 		// 	tr.errCh <- err
@@ -76,7 +68,6 @@ func (tr *tcp) Serve() {
 		// }
 
 		// push incoming connection to heap
-		item := &poller.HeapItem{Fd: fd, Value: conn}
-		heap.Push(tr.poller, item)
+		heap.Push(tr.poller, conn)
 	}
 }
