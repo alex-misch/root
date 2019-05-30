@@ -82,6 +82,11 @@ func Run(NODE, VERSION, TIMESTAMP string) {
 					Usage:  runHTTPCommandUsage,
 					Action: runCommandAction,
 				},
+				{
+					Name: "golang",
+					// Usage:  runGolangCommandUsage,
+					Action: runGolangCommandAction,
+				},
 			},
 		},
 	}

@@ -3,12 +3,16 @@ package cli
 import (
 	"fmt"
 	"net"
+	"net/http"
 	"strings"
 
 	"github.com/boomfunc/root/base/server"
+	"github.com/boomfunc/root/base/server/mux"
 	"github.com/boomfunc/root/base/tools"
+	"github.com/boomfunc/root/base/tools/poller"
 	tcli "github.com/boomfunc/root/tools/cli"
 	"github.com/boomfunc/root/tools/log"
+	"github.com/boomfunc/root/tools/router"
 	"github.com/urfave/cli"
 )
 
@@ -50,4 +54,35 @@ func runCommandAction(c *cli.Context) {
 	server.StartupLog(strings.ToUpper(transport), strings.ToUpper(application), fmt.Sprintf("%s:%d", ip, port), config, srv)
 	// blocking mode
 	srv.Serve()
+}
+
+func runGolangCommandAction(c *cli.Context) {
+	log.SetDebug(c.GlobalBool("debug"))
+
+	// Phase 1. Create application layer (parse config)
+	m, err := mux.FromFile(c.GlobalString("config"))
+	if err != nil {
+		// cannot load server config
+		tools.FatalLog(err)
+	}
+
+	// Phase 2. Create transport layer. Create underlying listener and wrap it to poller listener.
+	addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", net.ParseIP("0.0.0.0"), c.GlobalInt("port")))
+	if err != nil {
+		tools.FatalLog(err)
+	}
+	tcpl, err := net.ListenTCP("tcp", addr)
+	if err != nil {
+		tools.FatalLog(err)
+	}
+	l, err := poller.Listener(tcpl)
+	if err != nil {
+		tools.FatalLog(err)
+	}
+
+	// Phase 3. Run golang server
+	http.Serve(l, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		step := router.Mux(m).MatchLax(r.URL)
+		mux.StepHandler(step).ServeHTTP(w, r)
+	}))
 }
