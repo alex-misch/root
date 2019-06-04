@@ -21,7 +21,7 @@ func ConcurrentServe(workers, steps heap.Interface) Step {
 	return newGroup(
 		steps,
 		workers,
-		R_CONCURRENT|CTX_SEPARATE,
+		R_CONCURRENT|CTX_SEPARATE|W_INFINITY,
 	)
 }
 
