@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"io"
-	"os"
 )
 
 var (
@@ -17,20 +16,6 @@ var (
 	ErrNotAStep = errors.New("tools/flow: Object cannot be used as `Step` interface")
 )
 
-// Filer is interface to get underlying pollable file
-// used for describing input and output of step
-// for piping, logging
-// it is something where we can store step's result
-//
-// TODO: Examples:
-// File
-// Pipe
-// Logger
-// Socket
-type Filer interface {
-	File() (*os.File, error)
-}
-
 // Step interface describes something that can be runned in some flow
 type SStep interface {
 	// stdin, stdout, stderr
@@ -40,19 +25,25 @@ type Step interface {
 	Run(context.Context) error
 }
 
-// execute is a universal runnner for all objects implements Step interface
-// execute runs a step on behalf of a available worker
+// execute is a universal runnner for any object implements the `Step` interface.
+// execute describes full execution flow of the single step.
 func execute(workers heap.Interface, ctx context.Context, step Step) error {
+	// Pre Phase. NOTE: step might be nil -> we need to check if it makes sense at all
+	if step == nil {
+		return nil
+	}
+
+	// Phase 1. Enable or not workers mode.
 	if workers != nil {
 		heap.Pop(workers)             // wait for available worker
 		defer heap.Push(workers, nil) // return worker after a step is finished
 	}
 
-	// broadcast waiting steps
-	// at inner subscription system
+	// Phase 2. Step exists, resources exists, run!
+	// After execution - broadcast waiting nodes at inner subscription system
 	defer Broadcast(step)
 
-	// run the step
+	// Run the step
 	return step.Run(ctx)
 }
 
@@ -81,10 +72,5 @@ func Execute(step Step) error {
 // ExecuteWithContext is universal runnner for all objects implements Step interface
 // unnecessary nonsense to avoid copy a check for a non-nil step
 func ExecuteWithContext(ctx context.Context, step Step) error {
-	// Pre Phase. NOTE: step might be nil -> we need to check if it makes sense at all
-	if step == nil {
-		return nil
-	}
-
 	return execute(nil, ctx, step)
 }

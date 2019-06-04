@@ -16,24 +16,22 @@ type workers chan struct{}
 
 // WorkersHeap returns limited workers heap
 func WorkersHeap(n int) heap.Interface {
-	// empty heap - no heap creation needed
+	// Empty heap - no creation need i.e. unlimited resources.
 	if n == 0 {
 		return nil
 	}
 
-	// create empty heap
+	// Create empty heap and fill it with workers.
 	h := workers(make(chan struct{}, n))
-	heap.Init(h)
-
-	// fill a heap of workers
 	for i := 0; i < n; i++ {
 		heap.Push(h, nil)
 	}
+	heap.Init(h)
 
 	return h
 }
 
-// Pop implements heap.Interface
+// Pop implements the heap.Interface
 // Fetch worker from channel if there is one
 // otherwise block and wait for him
 func (ws workers) Pop() interface{} {

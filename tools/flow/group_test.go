@@ -1,7 +1,7 @@
 package flow
 
 import (
-	"container/heap"
+	// "container/heap"
 	"context"
 	"errors"
 	"fmt"
@@ -140,16 +140,16 @@ func TestGroupPrivate(t *testing.T) {
 			having bool
 		}{
 			{0, R_CONCURRENT, false},
-			{0, W_DELAY, false},
+			{0, W_BACKGROUND, false},
 
-			{W_DELAY, R_CONCURRENT, false},
-			{W_DELAY, W_DELAY, true},
+			{W_BACKGROUND, R_CONCURRENT, false},
+			{W_BACKGROUND, W_BACKGROUND, true},
 
 			{R_CONCURRENT, R_CONCURRENT, true},
-			{R_CONCURRENT, W_DELAY, false},
+			{R_CONCURRENT, W_BACKGROUND, false},
 
-			{R_CONCURRENT | W_DELAY, R_CONCURRENT, true},
-			{R_CONCURRENT | W_DELAY, W_DELAY, true},
+			{R_CONCURRENT | W_BACKGROUND, R_CONCURRENT, true},
+			{R_CONCURRENT | W_BACKGROUND, W_BACKGROUND, true},
 		}
 
 		// main goal - no panics

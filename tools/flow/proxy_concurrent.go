@@ -14,6 +14,17 @@ func ConcurrentHeap(workers, steps heap.Interface) Step {
 	)
 }
 
+// ConcurrentServe returns group of steps with R_CONCURRENT flag
+// and uses own context for each step
+// as steps receives heap.Interface
+func ConcurrentServe(workers, steps heap.Interface) Step {
+	return newGroup(
+		steps,
+		workers,
+		R_CONCURRENT|CTX_SEPARATE,
+	)
+}
+
 // Concurrent returns group of steps with R_CONCURRENT flag
 // as steps receives as slice of steps
 func Concurrent(workers heap.Interface, steps ...Step) Step {
@@ -27,7 +38,7 @@ func DelayConcurrentHeap(workers, steps heap.Interface) Step {
 	return newGroup(
 		steps,
 		workers,
-		R_CONCURRENT|W_DELAY|CTX_ORPHAN,
+		R_CONCURRENT|W_BACKGROUND|CTX_ORPHAN,
 	)
 }
 

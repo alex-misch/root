@@ -30,7 +30,7 @@ func DelayGroupHeap(workers, steps heap.Interface) Step {
 	return newGroup(
 		steps,
 		workers,
-		W_DELAY|CTX_ORPHAN,
+		W_BACKGROUND|CTX_ORPHAN,
 	)
 }
 
