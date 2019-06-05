@@ -11,7 +11,6 @@ const (
 	// Runner modes. How we run steps from heap?
 	R_CONCURRENT uint8 = 1 << iota // Should we run each step in their own goroutine.
 	W_BACKGROUND                   // Should we return control before everything is done.
-	W_INFINITY                     // Serve forever (no return in selector).
 	CTX_ORPHAN                     // Detach current group context from parent.
 	CTX_SEPARATE                   // Indicates that each step have their own context.
 )
@@ -115,27 +114,20 @@ func (g *group) runner() {
 	g.wg.Wait()
 }
 
-func (g *group) log(a ...interface{}) {
-	if fmt.Sprintf("%b", g.flags) == "10101" {
-		fmt.Println(a...)
-	}
-}
-
 // waiter waits for execution results.
 // Also returns access to caller via returned error.
 func (g *group) waiter() error {
 	// Phase 1. Try to get result from channel.
 	for {
-		err := <-g.errCh
-
-		// Result fetched. does we need to return access to caller?
-		if !g.has(W_BACKGROUND) && g.has(W_INFINITY) {
-			// TODO: maybe log?
-			continue
+		err, ok := <-g.errCh
+		// Result fetched. Does we need to return access to caller?
+		if !ok {
+			// The case when the channel was closed.
+			// Means g.Close() was invoked.
+			// Means all steps were handled by the `runner`.
+			// Nothing more will come => return access to a caller.
+			return err
 		}
-
-		// No need to store this routine, return result to caller.
-		return err
 	}
 }
 

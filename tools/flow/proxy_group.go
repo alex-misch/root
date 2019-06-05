@@ -7,9 +7,9 @@ import (
 // GroupHeap returns group of steps running step-by-step
 // as steps receives heap.Interface
 func GroupHeap(workers, steps heap.Interface) Step {
-	return newGroup(
-		steps,
+	return NewGroup(
 		workers,
+		steps,
 		0,
 	)
 }
@@ -27,9 +27,9 @@ func Group(workers heap.Interface, steps ...Step) Step {
 // in background mode
 // as steps receives heap.Interface
 func DelayGroupHeap(workers, steps heap.Interface) Step {
-	return newGroup(
-		steps,
+	return NewGroup(
 		workers,
+		steps,
 		W_BACKGROUND|CTX_ORPHAN,
 	)
 }
