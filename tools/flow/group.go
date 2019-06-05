@@ -4,7 +4,6 @@ import (
 	"container/heap"
 	"context"
 	"fmt"
-	"reflect"
 	"sync"
 )
 
@@ -39,9 +38,9 @@ type group struct {
 	errCh chan error     // Channel for collecting errors.
 }
 
-// newGroup returns new group of steps
+// NewGroup returns new group of steps
 // using flags for different running and waiting modifications
-func newGroup(steps, workers heap.Interface, flags uint8) *group {
+func NewGroup(workers, steps heap.Interface, flags uint8) Step {
 	// Pre phase. Checks and preparings
 	if steps == nil {
 		// nothing to run (empty heap)
@@ -101,10 +100,10 @@ func (g *group) runner() {
 
 		// Look at runner mode enabled. And run `sub-run` function with the step.
 		if g.has(R_CONCURRENT) {
-			// Run the `Step` in their own goroutine
+			// Run the `Step` in their own goroutine.
 			go g.run(step)
 		} else {
-			// Run the `Step` in current goroutine
+			// Run the `Step` in current goroutine.
 			if err := g.run(step); err != nil {
 				// Step failed, no need to move forward more.
 				break
@@ -114,6 +113,12 @@ func (g *group) runner() {
 
 	// Phase 2. Wait for all `sub-run` functions executed
 	g.wg.Wait()
+}
+
+func (g *group) log(a ...interface{}) {
+	if fmt.Sprintf("%b", g.flags) == "10101" {
+		fmt.Println(a...)
+	}
 }
 
 // waiter waits for execution results.
@@ -141,9 +146,7 @@ func (g *group) contexter() context.Context {
 	// if g.has(CTX_SEPARATE) {
 	if true {
 		// caller must use thie own version of ctx
-		ctx := context.Background()
-		fmt.Println("return new ctx because CTX_SEPARATE", reflect.ValueOf(ctx).Pointer())
-		return ctx
+		return context.Background()
 	}
 
 	g.mutex.Lock()
@@ -169,7 +172,6 @@ func (g *group) run(step Step) error {
 	// Phase 2. Check the relevance of the data being run.
 	select {
 	case <-ctx.Done():
-		fmt.Println("CTX CLOSED")
 		// Context cancelled by another `Step` in current group.
 		// No need for starting execution of this step.
 		return ctx.Err()
@@ -192,15 +194,18 @@ func (g *group) run(step Step) error {
 func (g *group) fail(err error) {
 	g.mutex.Lock()
 
-	// Phase 1. Send information to `agent` if he is related
-	if g.errCh != nil {
-		g.errCh <- err
-	}
-
-	// Phase 2. Close execution context
-	// give to understand that execution no sense
+	// Phase 1. Close execution context.
+	// Give to understand that execution no sense.
 	if g.cancel != nil {
 		g.cancel()
+	}
+
+	// Phase 2. Send information to `agent` if he is related
+	if g.errCh != nil {
+		// NOTE: operation in defer is not under mutex.Lock.
+		// Because channel operations is safe itself.
+		// In case when no receivers on channel locking mutex can hung.
+		defer func(ch chan error) { ch <- err }(g.errCh)
 	}
 
 	g.mutex.Unlock()
@@ -230,15 +235,15 @@ func (g *group) Run(ctx context.Context) error {
 func (g *group) Close() error {
 	g.mutex.Lock()
 
-	// Phase 1. Close all synchronization channels
+	// Phase 1. Close execution context
+	if g.cancel != nil {
+		g.cancel()
+	}
+
+	// Phase 2. Close all synchronization channels
 	if g.errCh != nil {
 		close(g.errCh)
 		g.errCh = nil
-	}
-
-	// Phase 2. Close execution context
-	if g.cancel != nil {
-		g.cancel()
 	}
 
 	g.mutex.Unlock()
