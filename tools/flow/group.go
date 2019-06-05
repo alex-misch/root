@@ -4,18 +4,17 @@ import (
 	"container/heap"
 	"context"
 	"fmt"
+	"reflect"
 	"sync"
 )
 
 const (
 	// Runner modes. How we run steps from heap?
 	R_CONCURRENT uint8 = 1 << iota // Should we run each step in their own goroutine.
-	// Waiter modes. How we will wait for group results?
-	W_BACKGROUND // Should we return control before everything is done.
-	W_INFINITY   // Serve forever (no return in selector).
-	// Context modes. How we will work with cancellation?
-	CTX_ORPHAN   // Detach current group context from parent.
-	CTX_SEPARATE // Indicates that each step have their own context.
+	W_BACKGROUND                   // Should we return control before everything is done.
+	W_INFINITY                     // Serve forever (no return in selector).
+	CTX_ORPHAN                     // Detach current group context from parent.
+	CTX_SEPARATE                   // Indicates that each step have their own context.
 )
 
 // group describes multiple `Step` runned as a complex task.
@@ -23,23 +22,21 @@ const (
 //
 // 1) Waiter. Describes how we will return results to caller.
 // 2) Runner. Describes iteration loop and execution logic of steps heap.
-// 3) Controller. Describes how we need return access to caller.
-// 4) Contexter. Describes which context will each step receive to .Run() method.
+// 3) Contexter. Describes which context will each step receive to .Run() method.
 //
 // Also, there is group level context logic.
 type group struct {
-	flags uint8      // modifications set
-	mutex sync.Mutex // protect variables below
+	flags uint8      // Modifications set.
+	mutex sync.Mutex // Protects variables below.
 
 	workers heap.Interface
 	steps   heap.Interface
 
-	ctx    context.Context    // group level context
-	cancel context.CancelFunc // group level context cancellation
+	ctx    context.Context    // Group level context.
+	cancel context.CancelFunc // Group level context cancellation
 
-	// wg     sync.WaitGroup // responsible for waiting that all the steps are finished
-	errCh  chan error    // channel for collecting errors
-	doneCh chan struct{} // channel indicates all groups step completes
+	wg    sync.WaitGroup // Allows track that all steps are finished.
+	errCh chan error     // Channel for collecting errors.
 }
 
 // newGroup returns new group of steps
@@ -55,7 +52,6 @@ func newGroup(steps, workers heap.Interface, flags uint8) *group {
 		flags:   flags,
 		workers: workers,
 		steps:   steps,
-		doneCh:  make(chan struct{}, 1),
 		errCh:   make(chan error),
 	}
 }
@@ -71,11 +67,11 @@ func (g *group) has(bit uint8) bool {
 // setContext sets context cancellation for all group
 func (g *group) setContext(ctx context.Context) {
 
-	if g.has(CTX_ORPHAN) {
-		ctx = context.Background()
-	}
+	// if g.has(CTX_ORPHAN) {
+	// 	ctx = context.Background()
+	// }
 
-	ctx, cancel := context.WithCancel(ctx)
+	ctx, cancel := context.WithCancel(context.Background())
 
 	g.mutex.Lock()
 	g.ctx = ctx
@@ -85,14 +81,11 @@ func (g *group) setContext(ctx context.Context) {
 
 // runner is the helper function which run all steps from heap.
 func (g *group) runner() {
-	defer func() {
-		g.mutex.Lock()
-		if g.doneCh != nil {
-			g.doneCh <- struct{}{} // send complete signal
-		}
-		g.mutex.Unlock()
-	}()
+	// Prephase. All steps finished, close the group execution.
+	// Waiter routine will handle this action and return actual error value.
+	defer g.Close()
 
+	// Phase 1. Iterate over all steps. May work as `serve forever`.
 	for {
 		step, ok := heap.Pop(g.steps).(Step)
 		if !ok {
@@ -101,7 +94,12 @@ func (g *group) runner() {
 			break
 		}
 
-		// Look at runner mode enabled.
+		// Step arrived, increase waiting counter.
+		g.mutex.Lock()
+		g.wg.Add(1)
+		g.mutex.Unlock()
+
+		// Look at runner mode enabled. And run `sub-run` function with the step.
 		if g.has(R_CONCURRENT) {
 			// Run the `Step` in their own goroutine
 			go g.run(step)
@@ -113,39 +111,26 @@ func (g *group) runner() {
 			}
 		}
 	}
+
+	// Phase 2. Wait for all `sub-run` functions executed
+	g.wg.Wait()
 }
 
 // waiter waits for execution results.
 // Also returns access to caller via returned error.
 func (g *group) waiter() error {
+	// Phase 1. Try to get result from channel.
 	for {
-		// wait and return error to caller
-		select {
-		case err := <-g.errCh:
-			// error arrived from channel
-			if g.has(W_INFINITY) {
-				// maybe log?
-				continue
-			}
-			return err
-		case <-g.doneCh:
-			select {
-			case err := <-g.errCh:
-				// error arrived from channel
-				if g.has(W_INFINITY) {
-					// maybe log?
-					continue
-				}
-				return err
-			default:
-				// Default is must be to avoid blocking
-				if g.has(W_INFINITY) {
-					// maybe log?
-					continue
-				}
-				return nil
-			}
+		err := <-g.errCh
+
+		// Result fetched. does we need to return access to caller?
+		if !g.has(W_BACKGROUND) && g.has(W_INFINITY) {
+			// TODO: maybe log?
+			continue
 		}
+
+		// No need to store this routine, return result to caller.
+		return err
 	}
 }
 
@@ -153,9 +138,12 @@ func (g *group) waiter() error {
 // based on CTX flags we can return new context or set some common cancellation.
 func (g *group) contexter() context.Context {
 
-	if g.has(CTX_SEPARATE) {
+	// if g.has(CTX_SEPARATE) {
+	if true {
 		// caller must use thie own version of ctx
-		return context.Background()
+		ctx := context.Background()
+		fmt.Println("return new ctx because CTX_SEPARATE", reflect.ValueOf(ctx).Pointer())
+		return ctx
 	}
 
 	g.mutex.Lock()
@@ -166,45 +154,60 @@ func (g *group) contexter() context.Context {
 
 // run runs single `Step` object in context of whole group.
 func (g *group) run(step Step) error {
-	// Phase 1. Use `contexter` for fetch actual ctx for step.
-	ctx := g.contexter()
+	// Prephase. Release it when finished
+	defer func() {
+		g.mutex.Lock()
+		g.wg.Done()
+		g.mutex.Unlock()
+	}()
+
+	// Phase 1. Prepare execution context.
+	// Use `contexter` to fetch actual ctx for this step.
+	// ctx := g.contexter()
+	ctx := context.Background()
 
 	// Phase 2. Check the relevance of the data being run.
 	select {
 	case <-ctx.Done():
-		// context cancelled by another `Step` in group
-		// no need for starting execution of this step
+		fmt.Println("CTX CLOSED")
+		// Context cancelled by another `Step` in current group.
+		// No need for starting execution of this step.
 		return ctx.Err()
-	default: // default is required to avoid blocking on select.
-		// We can start atomic function execution.
-		// Run throught the universal step exectution tool.
-		if err := execute(g.workers, ctx, step); err != nil {
-			g.mutex.Lock()
-			// oops, we have failed step
-			// Phase 1. Send information to `agent` if he is related
-			if g.errCh != nil {
-				g.errCh <- err
-			}
-			// Phase 2. Close execution context
-			// give to understand that execution no sense
-			if g.cancel != nil {
-				g.cancel()
-			}
-			g.mutex.Unlock()
-
-			// Phase 3. Return error to `runner`.
-			return err
-		}
+	default:
+		// default is required to avoid blocking on select.
 	}
 
-	return nil
+	// Phase 3. We can start atomic function execution.
+	// Run throught the universal step exectution tool.
+	err := execute(g.workers, ctx, step)
+	if err != nil {
+		// Oops, step failed, set group to `failed` state.
+		g.fail(err)
+	}
+
+	return err
+}
+
+// fail stops group execution with provided error.
+func (g *group) fail(err error) {
+	g.mutex.Lock()
+
+	// Phase 1. Send information to `agent` if he is related
+	if g.errCh != nil {
+		g.errCh <- err
+	}
+
+	// Phase 2. Close execution context
+	// give to understand that execution no sense
+	if g.cancel != nil {
+		g.cancel()
+	}
+
+	g.mutex.Unlock()
 }
 
 // Run implements the flow.Step interface.
 func (g *group) Run(ctx context.Context) error {
-	// Sure garbage will be collected.
-	defer g.Close()
-
 	// Prepare group level context and cancellation.
 	g.setContext(ctx)
 
@@ -231,10 +234,6 @@ func (g *group) Close() error {
 	if g.errCh != nil {
 		close(g.errCh)
 		g.errCh = nil
-	}
-	if g.doneCh != nil {
-		close(g.doneCh)
-		g.doneCh = nil
 	}
 
 	// Phase 2. Close execution context
