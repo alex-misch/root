@@ -2,7 +2,6 @@ package server
 
 import (
 	"container/heap"
-	"context"
 	"os"
 
 	"github.com/boomfunc/root/base/server/transport"
@@ -53,8 +52,11 @@ func (srv *Server) Serve() error {
 	stderr := log.New(os.Stderr, log.ErrorPrefix)
 	stderr.Write([]byte("OOOPS"))
 
-	return flow.ConcurrentServe(
-		flow.WorkersHeap(4), // number of workers (based on CPU)
-		srv.steps(),
-	).Run(context.Background())
+	return flow.NewGroup(
+		flow.WorkersHeap(4), // Number of workers (based on CPU).
+		srv.steps(),         // Steps from transport layer. Infinity heap mode.
+		// Own goroutine per request.
+		// Each request uses his own context
+		flow.R_CONCURRENT|flow.CTX_STEP_NEW,
+	).Run(nil)
 }
