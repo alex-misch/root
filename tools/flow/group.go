@@ -21,11 +21,12 @@ const (
 //
 // 1) Waiter. Describes how we will return results to caller.
 // 2) Runner. Describes iteration loop and execution logic of steps heap.
-// 3) Contexter. Describes which context will each step receive to .Run() method.
+// 3) getContext. Describes which context will each step receive to .Run() method.
 //
 // Also, there is group level context logic.
 type group struct {
 	flags uint8      // Modifications set.
+	once  sync.Once  // Prepare group only once.
 	mutex sync.Mutex // Protects variables below.
 
 	workers heap.Interface
@@ -64,21 +65,53 @@ func (g *group) has(bit uint8) bool {
 	return g.flags&bit != 0
 }
 
-// setContext sets context cancellation for all group
-func (g *group) setContext(ctx context.Context) {
-	// Check group independence from a caller's context.
-	if g.has(CTX_GROUP_ORPHAN) || ctx == nil {
-		ctx = context.Background()
+// prepare sets context cancellation for all group.
+func (g *group) prepare(ctx context.Context) {
+	// Function makes changes only once.
+	g.once.Do(func() {
+		// Check group independence from a caller's context.
+		orphan := g.has(CTX_GROUP_ORPHAN)
+
+		g.mutex.Lock()
+
+		switch {
+		case orphan:
+			// If orphan mode enabled - always use new context.
+			ctx = context.Background()
+		case g.ctx != nil:
+			// Context already set, ignore new one.
+			ctx = g.ctx
+		case ctx == nil:
+			// New context is nil - create empty one.
+			ctx = context.Background()
+		}
+
+		// Create group cancellation.
+		ctx, cancel := context.WithCancel(ctx)
+
+		// Save variables.
+		g.ctx = ctx
+		g.cancel = cancel
+
+		g.mutex.Unlock()
+	})
+}
+
+// getContext returns actual context used for run step.
+func (g *group) getContext() context.Context {
+	// Get current context.
+	g.mutex.Lock()
+	ctx := g.ctx
+	g.mutex.Unlock()
+
+	// Check child is independent of the group's context.
+	if g.has(CTX_STEP_NEW) || ctx == nil {
+		// Step will use his own context.
+		return context.Background()
 	}
 
-	// Create group cancellation.
-	ctx, cancel := context.WithCancel(ctx)
-
-	// Save variables.
-	g.mutex.Lock()
-	g.ctx = ctx
-	g.cancel = cancel
-	g.mutex.Unlock()
+	// Step will use the group's context.
+	return ctx
 }
 
 // runner is the helper function which run all steps from heap.
@@ -121,10 +154,22 @@ func (g *group) runner() {
 // waiter waits for execution results.
 // Also returns access to caller via returned error.
 func (g *group) waiter() error {
+	g.mutex.Lock()
+	ch := g.errCh
+	g.mutex.Unlock()
+
+	// error to return
+	var err error
+
 	// Phase 1. Try to get result from channel.
 	for {
-		err, ok := <-g.errCh
-		// Result fetched. Does we need to return access to caller?
+		e, ok := <-ch
+		// Result fetched.
+		// Does we need to store this error for nearest return operation?
+		if e != nil && err == nil {
+			err = e
+		}
+		// Does we need to return access to caller?
 		if !ok {
 			// The case when the channel was closed.
 			// Means g.Close() was invoked.
@@ -133,21 +178,6 @@ func (g *group) waiter() error {
 			return err
 		}
 	}
-}
-
-// getContext returns actual context used for run step.
-func (g *group) getContext() context.Context {
-	// Check child is independent of the group's context.
-	if g.has(CTX_STEP_NEW) {
-		// Step will use his own context.
-		return context.Background()
-	}
-
-	// Step will use the group's context.
-	g.mutex.Lock()
-	defer g.mutex.Unlock()
-
-	return g.ctx
 }
 
 // run runs single `Step` object in context of whole group.
@@ -207,8 +237,9 @@ func (g *group) fail(err error) {
 
 // Run implements the flow.Step interface.
 func (g *group) Run(ctx context.Context) error {
-	// Prepare group level context and cancellation.
-	g.setContext(ctx)
+	// Prepare group.
+	// 1) Set group's level context and cancellation.
+	g.prepare(ctx)
 
 	// Run system goroutines with step runner and response waiter.
 	go g.runner()
