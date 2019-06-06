@@ -8,11 +8,12 @@ import (
 )
 
 const (
-	// Runner modes. How we run steps from heap?
-	R_CONCURRENT uint8 = 1 << iota // Should we run each step in their own goroutine.
-	W_BACKGROUND                   // Should we return control before everything is done.
-	CTX_ORPHAN                     // Detach current group context from parent.
-	CTX_SEPARATE                   // Indicates that each step have their own context.
+	// Group runtime modifications.
+	// Describes how we run the steps, how we handle the result, what context we use.
+	R_CONCURRENT     uint8 = 1 << iota // Should we run each step in their own goroutine?
+	W_BACKGROUND                       // Should we return control before everything is done?
+	CTX_GROUP_ORPHAN                   // Detach current group context from a parent. Current tree will be independent.
+	CTX_STEP_NEW                       // Detach step's context from current. All children will be independent.
 )
 
 // group describes multiple `Step` runned as a complex task.
@@ -37,8 +38,9 @@ type group struct {
 	errCh chan error     // Channel for collecting errors.
 }
 
-// NewGroup returns new group of steps
-// using flags for different running and waiting modifications
+// NewGroup returns new group for `steps` execution.
+// Uses flags for different running and waiting modifications.
+// Most likely you should use predefined group creators like `Concurrent`, `Group`, etc.
 func NewGroup(workers, steps heap.Interface, flags uint8) Step {
 	// Pre phase. Checks and preparings
 	if steps == nil {
@@ -64,13 +66,15 @@ func (g *group) has(bit uint8) bool {
 
 // setContext sets context cancellation for all group
 func (g *group) setContext(ctx context.Context) {
+	// Check group independence from a caller's context.
+	if g.has(CTX_GROUP_ORPHAN) || ctx == nil {
+		ctx = context.Background()
+	}
 
-	// if g.has(CTX_ORPHAN) {
-	// 	ctx = context.Background()
-	// }
+	// Create group cancellation.
+	ctx, cancel := context.WithCancel(ctx)
 
-	ctx, cancel := context.WithCancel(context.Background())
-
+	// Save variables.
 	g.mutex.Lock()
 	g.ctx = ctx
 	g.cancel = cancel
@@ -131,16 +135,15 @@ func (g *group) waiter() error {
 	}
 }
 
-// contexter returns actual context used for run step.
-// based on CTX flags we can return new context or set some common cancellation.
-func (g *group) contexter() context.Context {
-
-	// if g.has(CTX_SEPARATE) {
-	if true {
-		// caller must use thie own version of ctx
+// getContext returns actual context used for run step.
+func (g *group) getContext() context.Context {
+	// Check child is independent of the group's context.
+	if g.has(CTX_STEP_NEW) {
+		// Step will use his own context.
 		return context.Background()
 	}
 
+	// Step will use the group's context.
 	g.mutex.Lock()
 	defer g.mutex.Unlock()
 
@@ -157,9 +160,8 @@ func (g *group) run(step Step) error {
 	}()
 
 	// Phase 1. Prepare execution context.
-	// Use `contexter` to fetch actual ctx for this step.
-	// ctx := g.contexter()
-	ctx := context.Background()
+	// Use `getContext` to fetch actual ctx for this step.
+	ctx := g.getContext()
 
 	// Phase 2. Check the relevance of the data being run.
 	select {
