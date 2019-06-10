@@ -33,7 +33,7 @@ type group struct {
 	steps   heap.Interface
 
 	ctx    context.Context    // Group level context.
-	cancel context.CancelFunc // Group level context cancellation
+	cancel context.CancelFunc // Group level context cancellation.
 
 	wg    sync.WaitGroup // Allows track that all steps are finished.
 	errCh chan error     // Channel for collecting errors.
@@ -57,7 +57,7 @@ func NewGroup(workers, steps heap.Interface, flags uint8) Step {
 	}
 }
 
-// has describes has the group's flags modification bit set
+// has describes has the group's flags modification bit set.
 func (g *group) has(bit uint8) bool {
 	g.mutex.Lock()
 	defer g.mutex.Unlock()

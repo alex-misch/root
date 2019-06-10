@@ -29,8 +29,8 @@ func GraphQL(schema graphql.Schema) flow.Step {
 
 		w, ok := ctx.Value("w").(http.ResponseWriter)
 		if ok {
-			// If we have HTTP mode - set headers and status code.
-			w.Header().Set("Content-Type", "application/json")
+			// If we have HTTP mode - modify headers.
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		}
 
 		// Phase 1. Fetch graphql query.
