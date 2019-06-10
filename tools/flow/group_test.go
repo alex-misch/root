@@ -93,26 +93,6 @@ func TestGroupPrivate(t *testing.T) {
 		}
 	})
 
-	t.Run("getContext", func(t *testing.T) {
-		tableTests := []struct {
-			g   *group
-			ctx context.Context
-		}{
-			{&group{}, context.Background()},
-			{&group{ctx: context.TODO()}, context.TODO()},
-			{&group{flags: CTX_STEP_NEW}, context.Background()},
-			{&group{ctx: context.TODO(), flags: CTX_STEP_NEW}, context.Background()},
-		}
-
-		for i, tt := range tableTests {
-			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-				if ctx := tt.g.getContext(); ctx != tt.ctx {
-					t.Fatalf("Expected %q, got %q", tt.ctx, ctx)
-				}
-			})
-		}
-	})
-
 	t.Run("runner", func(t *testing.T) {
 		// prepare data
 		var total uint8
@@ -348,6 +328,26 @@ func TestGroupPrivate(t *testing.T) {
 }
 
 func TestGroupPublic(t *testing.T) {
+	t.Run("Context", func(t *testing.T) {
+		tableTests := []struct {
+			g   *group
+			ctx context.Context
+		}{
+			{&group{}, context.Background()},
+			{&group{ctx: context.TODO()}, context.TODO()},
+			{&group{flags: CTX_STEP_NEW}, context.Background()},
+			{&group{ctx: context.TODO(), flags: CTX_STEP_NEW}, context.Background()},
+		}
+
+		for i, tt := range tableTests {
+			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+				if ctx := tt.g.Context(); ctx != tt.ctx {
+					t.Fatalf("Expected %q, got %q", tt.ctx, ctx)
+				}
+			})
+		}
+	})
+
 	t.Run("Close", func(t *testing.T) {
 		cancelled := false
 		cancel := func() { cancelled = true }

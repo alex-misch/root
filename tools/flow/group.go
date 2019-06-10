@@ -97,8 +97,9 @@ func (g *group) prepare(ctx context.Context) {
 	})
 }
 
-// getContext returns actual context used for run step.
-func (g *group) getContext() context.Context {
+// Context returns actual context used for run step.
+// Always return non-nil context.
+func (g *group) Context() context.Context {
 	// Get current context.
 	g.mutex.Lock()
 	ctx := g.ctx
@@ -190,8 +191,8 @@ func (g *group) run(step Step) error {
 	}()
 
 	// Phase 1. Prepare execution context.
-	// Use `getContext` to fetch actual ctx for this step.
-	ctx := g.getContext()
+	// Use `.Context()` to fetch actual ctx for this step.
+	ctx := g.Context()
 
 	// Phase 2. Check the relevance of the data being run.
 	select {

@@ -37,7 +37,7 @@ func GraphQL(schema graphql.Schema) flow.Step {
 		var query string
 
 		// Also, in http mode, a query can be in get parameters or post body.
-		if r := ctx.Value("r").(*http.Request); ok && r.Method == "GET" {
+		if r, _ := ctx.Value("r").(*http.Request); ok && r.Method == "GET" {
 			query = r.URL.Query().Get("query")
 		} else {
 			// In other cases (`no http` or `post request`) the query is the stdin itself.
