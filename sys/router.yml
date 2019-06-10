@@ -1,0 +1,15 @@
+- pattern: "/resize"
+  pipeline:
+
+    - type: process
+      cmd: cat ./sample.jpg
+
+    - type: process
+      cmd: convert - -filter Triangle -sample 400x400 -
+
+- pattern: "/graph/geo"
+  pipeline:
+
+    - type: plugin
+      path: ./sys-Linux-x86_64.so
+      name: GraphQL
