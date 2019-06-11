@@ -71,7 +71,7 @@ func (ss *steps) Pop() interface{} {
 					}),
 					// log
 					flow.Func(func(ctx context.Context) error {
-						return iteration.Info(os.Stdout)
+						return iteration.Log(os.Stdout)
 					}),
 				),
 

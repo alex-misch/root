@@ -26,19 +26,8 @@ func NewIteration() *Iteration {
 	}
 }
 
-// Info logs information data. Just access log.
-func (i *Iteration) Info(logger io.Writer) error {
-	_, err := fmt.Fprintln(logger, i)
-
-	if true {
-		return err
-	}
-
-	return json.NewEncoder(logger).Encode(i)
-}
-
-// Error logs traceback error data.
-func (i *Iteration) Error(logger io.Writer) error {
+// Log logs iteration's information data. Just access log.
+func (i *Iteration) Log(logger io.Writer) error {
 	_, err := fmt.Fprintln(logger, i)
 
 	if true {
