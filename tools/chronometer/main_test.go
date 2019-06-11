@@ -5,8 +5,8 @@ import (
 	"time"
 )
 
-func checkChronometerLen(t *testing.T, ch *Chronometer, nodes int) {
-	if l := len(*ch); l != nodes {
+func checkChronometerLen(t *testing.T, ch Chronometer, nodes int) {
+	if l := len(ch); l != nodes {
 		t.Fatalf("Unexpected len(chronometer): expected %d, got %d", nodes, l)
 	}
 }

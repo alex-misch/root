@@ -1,6 +1,7 @@
 package chronometer
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -29,12 +30,18 @@ func (node *Node) Duration() time.Duration {
 	return node.exit.Sub(node.enter)
 }
 
-// Enter starts measuring node
+// Enter starts measuring node.
 func (node *Node) Enter() {
 	node.enter = time.Now()
 }
 
-// Exit stops measuring node
+// Exit stops measuring node.
 func (node *Node) Exit() {
 	node.exit = time.Now()
+}
+
+// MarshalJSON implements json.Marshaler interface
+// Just return duration as string.
+func (node Node) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf("%q", node.Duration())), nil
 }
