@@ -4,7 +4,6 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/boomfunc/root/base/server/flow"
 	"github.com/boomfunc/root/tools/log"
 )
 
@@ -55,23 +54,4 @@ func PerformanceLog(numWorkers int) {
 			runtime.NumCPU(), numWorkers,
 		)
 	}
-}
-
-func AccessLog(flow *flow.Data) {
-	var status, url string
-
-	if flow.Successful() {
-		status = "SUCCESS"
-	} else {
-		status = "ERROR"
-	}
-
-	// Request might be nil if err while parsing incoming message
-	if flow.Stat.Req != nil {
-		url = flow.Stat.Req.Url.RequestURI()
-	} else {
-		url = "/XXX/XXX/XXX"
-	}
-
-	log.Infof("%s\t-\t%s\t-\t%s\t-\tTiming: `%s`", flow.UUID.String(), url, status, flow.Chronometer)
 }

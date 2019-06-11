@@ -2,12 +2,12 @@
   pipeline:
 
     - type: process
-      cmd: cat ./sample.jpg
+      cmd: cat ./sample0.jpg
 
     - type: process
-      cmd: convert - -filter Triangle -sample 400x400 -
+      cmd: convert - -filter Triangle -sample 200x400 -
 
-- pattern: "/graph/geo"
+- pattern: "/graph"
   pipeline:
 
     - type: plugin

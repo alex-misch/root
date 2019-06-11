@@ -5,15 +5,11 @@ import (
 	"context"
 	"io"
 	"net"
+	"os"
 	"syscall"
 
 	"github.com/boomfunc/root/tools/flow"
 )
-
-// func log(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer) error {
-// 	AccessLog(iteration.New(conn))
-// 	return nil
-// }
 
 func close(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer) error {
 	c, ok := stdin.(*net.TCPConn)
@@ -56,19 +52,30 @@ func (ss *steps) Pop() interface{} {
 	for {
 		if conn, ok := heap.Pop(ss.h).(io.ReadWriteCloser); ok {
 
+			iteration := NewIteration()
+			iteration.Chronometer.Enter("app")
+
 			return flow.Transaction(
+
 				// up movement - run application layer
 				flow.Func(func(ctx context.Context) error {
+					defer iteration.Chronometer.Exit("app")
 					return ss.entrypoint.Run(ctx, conn, conn, nil)
 				}),
 
-				// rollback action - close connection and log
-				flow.Func(func(ctx context.Context) error {
-					return flow.Func2(close).Run(ctx, conn, conn, nil)
-				}),
+				// Rollback action.
+				flow.Group(nil,
+					// close connection
+					flow.Func(func(ctx context.Context) error {
+						return flow.Func2(close).Run(ctx, conn, conn, nil)
+					}),
+					// log
+					flow.Func(func(ctx context.Context) error {
+						return iteration.Info(os.Stdout)
+					}),
+				),
 
-				// do rollback anyway
-				true,
+				true, // do rollback anyway
 			)
 
 		}

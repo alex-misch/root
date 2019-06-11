@@ -11,10 +11,10 @@ import (
 )
 
 var (
-	ErrWrongFlow          = errors.New("server: Unexpected flow type received from transport")
-	ErrWrongContext       = errors.New("server: Context without required key")
-	ErrUnknownApplication = errors.New("server: Unknown server application")
-	ErrUnknownTransport   = errors.New("server: Unknown server transport")
+	ErrWrongFlow          = errors.New("base/server: Unexpected flow type received from transport")
+	ErrWrongContext       = errors.New("base/server: Context without required key")
+	ErrUnknownApplication = errors.New("base/server: Unknown server application")
+	ErrUnknownTransport   = errors.New("base/server: Unknown server transport")
 )
 
 func New(transportName string, applicationName string, workers int, ip net.IP, port int, config string) (*Server, error) {
