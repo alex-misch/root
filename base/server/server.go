@@ -2,29 +2,29 @@ package server
 
 import (
 	"container/heap"
-	"os"
+	// "os"
 
 	"github.com/boomfunc/root/base/server/transport"
 	"github.com/boomfunc/root/tools/flow"
-	"github.com/boomfunc/root/tools/log"
+	// "github.com/boomfunc/root/tools/log"
 	"github.com/google/uuid"
 )
 
 type Server struct {
-	// common instance variables
+	// Common server variables.
 	uuid    uuid.UUID
 	workers int
 
-	// transport layer variables
+	// Transport layer variables.
 	transport transport.Interface
 
-	// application layer variables
+	// Application layer variables.
 	application flow.SStep
 }
 
 func (srv *Server) steps() heap.Interface {
 	return &steps{
-		h:          srv.transport,
+		inner:      srv.transport,
 		entrypoint: srv.application,
 	}
 }
@@ -49,12 +49,12 @@ func (srv *Server) Serve() error {
 
 	go srv.transport.Serve()
 
-	stderr := log.New(os.Stderr, log.ErrorPrefix)
-	stderr.Write([]byte("OOOPS"))
+	// stderr := log.New(os.Stderr, log.ErrorPrefix)
+	// stderr.Write([]byte("OOOPS"))
 
 	return flow.NewGroup(
-		flow.WorkersHeap(4), // Number of workers (based on CPU).
-		srv.steps(),         // Steps from transport layer. Infinity heap mode.
+		flow.WorkersHeap(srv.workers), // Number of workers (based on CPU).
+		srv.steps(),                   // Steps from transport layer. Infinity heap mode.
 		// Own goroutine per request.
 		// Each request uses his own context
 		flow.R_CONCURRENT|flow.CTX_STEP_NEW,

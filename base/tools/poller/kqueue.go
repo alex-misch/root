@@ -67,16 +67,16 @@ func (p *kqueue) Events() ([]Event, []Event, error) {
 	for _, event := range events {
 		ev := toEvent(event)
 
-		if event.Flags&(unix.EV_EOF) != 0 {
+		if event.Filter&(unix.EVFILT_READ) != 0 {
+			// event 'ready for reading'
+			p.Del(ev.Fd())
+			re = append(re, ev)
+		} else if event.Flags&(unix.EV_EOF) != 0 {
 			// closed by peer
 			if err := p.Del(ev.Fd()); err == nil {
 				unix.Close(int(ev.Fd()))
 			}
 			ce = append(ce, ev)
-		} else if event.Filter&(unix.EVFILT_READ) != 0 {
-			// event 'ready for reading'
-			p.Del(ev.Fd())
-			re = append(re, ev)
 		}
 	}
 
