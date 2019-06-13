@@ -4,52 +4,29 @@ import (
 	"container/heap"
 	"context"
 	"io"
-	"net"
 	"os"
-	"syscall"
 
 	"github.com/boomfunc/root/tools/flow"
 	"github.com/boomfunc/root/tools/log"
 )
 
-func close(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer) error {
-	c, ok := stdin.(*net.TCPConn)
-	if !ok {
-		return nil
-	}
-
-	defer c.Close()
-
-	f, err := c.File()
-	if err != nil {
-		return err
-	}
-
-	return syscall.Shutdown(int(f.Fd()), syscall.SHUT_RDWR)
-}
-
-type steps struct {
+// StepsHeap implements heap.Interface which returns flow.Step.
+type StepsHeap struct {
 	inner      heap.Interface
 	entrypoint flow.SStep
 }
 
-func (ss *steps) Len() int {
-	return ss.inner.Len()
-}
+func (ss *StepsHeap) Len() int           { return ss.inner.Len() }      // Just a proxy method.
+func (ss *StepsHeap) Less(i, j int) bool { return ss.inner.Less(i, j) } // Just a proxy method.
+func (ss *StepsHeap) Swap(i, j int)      { ss.inner.Swap(i, j) }        // Just a proxy method.
+func (ss *StepsHeap) Push(x interface{}) { heap.Push(ss.inner, x) }     // Just a proxy method.
 
-func (ss *steps) Less(i, j int) bool {
-	return ss.inner.Less(i, j)
-}
-
-func (ss *steps) Swap(i, j int) {
-	ss.inner.Swap(i, j)
-}
-
-func (ss *steps) Push(x interface{}) {}
-
-func (ss *steps) Pop() interface{} {
+func (ss *StepsHeap) Pop() interface{} {
 	for {
 		if conn, ok := heap.Pop(ss.inner).(io.ReadWriteCloser); ok {
+
+			// Wrap raw connection.
+			conn = &Conn{rwc: conn}
 
 			iteration := NewIteration()
 			stdout := log.New(os.Stdout, log.InfoPrefix)
@@ -68,13 +45,12 @@ func (ss *steps) Pop() interface{} {
 
 				}),
 
-				flow.Group(nil,
-					// Rollback action - close connection
+				// Rollback action - log results and close connection.
+				flow.Concurrent(nil,
 					flow.Func(func(ctx context.Context) error {
-						flow.Func2(close).Run(ctx, conn, conn, nil)
-						return nil
+						return conn.Close()
 					}),
-					// And log results.
+
 					flow.Func(func(ctx context.Context) error {
 						iteration.Log(stdout)
 						if iteration.Error != nil {

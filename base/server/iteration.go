@@ -13,7 +13,7 @@ import (
 // Timing url, errors, etc
 type Iteration struct {
 	UUID        uuid.UUID
-	Err         error `json:",omitempty"`
+	Error       error `json:",omitempty"`
 	url         string
 	Chronometer chronometer.Chronometer
 }
@@ -38,7 +38,7 @@ func (i *Iteration) Log(logger io.Writer) error {
 }
 
 func (i Iteration) Status() string {
-	if i.Err == nil {
+	if i.Error == nil {
 		return "SUCCESS"
 	}
 	return "ERROR"
@@ -49,6 +49,13 @@ func (i Iteration) Url() string {
 		return "/XXX/XXX/XXX"
 	}
 	return i.url
+}
+
+func (i Iteration) ErrorString() string {
+	if i.Error != nil {
+		return i.Error.Error()
+	}
+	return ""
 }
 
 // String implements the fmt.Stringer interface.
@@ -65,11 +72,13 @@ func (i Iteration) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&struct {
 		Url    string
 		Status string
+		Error  string `json:",omitempty"`
 		alias
 	}{
 		// TODO: paths from router dynamically
 		Url:    i.Url(),
 		Status: i.Status(),
+		Error:  i.ErrorString(),
 		alias:  alias(i),
 	})
 }

@@ -23,7 +23,7 @@ type Server struct {
 }
 
 func (srv *Server) steps() heap.Interface {
-	return &steps{
+	return &StepsHeap{
 		inner:      srv.transport,
 		entrypoint: srv.application,
 	}
