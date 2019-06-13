@@ -13,3 +13,16 @@
     - type: plugin
       path: ./sys-Linux-x86_64.so
       name: GraphQL
+
+- pattern: "/graph/play"
+  pipeline:
+
+    - type: plugin
+      path: ./sys-Linux-x86_64.so
+      name: GraphiQL
+
+- pattern: "/ping"
+  pipeline:
+
+    - type: process
+      cmd: echo pong

@@ -11,9 +11,10 @@ import (
 
 	"github.com/boomfunc/root/tools/flow"
 	"github.com/graphql-go/graphql"
+	"github.com/graphql-go/handler"
 )
 
-// GraphQL return step generated with provided schema.
+// GraphQL returns step that generates graphql server with provided schema.
 func GraphQL(schema graphql.Schema) flow.Step {
 	return flow.Func(func(ctx context.Context) error {
 		// TODO: deprecated phase
@@ -52,5 +53,27 @@ func GraphQL(schema graphql.Schema) flow.Step {
 			RequestString: query,
 		})
 		return json.NewEncoder(stdout).Encode(result)
+	})
+}
+
+// GraphiQL returns step that generates graphql playground with provided schema.
+func GraphiQL(schema graphql.Schema) flow.Step {
+	return flow.Func(func(ctx context.Context) error {
+		w, ok := ctx.Value("w").(http.ResponseWriter)
+		if !ok {
+			return nil
+		}
+
+		r, _ := ctx.Value("r").(*http.Request)
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+		// Use builtin handler.
+		handler.New(&handler.Config{
+			Schema:   &schema,
+			Pretty:   true,
+			GraphiQL: true,
+		}).ServeHTTP(w, r)
+
+		return nil
 	})
 }
