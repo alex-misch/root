@@ -3,6 +3,7 @@ package server
 import (
 	"container/heap"
 	"context"
+	"fmt"
 	"io"
 	"os"
 
@@ -37,6 +38,27 @@ func (ss *StepsHeap) Pop() interface{} {
 				// Up action - run application layer.
 				flow.Func(func(ctx context.Context) error {
 
+					// Good place to catch unexpected errors (panics).
+					// If there exists - means it is low-level error.
+					// Override error from application.
+					defer func() {
+						if r := recover(); r != nil {
+							switch typed := r.(type) {
+							case error:
+								iteration.Error = typed
+							case string:
+								iteration.Error = fmt.Errorf("base/server: %s", typed)
+							}
+						}
+					}()
+
+					// Workaround for fetching url from entrypoint in iteration log.
+					url := new(string)
+					defer func() { iteration.url = *url }()
+					ctx = context.WithValue(ctx, "base.request.url", url)
+					// End of the workaround.
+
+					// Run entrypoint with measuring.
 					iteration.Chronometer.Enter("app")
 					defer iteration.Chronometer.Exit("app")
 

@@ -7,19 +7,19 @@
     - type: process
       cmd: convert - -filter Triangle -sample 200x400 -
 
-- pattern: "/graph"
-  pipeline:
-
-    - type: plugin
-      path: ./sys-Linux-x86_64.so
-      name: GraphQL
-
-- pattern: "/graph/play"
+- pattern: "/graph/play{*}"
   pipeline:
 
     - type: plugin
       path: ./sys-Linux-x86_64.so
       name: GraphiQL
+
+- pattern: "/graph{*}"
+  pipeline:
+
+    - type: plugin
+      path: ./sys-Linux-x86_64.so
+      name: GraphQL
 
 - pattern: "/ping"
   pipeline:

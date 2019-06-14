@@ -53,6 +53,10 @@ func (mux Router) JSON(ctx context.Context, stdin io.Reader, stdout, stderr io.W
 		return err
 	}
 
+	if url, ok := ctx.Value("base.request.url").(*string); ok {
+		*url = intermediate.Url
+	}
+
 	u, err := url.Parse(intermediate.Url)
 	if err != nil {
 		return err
@@ -71,6 +75,10 @@ func (mux Router) HTTP(ctx context.Context, stdin io.Reader, stdout, stderr io.W
 	r, err := http.ReadRequest(bufio.NewReader(stdin))
 	if err != nil {
 		return err
+	}
+
+	if url, ok := ctx.Value("base.request.url").(*string); ok {
+		*url = r.URL.RequestURI()
 	}
 
 	// Phase 2. Run http.Handler
