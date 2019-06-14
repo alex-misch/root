@@ -32,6 +32,8 @@ func ToStep(x interface{}) (Step, error) {
 		return Func(typed), nil
 	case Step:
 		return typed, nil
+	case *Step:
+		return *typed, nil
 	default:
 		return nil, ErrNotAStep
 	}

@@ -155,15 +155,22 @@ func (g *group) runner() {
 // waiter waits for execution results.
 // Also returns access to caller via returned error.
 func (g *group) waiter() error {
+	// Error to be returned.
+	var err error
+
 	g.mutex.Lock()
 	ch := g.errCh
 	g.mutex.Unlock()
 
-	// error to return
-	var err error
+	if ch == nil {
+		// Case when runner already closed channel. Nothing to listen.
+		return err
+	}
 
 	// Phase 1. Try to get result from channel.
 	for {
+		// The channel is guaranteed nonnil.
+		// Even if after `ch` variable was declared `errCh` was closed.
 		e, ok := <-ch
 		// Result fetched.
 		// Does we need to store this error for nearest return operation?
