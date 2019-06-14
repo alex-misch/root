@@ -71,8 +71,8 @@ func GraphiQL(schema graphql.Schema) flow.Step {
 		handler.New(&handler.Config{
 			Schema:     &schema,
 			Pretty:     true,
-			GraphiQL:   true,
 			Playground: true,
+			// GraphiQL:   true,
 		}).ServeHTTP(w, r)
 
 		return nil
