@@ -22,8 +22,15 @@ func New(out io.Writer, prefix string) *Logger {
 		out = os.Stdout
 	}
 
+	var flags int
+
+	// If prefix is not empty - we want add time information to log.
+	if prefix != "" {
+		flags = log.LstdFlags
+	}
+
 	return &Logger{
-		out:    log.New(out, prefix, log.LstdFlags),
+		out:    log.New(out, prefix, flags),
 		prefix: prefix,
 		debug:  false,
 	}

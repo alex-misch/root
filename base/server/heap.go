@@ -30,8 +30,12 @@ func (ss *StepsHeap) Pop() interface{} {
 			conn = &Conn{rwc: conn}
 
 			iteration := NewIteration()
-			stdout := log.New(os.Stdout, log.InfoPrefix)
-			stderr := log.New(os.Stderr, log.ErrorPrefix)
+
+			// stdout := log.New(os.Stdout, log.InfoPrefix)
+			// stderr := log.New(os.Stderr, log.ErrorPrefix)
+
+			stdout := log.New(os.Stdout, "")
+			stderr := log.New(os.Stderr, "")
 
 			return flow.Transaction(
 
