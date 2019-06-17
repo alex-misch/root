@@ -26,6 +26,8 @@ RUN set -eux \
 		LICENSE.txt \
 		README.txt \
 	\
+	&& stat GeoLite2-City.mmdb \
+	\
 	&& rm -rf /var/cache/apk/* \
 	&& apk del .build-deps
 
