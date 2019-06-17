@@ -44,7 +44,7 @@ services:
     << : *service
     command: .scripts/fmt.sh
 
-  # container for running microservices under base ( base from source, build from script)
+  # container for running microservices under base (base from source, build from script)
   ms:
     << : *service
     command: .scripts/docker-entrypoint.sh
@@ -54,6 +54,12 @@ services:
       # http://www.lognormal.com/blog/2012/09/27/linux-tcpip-tuning/
       net.core.somaxconn: 100000
       net.ipv4.ip_local_port_range: "18000 65535"
+
+  # container for build and run microservices under base (base from docker image (imitate production))
+  bms:
+    build: sys
+    ports:
+      - "8080:8080"
 
 volumes:
   src-vol:
