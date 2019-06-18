@@ -1,191 +1,103 @@
 
-x-defaults:
-  jsonplugin: &jsonplugin
-    type: plugin
-    path: ./ssr-Linux-x86_64.so
-    name: JsonEntrypoint
-
-  clearcache: &clearcache
-    pipeline:
-      - type: process
-        cmd: rm -rf ./cache/data/{{url "node"}}
+# Common urls.
+- pattern: "/ping"
+  pipeline:
+    - type: process
+      cmd: echo pong
 
 
+# Urls for node `com.jetsmarter`
+# Sitemap generator
+- pattern: "/ssr/{node:com/jetsmarter}/sitemap.xml"
+  pipeline: &sitemap
+    - type: process
+      cmd: >
+        node
+        --experimental-modules
+        --no-warnings
+        --experimental-vm-modules
+        ./sitemap.mjs
+        --output=stdout
+        --user-agent='{{meta "ua"}}'
+        --origin=https://jetsmarter.com
+        --src=https://jetsmarter.com/data/{{url "node"}}/index.es.js
 
-collection:
-  # Route
-  # AWS ECS ping
-  - pattern: "/ping"
-    pipeline:
-      - type: process
-        cmd: echo pong
+    - type: plugin
+      path: ./ssr-Linux-x86_64.so
+      name: JsonEntrypoint
 
+# Clear cache
+- pattern: "/{node:com/jetsmarter}/cleanthisbitch"
+  pipeline: &clearcache
+    - type: process
+      cmd: rm -rf ./cache/data/{{url "node"}}
 
-  # Sitemap generator
-  - pattern: "/ssr/{node:com/flyxo}/sitemap.xml"
-    pipeline:
-      - type: process
-        cmd: >
-          node
-          --experimental-modules
-          --no-warnings
-          --experimental-vm-modules
-          ./sitemap.mjs
-          --output=stdout
-          --user-agent='{{meta "ua"}}'
-          --origin=https://flyxo.com
-          --src=https://flyxo.com/data/{{url "node"}}/index.es.js
+# Client app rendering
+- pattern: "/ssr/{node:com/jetsmarter}/{url:*}"
+  pipeline: &render
+    - type: process
+      cmd: >
+        node
+        --experimental-modules
+        --no-warnings
+        --experimental-vm-modules
+        ./render.mjs
+        --url=/{{url "url"}}
+        --ip={{meta "ip"}}
+        --user-agent='{{meta "ua"}}'
+        --src=https://jetsmarter.com/data/{{url "node"}}/index.es.js
+        --origin=https://jetsmarter.com/
 
-      - *jsonplugin
-
-  # Clear cache
-  - pattern: "/{node:com/flyxo}/cleanthisbitch"
-    << : *clearcache
-
-  # Client app rendering
-  - pattern: "/ssr/{node:com/flyxo}/{url:*}"
-    pipeline:
-
-      - type: process
-        cmd: >
-          node
-          --experimental-modules
-          --no-warnings
-          --experimental-vm-modules
-          ./render.mjs
-          --url=/{{url "url"}}
-          --ip={{meta "ip"}}
-          --user-agent='{{meta "ua"}}'
-          --src=https://flyxo.com/data/{{url "node"}}/index.es.js
-          --origin=https://flyxo.com/
-
-      - *jsonplugin
+    - type: plugin
+      path: ./ssr-Linux-x86_64.so
+      name: JsonEntrypoint
 
 
-  # Sitemap generator
-  - pattern: "/ssr/{node:com/jetsmarter.charter}/sitemap.xml"
-    pipeline:
-      - type: process
-        cmd: >
-          node
-          --experimental-modules
-          --no-warnings
-          --experimental-vm-modules
-          ./sitemap.mjs
-          --output=stdout
-          --user-agent='{{meta "ua"}}'
-          --origin=https://charter.jetsmarter.com
-          --src=https://jetsmarter.com/data/{{url "node"}}/index.es.js
-      # --src=/Users/alexander/letsnet/jetsmarter.mono/dist/index.es.js
+# Urls for node `com.jetsmarter.charter`
+# Sitemap generator
+- pattern: "/ssr/{node:com/jetsmarter.charter}/sitemap.xml"
+  pipeline: *sitemap
 
-      - *jsonplugin
+# Clear cache
+- pattern: "/{node:com/jetsmarter.charter}/cleanthisbitch"
+  pipeline : *clearcache
 
-  # Clear cache
-  - pattern: "/{node:com/jetsmarter.charter}/cleanthisbitch"
-    << : *clearcache
-
-  # Client app rendering
-  - pattern: "/ssr/{node:com/jetsmarter.charter}/{url:*}"
-    pipeline:
-      - type: process
-        cmd: >
-          node
-          --experimental-modules
-          --no-warnings
-          --experimental-vm-modules
-          ./render.mjs
-          --url=/{{url "url"}}
-          --ip={{meta "ip"}}
-          --user-agent='{{meta "ua"}}'
-          --src=https://jetsmarter.com/data/{{url "node"}}/index.es.js
-          --origin=https://charter.jetsmarter.com/
-
-      - *jsonplugin
-
-  - pattern: "/ssr/{node:com/jetsmarter.biggame}/sitemap.xml"
-    pipeline:
-      - type: process
-        cmd: >
-          node
-          --experimental-modules
-          --no-warnings
-          --experimental-vm-modules
-          ./sitemap.mjs
-          --output=stdout
-          --user-agent='{{meta "ua"}}'
-          --origin=https://biggame.jetsmarter.com
-          --src=https://jetsmarter.com/data/{{url "node"}}/index.es.js
-
-      - *jsonplugin
-
-  # Clear cache
-  - pattern: "/{node:com/jetsmarter.biggame}/cleanthisbitch"
-    << : *clearcache
-
-  # Client app rendering
-  - pattern: "/ssr/{node:com/jetsmarter.biggame}/{url:*}"
-    pipeline:
-
-      - type: process
-        cmd: >
-          node
-          --experimental-modules
-          --no-warnings
-          --experimental-vm-modules
-          ./render.mjs
-          --url=/{{url "url"}}
-          --ip={{meta "ip"}}
-          --user-agent='{{meta "ua"}}'
-          --src=https://jetsmarter.com/data/{{url "node"}}/index.es.js
-          --origin=https://biggame.jetsmarter.com/
-
-      - *jsonplugin
+# Client app rendering
+- pattern: "/ssr/{node:com/jetsmarter.charter}/{url:*}"
+  pipeline : *render
 
 
-  # Sitemap generator
-  - pattern: "/ssr/{node:com/jetsmarter.crowdfund}/sitemap.xml"
-    pipeline:
-      - type: process
-        cmd: >
-          node
-          --experimental-modules
-          --no-warnings
-          --experimental-vm-modules
-          ./sitemap.mjs
-          --output=stdout
-          --user-agent='{{meta "ua"}}'
-          --origin=https://crowdfund.jetsmarter.com
-          --src=https://jetsmarter.com/data/{{url "node"}}/index.es.js
+# Urls for node `com.jetsmarter.biggame`
+# Sitemap generator
+- pattern: "/ssr/{node:com/jetsmarter.biggame}/sitemap.xml"
+  pipeline: *sitemap
 
-      - *jsonplugin
-  # Clear cache
-  - pattern: "/{node:com/jetsmarter.crowdfund}/cleanthisbitch"
-    << : *clearcache
+# Clear cache
+- pattern: "/{node:com/jetsmarter.biggame}/cleanthisbitch"
+  pipeline : *clearcache
 
-  # Client app rendering
-  - pattern: "/ssr/{node:com/jetsmarter.crowdfund}/{url:*}"
-    pipeline:
-
-      - type: process
-        cmd: >
-          node
-          --experimental-modules
-          --no-warnings
-          --experimental-vm-modules
-          ./render.mjs
-          --url=/{{url "url"}}
-          --ip={{meta "ip"}}
-          --user-agent='{{meta "ua"}}'
-          --src=https://jetsmarter.com/data/{{url "node"}}/index.es.js
-          --origin=https://crowdfund.jetsmarter.com/
-
-      - *jsonplugin
+# Client app rendering
+- pattern: "/ssr/{node:com/jetsmarter.biggame}/{url:*}"
+  pipeline : *render
 
 
+# Urls for node `com.jetsmarter.crowdfund`
+# Sitemap generator
+- pattern: "/ssr/{node:com/jetsmarter.crowdfund}/sitemap.xml"
+  pipeline: *sitemap
 
-  # Serve static data
-  # - pattern: "/data/{url:*}"
-  #   pipeline:
+# Clear cache
+- pattern: "/{node:com/jetsmarter.crowdfund}/cleanthisbitch"
+  pipeline : *clearcache
 
-  #     - type: process
-  #       cmd: cat ./cache/{{url "url"}}
+# Client app rendering
+- pattern: "/ssr/{node:com/jetsmarter.crowdfund}/{url:*}"
+  pipeline : *render
+
+
+# Serve static data
+# - pattern: "/data/{url:*}"
+#   pipeline:
+
+#     - type: process
+#       cmd: cat ./cache/{{url "url"}}

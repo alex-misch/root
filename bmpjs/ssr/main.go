@@ -24,7 +24,6 @@ func JsonEntrypoint(ctx context.Context) error {
 	}
 	// TODO: end of deprecated phase
 
-
 	// Phase 1. Parse json returned from ssr cli
 	intermediate := struct {
 		Status  int
