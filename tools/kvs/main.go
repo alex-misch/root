@@ -11,55 +11,62 @@
 // 9. Protect namespace from r/w
 package kvs
 
-// DB is a set of separate namespaces which is key-value storage
-type DB map[string]*Namespace
+// Storage is a set of separate namespaces which is key-value storage
+type Storage map[string]*Namespace
 
 // New initialize and returns new key-value database
 // if namespaces empty - `default` namespace will be created
-func New(namespaces ...string) DB {
-	db := make(map[string]*Namespace)
+func New(namespaces ...string) Storage {
+	s := make(map[string]*Namespace)
 
-	if namespaces == nil { // check namespace slice is nil
-		namespaces = make([]string, 1)
-		namespaces[0] = "default"
-	} else if len(namespaces) == 0 { // check empty namespaces
+	switch {
+	// namespaces not provided
+	case namespaces == nil:
+		namespaces = []string{"default"}
+
+	// namespaces empty
+	case len(namespaces) == 0:
 		namespaces = append(namespaces, "default")
 	}
 
 	// create namespaces
 	for _, namespace := range namespaces {
-		db[namespace] = NewNamespace()
+		s[namespace] = NewNamespace()
 	}
 
-	return db
+	return s
 }
 
-func (db DB) namespace(key string) *Namespace {
+func (s Storage) namespace(key string) *Namespace {
 	if key == "" {
 		key = "default"
 	}
 
-	return db[key]
+	return s[key]
 }
 
-func (db DB) Wait(namespace, key string) {
-	if ns := db.namespace(namespace); ns != nil {
+func (s Storage) AddNamespace(namespace string) {
+	s[namespace] = NewNamespace()
+}
+
+func (s Storage) Wait(namespace, key string) {
+	if ns := s.namespace(namespace); ns != nil {
 		ns.Wait(key)
 	}
 
 	return
 }
 
-func (db DB) Get(namespace, key string) interface{} {
-	if ns := db.namespace(namespace); ns != nil {
+func (s Storage) Get(namespace, key string) interface{} {
+	if ns := s.namespace(namespace); ns != nil {
 		return ns.Get(key)
 	}
 
 	return nil
 }
 
-func (db DB) Set(namespace, key string, value interface{}) {
-	if ns := db.namespace(namespace); ns != nil {
+func (s Storage) Set(namespace, key string, value interface{}) {
+	if ns := s.namespace(namespace); ns != nil {
 		ns.Set(key, value)
 	}
 
