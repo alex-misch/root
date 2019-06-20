@@ -4,11 +4,11 @@ import (
 	"regexp"
 )
 
-func MatchParams(re *regexp.Regexp, s string) (map[string]string, error) {
+func MatchParams(re *regexp.Regexp, s string) map[string]string {
 	// check `s` is valid and can be matched
 	matches := re.FindStringSubmatch(s)
 	if matches == nil {
-		return nil, ErrUriInappropriate
+		return nil
 	}
 
 	// extract params
@@ -16,7 +16,7 @@ func MatchParams(re *regexp.Regexp, s string) (map[string]string, error) {
 
 	// check no params needed
 	if len(names) == 1 {
-		return nil, nil
+		return nil
 	}
 
 	// there is some capturing groups in pattern
@@ -34,8 +34,8 @@ func MatchParams(re *regexp.Regexp, s string) (map[string]string, error) {
 
 	// maybe there was not any named group
 	if len(params) == 0 {
-		return nil, nil
+		return nil
 	}
 
-	return params, nil
+	return params
 }

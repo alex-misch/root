@@ -12,16 +12,15 @@ func TestMatchParams(t *testing.T) {
 		pattern string            // incoming pattern for regexp
 		uri     string            // incoming string to match
 		params  map[string]string // expecting params
-		err     error             // expecting error
 	}{
-		{"^foobar$", "lolkek", nil, ErrUriInappropriate},                                                         // no match
-		{"^foobar$", "foobar", nil, nil},                                                                         // match and no group
-		{"^(foo)(bar)$", "foobar", nil, nil},                                                                     // not named groups
-		{"^(?P<foo>foo)(b)(?P<ar>ar)$", "foobar", map[string]string{"foo": "foo", "ar": "ar"}, nil},              // mixed
-		{"^(?P<foo>foo)(?P<bar>bar)$", "foobar", map[string]string{"foo": "foo", "bar": "bar"}, nil},             // all named
-		{"^foo(?P<bar>bar)?(?P<baz>baz)$", "foobaz", map[string]string{"bar": "", "baz": "baz"}, nil},            // special case - optional group in the middle
-		{"^foo(?P<bar>.*)?(?P<baz>baz)$", "foobaz", map[string]string{"bar": "", "baz": "baz"}, nil},             // special case - optional group in the middle
-		{"^foo(?P<bar>.*)?(?P<baz>baz)$", "foololkekbaz", map[string]string{"bar": "lolkek", "baz": "baz"}, nil}, // special case - optional group in the middle
+		{"^foobar$", "lolkek", nil},     // no match
+		{"^foobar$", "foobar", nil},     // match and no group
+		{"^(foo)(bar)$", "foobar", nil}, // not named groups
+		{"^(?P<foo>foo)(b)(?P<ar>ar)$", "foobar", map[string]string{"foo": "foo", "ar": "ar"}},              // mixed
+		{"^(?P<foo>foo)(?P<bar>bar)$", "foobar", map[string]string{"foo": "foo", "bar": "bar"}},             // all named
+		{"^foo(?P<bar>bar)?(?P<baz>baz)$", "foobaz", map[string]string{"bar": "", "baz": "baz"}},            // special case - optional group in the middle
+		{"^foo(?P<bar>.*)?(?P<baz>baz)$", "foobaz", map[string]string{"bar": "", "baz": "baz"}},             // special case - optional group in the middle
+		{"^foo(?P<bar>.*)?(?P<baz>baz)$", "foololkekbaz", map[string]string{"bar": "lolkek", "baz": "baz"}}, // special case - optional group in the middle
 	}
 
 	for i, tt := range tableTests {
@@ -31,12 +30,7 @@ func TestMatchParams(t *testing.T) {
 				t.Fatalf("Unexpected error, got %q", err.Error())
 			}
 
-			params, err := MatchParams(re, tt.uri)
-			if err != tt.err {
-				t.Fatalf("Expected %q, got %q", tt.err, err)
-			}
-
-			if !reflect.DeepEqual(params, tt.params) {
+			if params := MatchParams(re, tt.uri); !reflect.DeepEqual(params, tt.params) {
 				t.Fatalf("Expected %q, got %q", tt.params, params)
 			}
 		})
