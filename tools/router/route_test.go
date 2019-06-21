@@ -25,10 +25,10 @@ func TestRoute(t *testing.T) {
 
 	// NOTE: just proxy test (see `regexp` package tests)
 	// test case created for future custom logic (look at TODO in Route.Match)
-	t.Run("Match", func(t *testing.T) {
+	t.Run("MatchString", func(t *testing.T) {
 		tableTests := []struct {
 			uri string // incoming uri
-			out bool   // expected value of String() method
+			out bool   // applicable or not
 		}{
 			{"foobar", true},
 			{"foobar2", false},
@@ -36,8 +36,26 @@ func TestRoute(t *testing.T) {
 
 		for i, tt := range tableTests {
 			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-				if out := route.Match(tt.uri); out != tt.out {
+				if out := route.MatchString(tt.uri); out != tt.out {
 					t.Fatalf("Expected '%t', got '%t'", tt.out, out)
+				}
+			})
+		}
+	})
+
+	t.Run("WithUrl", func(t *testing.T) {
+		tableTests := []struct {
+			route *Route
+			url   string
+		}{
+			{&route, ""},
+			{(&route).WithUrl("/foo/bar"), "/foo/bar"},
+		}
+
+		for i, tt := range tableTests {
+			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+				if url := tt.route.Url; url != tt.url {
+					t.Fatalf("Expected %q, got %q", tt.url, url)
 				}
 			})
 		}

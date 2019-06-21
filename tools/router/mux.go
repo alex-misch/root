@@ -24,10 +24,11 @@ func (routes Mux) MatchLax(url *url.URL) *Route {
 
 	// Try to get the route in priority order.
 	for _, route := range routes {
-		if route.Match(surl) {
+		if route.MatchString(surl) {
 			return route.WithUrl(surl)
 		}
 	}
+
 	// Nothing resolved.
 	return nil
 }
@@ -35,9 +36,9 @@ func (routes Mux) MatchLax(url *url.URL) *Route {
 // MatchStrict returns most priority route by pattern (look at ql subpackage).
 // If url is not mapped - error returned.
 func (routes Mux) MatchStrict(url *url.URL) (*Route, error) {
-	route := routes.MatchLax(url)
-	if route == nil {
-		return nil, ErrNotFound
+	if route := routes.MatchLax(url); route != nil {
+		return route, nil
 	}
-	return route, nil
+
+	return nil, ErrNotFound
 }

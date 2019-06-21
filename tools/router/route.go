@@ -27,8 +27,8 @@ func NewRoute(pattern string, step flow.SStep) *Route {
 	}
 }
 
-// Match return bool meaning this route is applicable to requested url.
-func (r *Route) Match(url string) bool {
+// MatchString return bool meaning this route is applicable to requested url.
+func (r *Route) MatchString(url string) bool {
 	return r.Pattern.MatchString(url)
 }
 
@@ -42,8 +42,7 @@ func (r *Route) WithUrl(url string) *Route {
 	}
 }
 
-// Match trying to match incoming string on pattern and return map of captured data and
-// bool meaning this string was matched
+// Params return a map of keyword arguments fetched from `RouteMatch`.
 func (r *Route) Params() map[string]string {
 	// Case when we used MatchLax to match url from mux.
 	if r == nil {
@@ -59,8 +58,7 @@ func (r *Route) Params() map[string]string {
 	return MatchParams(r.Pattern, r.Url)
 }
 
-// Run runs associted Step interface
-// implements implements `flow.Step` interface itself
+// Run runs associated Step interface. Also implements the `flow.Step` interface itself.
 func (r *Route) Run(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer) error {
 	// Case when we used MatchLax to match url from mux.
 	if r == nil {
