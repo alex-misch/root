@@ -38,16 +38,19 @@ func fillCtx(ctx context.Context, match *router.Route, rwc interface{}, r *http.
 	}
 
 	// Fill `meta` namespace
-	if r == nil { // not an `http` mode
-		kvs.SetWithContext(ctx, "meta", "ip", tools.GetRemoteIP(
-			tools.GetRemoteAddr(rwc),
-		))
-	} else {
+	if r != nil {
+		// HTTP mode
 		kvs.SetWithContext(ctx, "meta", "ip", tools.GetRemoteIP(
 			tools.GetRemoteAddr(rwc),
 			r.Header.Get("X-Forwarded-For"), r.Header.Get("X-Real-IP"),
 		))
 		kvs.SetWithContext(ctx, "meta", "ua", r.UserAgent())
+		kvs.SetWithContext(ctx, "meta", "host", r.Host)
+	} else {
+		// Plain TCP mode.
+		kvs.SetWithContext(ctx, "meta", "ip", tools.GetRemoteIP(
+			tools.GetRemoteAddr(rwc),
+		))
 	}
 
 	return ctx

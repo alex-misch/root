@@ -21,13 +21,10 @@ func StartupLog(transportName, applicationName, addr, config string, srv *Server
 		log.Wrap(srv.uuid.String(), log.Bold),
 	)
 
-	log.Infof(
-		"server:\t%s (%s application) up and running on %s",
-		log.Wrap(transportName, log.Bold),
-		log.Wrap(applicationName, log.Bold),
-		log.Wrap(addr, log.Bold, log.Blink),
-	)
-	log.Infof("server:\tCurrent working directory: %s", log.Wrap(cwd, log.Bold))
+	log.Infof("server:\tUp and running on %s", log.Wrap(addr, log.Bold, log.Blink))
+	log.Infof("server:\t%s transport", log.Wrap(transportName, log.Bold))
+	log.Infof("server:\t%s application", log.Wrap(applicationName, log.Bold))
+	log.Infof("server:\tRoot is %s", log.Wrap(cwd, log.Bold))
 	log.Infof("router:\t%s", log.Wrap(config, log.Bold))
 	log.Debugf("server:\tEnabled %s mode", log.Wrap("DEBUG", log.Bold, log.Blink))
 }

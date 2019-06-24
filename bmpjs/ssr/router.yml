@@ -19,7 +19,7 @@
         ./sitemap.mjs
         --output=stdout
         --user-agent='{{meta "ua"}}'
-        --origin=https://jetsmarter.com
+        --origin='{{meta "host"}}'
         --src=https://jetsmarter.com/data/{{url "node"}}/index.es.js
 
     - type: plugin
@@ -43,10 +43,10 @@
         --experimental-vm-modules
         ./render.mjs
         --url=/{{url "url"}}
-        --ip={{meta "ip"}}
+        --ip='{{meta "ip"}}'
         --user-agent='{{meta "ua"}}'
+        --origin='{{meta "host"}}'
         --src=https://jetsmarter.com/data/{{url "node"}}/index.es.js
-        --origin=https://jetsmarter.com/
 
     - type: plugin
       path: ./ssr-Linux-x86_64.so
