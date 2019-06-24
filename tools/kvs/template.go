@@ -4,10 +4,10 @@ package kvs
 // for rendering template's variable from storage
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"text/template"
 )
 
@@ -28,11 +28,11 @@ func TemplateFunc(ctx context.Context, namespace string) func(string) (string, e
 	}
 }
 
-// RenderFromCtx returns rendered string
+// RenderFromCtx returns rendered incoming strings
 // fill values from kvs templatefuncs
 // Example:
 // {{<namespace> <key>}}
-func RenderFromCtx(ctx context.Context, s string) (string, error) {
+func RenderFromCtx(ctx context.Context, ss []string) []string {
 	// add shortcuts to template rendering
 	// TODO: maybe in future this map will generate from params dynamically
 	funcMap := template.FuncMap{
@@ -40,17 +40,26 @@ func RenderFromCtx(ctx context.Context, s string) (string, error) {
 		"q":    TemplateFunc(ctx, "q"),
 		"url":  TemplateFunc(ctx, "url"),
 	}
-	tpl, err := template.New("").Funcs(funcMap).Parse(s)
-	if err != nil {
-		return "", err
+
+	// Create parent template chain and string builder.
+	tpl := template.New("").Funcs(funcMap)
+	var b strings.Builder
+	nss := make([]string, len(ss))
+
+	for i := 0; i < len(ss); i++ {
+		inner, err := tpl.Parse(ss[i])
+		if err != nil {
+			continue
+		}
+
+		if err := inner.Execute(&b, nil); err != nil {
+			b.Reset()
+			continue
+		}
+
+		nss[i] = b.String()
+		b.Reset()
 	}
 
-	// TODO look for better solution
-	var b bytes.Buffer
-
-	if err := tpl.Execute(&b, nil); err != nil {
-		return "", err
-	}
-
-	return b.String(), nil
+	return nss
 }

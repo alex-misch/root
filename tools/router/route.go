@@ -3,6 +3,7 @@ package router
 import (
 	"context"
 	"io"
+	"net/url"
 	"regexp"
 
 	"github.com/boomfunc/root/tools/flow"
@@ -13,7 +14,7 @@ import (
 // loads from config
 // NOTE: implements `flow.Step` interface
 type Route struct {
-	Url     string
+	Url     *url.URL
 	Pattern *regexp.Regexp
 	Step    flow.SStep
 }
@@ -34,9 +35,9 @@ func (r *Route) MatchString(url string) bool {
 
 // WithUrl returns new route with embedded url.
 // Can be interpreted as the `RouteMatch` instance.
-func (r *Route) WithUrl(url string) *Route {
+func (r *Route) WithUrl(u *url.URL) *Route {
 	return &Route{
-		Url:     url,
+		Url:     u,
 		Pattern: r.Pattern,
 		Step:    r.Step,
 	}
@@ -51,11 +52,11 @@ func (r *Route) Params() map[string]string {
 
 	// Case when this route instance is `abstract`.
 	// Means this route not matched.
-	if r.Url == "" {
+	if r.Url == nil {
 		return nil
 	}
 
-	return MatchParams(r.Pattern, r.Url)
+	return MatchParams(r.Pattern, r.Url.RequestURI())
 }
 
 // Run runs associated Step interface. Also implements the `flow.Step` interface itself.

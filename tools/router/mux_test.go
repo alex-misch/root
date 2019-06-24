@@ -10,21 +10,27 @@ import (
 
 func TestMux(t *testing.T) {
 	foo := &Route{Pattern: regexp.MustCompile("^foo"), Step: nil}
+	foou, _ := url.Parse("foo")
+
 	foobar := &Route{Pattern: regexp.MustCompile("^foobar"), Step: nil}
+	foobaru, _ := url.Parse("foobar")
+
 	foobarbaz := &Route{Pattern: regexp.MustCompile("^foobarbaz"), Step: nil}
+	foobarbazu, _ := url.Parse("foobarbaz")
+	foobarbazlolu, _ := url.Parse("foobarbazlol")
 
 	router := Mux([]Route{*foo, *foobar, *foobarbaz})
 
 	t.Run("Match", func(t *testing.T) {
 		tableTests := []struct {
-			url   string // incoming url
+			url   string // incoming raw url
 			route *Route // expected route
 			err   error  // expected error
 		}{
-			{"foo", foo.WithUrl("foo"), nil},
-			{"foobar", foo.WithUrl("foobar"), nil},
-			{"foobarbaz", foo.WithUrl("foobarbaz"), nil},
-			{"foobarbazlol", foo.WithUrl("foobarbazlol"), nil},
+			{"foo", foo.WithUrl(foou), nil},
+			{"foobar", foo.WithUrl(foobaru), nil},
+			{"foobarbaz", foo.WithUrl(foobarbazu), nil},
+			{"foobarbazlol", foo.WithUrl(foobarbazlolu), nil},
 			{"lolkek", nil, ErrNotFound},
 		}
 

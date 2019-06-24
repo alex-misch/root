@@ -10,11 +10,51 @@ import (
 	"strings"
 
 	"github.com/boomfunc/root/base/pipeline"
+	"github.com/boomfunc/root/base/tools"
+	"github.com/boomfunc/root/tools/kvs"
 	"github.com/boomfunc/root/tools/router"
 )
 
+// fillCtx is the isolated ugly workaround for application layer.
+// Fill to context three namespaces for future bindings.
+//
+// q - from query string
+// meta - from server connection
+// url - from regexp match
+//
+// In future - look for a better solution.
+func fillCtx(ctx context.Context, match *router.Route, rwc interface{}, r *http.Request) context.Context {
+	ctx = kvs.NewWithContext(ctx, "q", "url", "meta")
+
+	// Fill `q` namespace.
+	q := match.Url.Query()
+	for k, _ := range q {
+		kvs.SetWithContext(ctx, "q", k, q.Get(k))
+	}
+
+	// Fill `url` namespace.
+	for k, v := range match.Params() {
+		kvs.SetWithContext(ctx, "url", k, v)
+	}
+
+	// Fill `meta` namespace
+	if r == nil { // not an `http` mode
+		kvs.SetWithContext(ctx, "meta", "ip", tools.GetRemoteIP(
+			tools.GetRemoteAddr(rwc),
+		))
+	} else {
+		kvs.SetWithContext(ctx, "meta", "ip", tools.GetRemoteIP(
+			tools.GetRemoteAddr(rwc),
+			r.Header.Get("X-Forwarded-For"), r.Header.Get("X-Real-IP"),
+		))
+		kvs.SetWithContext(ctx, "meta", "ua", r.UserAgent())
+	}
+
+	return ctx
+}
+
 // Router is type wrapper
-// Implements several application handlers
+// Contains several application handlers.
 type Router router.Mux
 
 // UnmarshalYAML implements the yaml.Unmarshaller interface
@@ -44,7 +84,7 @@ func (r *Router) UnmarshalYAML(unmarshal func(interface{}) error) error {
 // Parse incoming data as json payload
 // Return data as raw
 func (mux Router) JSON(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer) error {
-	// Phase 1. Parse payload as JSON
+	// Phase 1. Parse payload as raw JSON.
 	intermediate := struct {
 		Url   string
 		Stdin string
@@ -53,6 +93,8 @@ func (mux Router) JSON(ctx context.Context, stdin io.Reader, stdout, stderr io.W
 		return err
 	}
 
+	// Part of the workaround with url for iteration.
+	// Look at heap.go
 	if url, ok := ctx.Value("base.request.url").(*string); ok {
 		*url = intermediate.Url
 	}
@@ -62,8 +104,14 @@ func (mux Router) JSON(ctx context.Context, stdin io.Reader, stdout, stderr io.W
 		return err
 	}
 
-	// NOTE: new stdin - Stdin from parsed json
-	return router.Mux(mux).MatchLax(u).Run(ctx, strings.NewReader(intermediate.Stdin), stdout, stderr)
+	// Phase 2. Run view (`Step` interface) fetched from router.
+	step := router.Mux(mux).MatchLax(u)
+	if step != nil {
+		// Middlephase. Fill context only if something matched.
+		ctx = fillCtx(ctx, step, stdin, nil)
+	}
+
+	return step.Run(ctx, strings.NewReader(intermediate.Stdin), stdout, stderr)
 }
 
 // HTTP is the http logic handler entrypoint.
@@ -71,12 +119,14 @@ func (mux Router) JSON(ctx context.Context, stdin io.Reader, stdout, stderr io.W
 // Run http handler.
 // Pack response as http.
 func (mux Router) HTTP(ctx context.Context, stdin io.Reader, stdout, stderr io.Writer) error {
-	// Phase 1. Parse payload as plain http request
+	// Phase 1. Parse payload as http request.
 	r, err := http.ReadRequest(bufio.NewReader(stdin))
 	if err != nil {
 		return err
 	}
 
+	// Part of the workaround with url for iteration.
+	// Look at heap.go
 	if url, ok := ctx.Value("base.request.url").(*string); ok {
 		*url = r.URL.RequestURI()
 	}
@@ -86,6 +136,10 @@ func (mux Router) HTTP(ctx context.Context, stdin io.Reader, stdout, stderr io.W
 	// 2. Tranform request to use out cancellation context.
 	// 3. Run via StepHandler
 	step := router.Mux(mux).MatchLax(r.URL)
+	if step != nil {
+		// Middlephase. Fill context only if something matched.
+		ctx = fillCtx(ctx, step, stdin, r)
+	}
 	w := NewHTTPResponseWriter()
 	r = r.WithContext(ctx)
 

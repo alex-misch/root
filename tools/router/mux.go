@@ -18,14 +18,14 @@ type Mux []Route
 // Error `ErrNotFound` will be thrown in .Run() method.
 // This method used in chains like.
 // err := mux.MatchLax(url).Run(ctx)
-func (routes Mux) MatchLax(url *url.URL) *Route {
+func (routes Mux) MatchLax(u *url.URL) *Route {
 	// Describe url as a string.
-	surl := url.RequestURI()
+	surl := u.RequestURI()
 
 	// Try to get the route in priority order.
 	for _, route := range routes {
 		if route.MatchString(surl) {
-			return route.WithUrl(surl)
+			return route.WithUrl(u)
 		}
 	}
 
@@ -35,8 +35,8 @@ func (routes Mux) MatchLax(url *url.URL) *Route {
 
 // MatchStrict returns most priority route by pattern (look at ql subpackage).
 // If url is not mapped - error returned.
-func (routes Mux) MatchStrict(url *url.URL) (*Route, error) {
-	if route := routes.MatchLax(url); route != nil {
+func (routes Mux) MatchStrict(u *url.URL) (*Route, error) {
+	if route := routes.MatchLax(u); route != nil {
 		return route, nil
 	}
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/url"
 	"reflect"
 	"regexp"
 	"testing"
@@ -44,17 +45,27 @@ func TestRoute(t *testing.T) {
 	})
 
 	t.Run("WithUrl", func(t *testing.T) {
+		u, _ := url.Parse("/foo/bar")
+
 		tableTests := []struct {
 			route *Route
 			url   string
 		}{
 			{&route, ""},
-			{(&route).WithUrl("/foo/bar"), "/foo/bar"},
+			{(&route).WithUrl(u), "/foo/bar"},
 		}
 
 		for i, tt := range tableTests {
 			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-				if url := tt.route.Url; url != tt.url {
+				var url string
+
+				if tt.route.Url != nil {
+					url = tt.route.Url.RequestURI()
+				} else {
+					url = ""
+				}
+
+				if url != tt.url {
 					t.Fatalf("Expected %q, got %q", tt.url, url)
 				}
 			})
@@ -82,7 +93,12 @@ func TestRoute(t *testing.T) {
 
 		for i, tt := range tableTests {
 			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-				route := Route{Url: tt.uri, Pattern: ql.Regexp(tt.pattern)}
+				u, err := url.Parse(tt.uri)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				route := Route{Url: u, Pattern: ql.Regexp(tt.pattern)}
 				if params := route.Params(); !reflect.DeepEqual(params, tt.params) {
 					t.Fatalf("Expected '%v', got '%v'", tt.params, params)
 				}

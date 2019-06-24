@@ -20,70 +20,60 @@ func NewWithContext(ctx context.Context, namespaces ...string) context.Context {
 // GetStrictWithContext is a shortcut for getting value from storage, stored in context
 // returns error additional (if not contextKey)
 func GetStrictWithContext(ctx context.Context, namespace, key string) (interface{}, error) {
-	// check context with storage
-	storage, ok := ctx.Value(ContextKey).(Storage)
-	if !ok {
-		return nil, ErrContextNoStorage
+	if storage, ok := ctx.Value(ContextKey).(Storage); ok {
+		// Storage onboard, get and return value.
+		return storage.Get(namespace, key), nil
 	}
-	// storage onboard, get value
-	return storage.Get(namespace, key), nil
+
+	return nil, ErrContextNoStorage
 }
 
 // SetStrictWithContext is a shortcut for setting value to storage, stored in context
 // returns error additional (if not contextKey)
 func SetStrictWithContext(ctx context.Context, namespace, key string, value interface{}) error {
-	// check context with storage
-	storage, ok := ctx.Value(ContextKey).(Storage)
-	if !ok {
-		return ErrContextNoStorage
+	if storage, ok := ctx.Value(ContextKey).(Storage); ok {
+		// Storage onboard, set value.
+		storage.Set(namespace, key, value)
+		return nil
 	}
-	// storage onboard, set value
-	storage.Set(namespace, key, value)
-	return nil
+
+	return ErrContextNoStorage
 }
 
 // WaitStrictWithContext is a shortcut for waiting value from storage, stored in context
 // returns error additional (if not contextKey)
 func WaitStrictWithContext(ctx context.Context, namespace, key string) error {
-	// check context with storage
-	storage, ok := ctx.Value(ContextKey).(Storage)
-	if !ok {
-		return ErrContextNoStorage
+	if storage, ok := ctx.Value(ContextKey).(Storage); ok {
+		// Storage onboard, wait value.
+		storage.Wait(namespace, key)
+		return nil
 	}
-	// storage onboard, wait value
-	storage.Wait(namespace, key)
-	return nil
+
+	return ErrContextNoStorage
 }
 
 // GetWithContext is a shortcut for getting value from storage, stored in context
 func GetWithContext(ctx context.Context, namespace, key string) interface{} {
-	// check context with storage
-	storage, ok := ctx.Value(ContextKey).(Storage)
-	if !ok {
-		return nil
+	if storage, ok := ctx.Value(ContextKey).(Storage); ok {
+		// Storage onboard, get and return value.
+		return storage.Get(namespace, key)
 	}
-	// storage onboard, get value
-	return storage.Get(namespace, key)
+
+	return nil
 }
 
 // SetWithContext is a shortcut for setting value to storage, stored in context
 func SetWithContext(ctx context.Context, namespace, key string, value interface{}) {
-	// check context with storage
-	storage, ok := ctx.Value(ContextKey).(Storage)
-	if !ok {
-		return
+	if storage, ok := ctx.Value(ContextKey).(Storage); ok {
+		// Storage onboard, set value.
+		storage.Set(namespace, key, value)
 	}
-	// storage onboard, set value
-	storage.Set(namespace, key, value)
 }
 
 // WaitWithContext is a shortcut for waiting value from storage, stored in context
 func WaitWithContext(ctx context.Context, namespace, key string) {
-	// check context with storage
-	storage, ok := ctx.Value(ContextKey).(Storage)
-	if !ok {
-		return
+	if storage, ok := ctx.Value(ContextKey).(Storage); ok {
+		// Storage onboard, wait value.
+		storage.Wait(namespace, key)
 	}
-	// storage onboard, wait value
-	storage.Wait(namespace, key)
 }

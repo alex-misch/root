@@ -2,9 +2,11 @@ package server
 
 import (
 	"io"
+	"net"
 	"os"
 	"sync"
 	"syscall"
+	"time"
 )
 
 // filer describes objects with underlying file.
@@ -19,9 +21,18 @@ type Conn struct {
 	conce sync.Once          // Close method might be invoked only once.
 }
 
+// Proxy methods for inplementing the io.ReadWriter interface
 func (conn *Conn) Read(p []byte) (int, error)  { return conn.rwc.Read(p) }  // Just a proxy method.
 func (conn *Conn) Write(p []byte) (int, error) { return conn.rwc.Write(p) } // Just a proxy method.
 
+// Proxy methods for inplementing the net.Conn interface
+func (conn *Conn) LocalAddr() net.Addr                { return conn.rwc.(net.Conn).LocalAddr() }         // Just a proxy method.
+func (conn *Conn) RemoteAddr() net.Addr               { return conn.rwc.(net.Conn).RemoteAddr() }        // Just a proxy method.
+func (conn *Conn) SetDeadline(t time.Time) error      { return conn.rwc.(net.Conn).SetDeadline(t) }      // Just a proxy method.
+func (conn *Conn) SetReadDeadline(t time.Time) error  { return conn.rwc.(net.Conn).SetReadDeadline(t) }  // Just a proxy method.
+func (conn *Conn) SetWriteDeadline(t time.Time) error { return conn.rwc.(net.Conn).SetWriteDeadline(t) } // Just a proxy method.
+
+// Close implements the io.Closer interface.
 func (conn *Conn) Close() error {
 	var err error
 

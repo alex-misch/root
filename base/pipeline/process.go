@@ -8,6 +8,7 @@ import (
 	"os/exec"
 
 	"github.com/boomfunc/root/base/tools"
+	"github.com/boomfunc/root/tools/kvs"
 	"github.com/boomfunc/root/tools/log"
 )
 
@@ -80,7 +81,7 @@ func (p *process) run(ctx context.Context) error {
 	stderr := new(bytes.Buffer)
 
 	// fill parts with context information
-	rendered := tools.StringsFromCtx(ctx, *(p.parts))
+	rendered := kvs.RenderFromCtx(ctx, *(p.parts))
 
 	// create command with cancel functionality
 	cmd := exec.CommandContext(ctx, rendered[0], rendered[1:]...)

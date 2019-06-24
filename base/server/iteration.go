@@ -28,6 +28,10 @@ func NewIteration() *Iteration {
 
 // Log logs iteration's information data. Just access log.
 func (i *Iteration) Log(logger io.Writer) error {
+	if true {
+		return json.NewEncoder(logger).Encode(i)
+	}
+
 	_, err := fmt.Fprintln(logger, i)
 
 	if true {
