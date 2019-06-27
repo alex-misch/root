@@ -67,6 +67,8 @@ const HTML5Api = ({ url, userAgent, baseURI }) => ({
 	customElements,
 	CustomEvent: class {},
 	fetch: async (...args) => {
+		const [url] = args
+		if (!/https?:/.test(url)) args[0] = `https:${url}`
 		const fetchTime = (new Date()).getTime()
 		const res = await fetch(...args)
 		console.warn('Fetch end in', timeStamp(fetchTime), args[0])

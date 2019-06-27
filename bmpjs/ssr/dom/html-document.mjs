@@ -6,6 +6,7 @@ class HTMLDocument extends HTMLElement {
 
 	constructor(baseURI) {
 		super()
+		this.documentElement = new HTMLElement('html', {}, this)
 		this.body = new HTMLElement('body', {}, this)
 		this.head = new HTMLElement('head', {}, this)
 		this.baseURI = baseURI || ""

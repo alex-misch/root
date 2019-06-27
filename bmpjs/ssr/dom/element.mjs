@@ -97,6 +97,9 @@ class Element {
 	matches() { return true }
 
 	/** Positioning */
+	getBoundingClientRect() {
+		return { top: 0, bottom: 0, left: 0, right: 0 }
+	}
 	get clientHeight() { return 0 }
 	get clientLeft() { return 0 }
 	get clientTop() { return 0 }
