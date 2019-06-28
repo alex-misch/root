@@ -39,7 +39,7 @@ collection:
       - *jsonplugin
 
   # Clear cache
-  - pattern: "/{node:com/jetsmarter}/cleanthisbitch"
+  - pattern: "/{node:com/flyxo}/cleanthisbitch"
     << : *clearcache
 
   # Client app rendering
