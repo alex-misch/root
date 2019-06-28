@@ -28,9 +28,13 @@ func NewRoute(pattern string, step flow.SStep) *Route {
 	}
 }
 
-// MatchString return bool meaning this route is applicable to requested url.
-func (r *Route) MatchString(url string) bool {
-	return r.Pattern.MatchString(url)
+// match return bool meaning this route is applicable to requested url.
+// This method fully describes how url will be mapped to pattern.
+func (r *Route) match(u *url.URL) bool {
+	// We will simply try to match all url's string representation (including get params).
+	return r.Pattern.MatchString(
+		u.RequestURI(),
+	)
 }
 
 // WithUrl returns new route with embedded url.

@@ -19,12 +19,9 @@ type Mux []Route
 // This method used in chains like.
 // err := mux.MatchLax(url).Run(ctx)
 func (routes Mux) MatchLax(u *url.URL) *Route {
-	// Describe url as a string.
-	surl := u.RequestURI()
-
 	// Try to get the route in priority order.
 	for _, route := range routes {
-		if route.MatchString(surl) {
+		if route.match(u) {
 			return route.WithUrl(u)
 		}
 	}

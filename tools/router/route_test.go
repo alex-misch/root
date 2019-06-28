@@ -26,18 +26,24 @@ func TestRoute(t *testing.T) {
 
 	// NOTE: just proxy test (see `regexp` package tests)
 	// test case created for future custom logic (look at TODO in Route.Match)
-	t.Run("MatchString", func(t *testing.T) {
+	t.Run("match", func(t *testing.T) {
 		tableTests := []struct {
 			uri string // incoming uri
 			out bool   // applicable or not
 		}{
 			{"foobar", true},
+			{"ffoobar", false},
 			{"foobar2", false},
 		}
 
 		for i, tt := range tableTests {
 			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-				if out := route.MatchString(tt.uri); out != tt.out {
+				u, err := url.Parse(tt.uri)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				if out := route.match(u); out != tt.out {
 					t.Fatalf("Expected '%t', got '%t'", tt.out, out)
 				}
 			})
