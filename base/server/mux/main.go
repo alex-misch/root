@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"net/url"
@@ -13,6 +14,11 @@ import (
 	"github.com/boomfunc/root/base/tools"
 	"github.com/boomfunc/root/tools/kvs"
 	"github.com/boomfunc/root/tools/router"
+)
+
+var (
+	ErrMalformedHTTPRequest = errors.New("base/server/mux: Malformed HTTP request.") // We cannot parse incoming http request.
+	ErrMalformedJSONRequest = errors.New("base/server/mux: Malformed JSON request.") // We cannot parse incoming json request.
 )
 
 // fillCtx is the isolated ugly workaround for application layer.
@@ -93,7 +99,8 @@ func (mux Router) JSON(ctx context.Context, stdin io.Reader, stdout, stderr io.W
 		Stdin string
 	}{}
 	if err := json.NewDecoder(stdin).Decode(&intermediate); err != nil {
-		return err
+		// The parsing error might be very long so we will hide it under common error.
+		return ErrMalformedJSONRequest
 	}
 
 	// Part of the workaround with url for iteration.
@@ -125,7 +132,8 @@ func (mux Router) HTTP(ctx context.Context, stdin io.Reader, stdout, stderr io.W
 	// Phase 1. Parse payload as http request.
 	r, err := http.ReadRequest(bufio.NewReader(stdin))
 	if err != nil {
-		return err
+		// The parsing error might be very long so we will hide it under common error.
+		return ErrMalformedHTTPRequest
 	}
 
 	// Part of the workaround with url for iteration.

@@ -48,7 +48,7 @@ func TestPipelineRun(t *testing.T) {
 			err    error
 		}{
 			// no input
-			{nil, nil, nil, nil}, // - -
+			// {nil, nil, nil, nil}, // - -
 			// {context.WithValue(context.Background(), "output", 42), flow.ErrStepOrphan},                                           // - +(-)
 			// {context.WithValue(context.Background(), "output", tools.WriteCloser(bytes.NewBuffer([]byte{}))), flow.ErrStepOrphan}, // - +(+)
 			// // input wrong type
