@@ -31,6 +31,7 @@ func TestRoute(t *testing.T) {
 			uri string // incoming uri
 			out bool   // applicable or not
 		}{
+			{"%", false}, // url.Parse will fail with that string (u == nil)
 			{"foobar", true},
 			{"ffoobar", false},
 			{"foobar2", false},
@@ -38,10 +39,7 @@ func TestRoute(t *testing.T) {
 
 		for i, tt := range tableTests {
 			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-				u, err := url.Parse(tt.uri)
-				if err != nil {
-					t.Fatal(err)
-				}
+				u, _ := url.Parse(tt.uri)
 
 				if out := route.match(u); out != tt.out {
 					t.Fatalf("Expected '%t', got '%t'", tt.out, out)
@@ -52,27 +50,39 @@ func TestRoute(t *testing.T) {
 
 	t.Run("WithUrl", func(t *testing.T) {
 		u, _ := url.Parse("/foo/bar")
+		n := &Route{
+			Url:     u,
+			Pattern: route.Pattern,
+			Step:    route.Step,
+		}
 
 		tableTests := []struct {
-			route *Route
-			url   string
+			old  *Route
+			u    *url.URL
+			new  *Route
+			same bool
 		}{
-			{&route, ""},
-			{(&route).WithUrl(u), "/foo/bar"},
+			{&route, nil, &route, true}, // returns same route
+			{&route, u, n, false},
 		}
 
 		for i, tt := range tableTests {
 			t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-				var url string
+				new := tt.old.WithUrl(tt.u)
 
-				if tt.route.Url != nil {
-					url = tt.route.Url.RequestURI()
-				} else {
-					url = ""
+				if !reflect.DeepEqual(new, tt.new) {
+					t.Fatalf("Expected %q, got %q", tt.new, new)
 				}
 
-				if url != tt.url {
-					t.Fatalf("Expected %q, got %q", tt.url, url)
+				// If we expecting same route - also check pointer.
+				if tt.same {
+					if new != tt.new {
+						t.Fatalf("Expected %q, got %q", tt.new, new)
+					}
+				} else {
+					if new == tt.new {
+						t.Fatalf("Expected another route pointer")
+					}
 				}
 			})
 		}

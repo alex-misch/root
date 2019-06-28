@@ -32,6 +32,10 @@ func NewRoute(pattern string, step flow.SStep) *Route {
 // This method fully describes how url will be mapped to pattern.
 func (r *Route) match(u *url.URL) bool {
 	// We will simply try to match all url's string representation (including get params).
+	if u == nil {
+		return false
+	}
+
 	return r.Pattern.MatchString(
 		u.RequestURI(),
 	)
@@ -40,6 +44,10 @@ func (r *Route) match(u *url.URL) bool {
 // WithUrl returns new route with embedded url.
 // Can be interpreted as the `RouteMatch` instance.
 func (r *Route) WithUrl(u *url.URL) *Route {
+	if u == nil {
+		return r
+	}
+
 	return &Route{
 		Url:     u,
 		Pattern: r.Pattern,
