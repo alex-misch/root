@@ -19,7 +19,7 @@
         ./sitemap.mjs
         --output=stdout
         --user-agent='{{meta "ua"}}'
-        --origin='{{meta "host"}}'
+        --origin='https://{{meta "host"}}'
         --src=https://jetsmarter.com/data/{{url "node"}}/index.es.js
 
     - type: plugin
@@ -42,10 +42,10 @@
         --no-warnings
         --experimental-vm-modules
         ./render.mjs
-        --url=/{{url "url"}}
+        --url='/{{url "url"}}'
         --ip='{{meta "ip"}}'
         --user-agent='{{meta "ua"}}'
-        --origin='{{meta "host"}}'
+        --origin='https://{{meta "host"}}'
         --src=https://jetsmarter.com/data/{{url "node"}}/index.es.js
 
     - type: plugin

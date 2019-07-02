@@ -64,17 +64,19 @@ func (p *epoll) Events() ([]Event, []Event, error) {
 	for _, event := range events {
 		ev := toEvent(event)
 
-		if event.Events&(unix.EPOLLIN) != 0 {
-			// event 'ready for reading'
-			p.Del(ev.Fd())
-			re = append(re, ev)
-		} else if event.Events&(unix.EPOLLRDHUP|unix.EPOLLHUP) != 0 {
-			// closed by peer
+		if event.Events&(unix.EPOLLERR|unix.EPOLLHUP) != 0 {
+			// Closed by peer (EPOLLHUP)
+			// Or unexpected error (EPOLLERR)
 			// http://man7.org/linux/man-pages/man7/epoll.7.html
 			if err := p.Del(ev.Fd()); err == nil {
 				unix.Close(int(ev.Fd()))
 			}
 			ce = append(ce, ev)
+		} else if event.Events&(unix.EPOLLIN|unix.EPOLLRDHUP) != 0 {
+			// event 'ready for reading' (EPOLLIN)
+			// or EOF have been reached (EPOLLRDHUP)
+			p.Del(ev.Fd())
+			re = append(re, ev)
 		}
 	}
 

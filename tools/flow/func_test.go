@@ -4,17 +4,19 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"testing"
 )
 
 func finner(ctx context.Context) error {
-	return nil
-
-	// TODO:
-
 	// write hello world to stdout
-	// _, err := fmt.Fprint(opts.Stdout(), "Hello world")
-	// return err
+	stdout, ok := ctx.Value("stdout").(io.Writer)
+	if !ok {
+		return ErrStepOrphan
+	}
+
+	_, err := fmt.Fprint(stdout, "Hello world")
+	return err
 }
 
 func TestFunc(t *testing.T) {
@@ -40,7 +42,9 @@ func TestFunc(t *testing.T) {
 
 	t.Run("Run", func(t *testing.T) {
 		stdout := bytes.NewBuffer(nil)
-		err := Func(finner).Run(context.Background())
+		err := Func(finner).Run(
+			context.WithValue(context.Background(), "stdout", stdout),
+		)
 
 		if err != nil {
 			t.Fatal(err)
