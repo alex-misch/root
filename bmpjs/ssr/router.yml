@@ -8,7 +8,7 @@
 
 # Urls for node `com.jetsmarter`
 # Sitemap generator
-- pattern: "/ssr/{node:com/jetsmarter}/sitemap.xml"
+- pattern: "/ssr/{node:com/flyxo}/sitemap.xml"
   pipeline: &sitemap
     - type: process
       cmd: >
@@ -20,20 +20,20 @@
         --output=stdout
         --user-agent='{{meta "ua"}}'
         --origin='https://{{meta "host"}}'
-        --src=https://jetsmarter.com/data/{{url "node"}}/index.es.js
+        --src=https://flyxo.com/data/{{url "node"}}/index.es.js
 
     - type: plugin
       path: ./ssr-Linux-x86_64.so
       name: JsonEntrypoint
 
 # Clear cache
-- pattern: "/{node:com/jetsmarter}/cleanthisbitch"
+- pattern: "/{node:com/flyxo}/cleanthisbitch"
   pipeline: &clearcache
     - type: process
       cmd: rm -rf ./cache/data/{{url "node"}}
 
 # Client app rendering
-- pattern: "/ssr/{node:com/jetsmarter}/{url:*}"
+- pattern: "/ssr/{node:com/flyxo}/{url:*}"
   pipeline: &render
     - type: process
       cmd: >
@@ -46,7 +46,7 @@
         --ip='{{meta "ip"}}'
         --user-agent='{{meta "ua"}}'
         --origin='https://{{meta "host"}}'
-        --src=https://jetsmarter.com/data/{{url "node"}}/index.es.js
+        --src=https://flyxo.com/data/{{url "node"}}/index.es.js
 
     - type: plugin
       path: ./ssr-Linux-x86_64.so
