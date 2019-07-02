@@ -1,13 +1,13 @@
 package trust
 
 import (
+	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/md5"
 	"crypto/rand"
 	"encoding/hex"
 	"io"
-	"bytes"
 )
 
 // Abstract represents raw fingerprint as interface
