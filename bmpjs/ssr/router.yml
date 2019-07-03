@@ -19,7 +19,7 @@
         ./sitemap.mjs
         --output=stdout
         --user-agent='{{meta "ua"}}'
-        --origin='https://{{meta "host"}}'
+        --origin='https://flyxo.com'
         --src=https://flyxo.com/data/{{url "node"}}/index.es.js
 
     - type: plugin
@@ -45,7 +45,7 @@
         --url='/{{url "url"}}'
         --ip='{{meta "ip"}}'
         --user-agent='{{meta "ua"}}'
-        --origin='https://{{meta "host"}}'
+        --origin='https://flyxo.com'
         --src=https://flyxo.com/data/{{url "node"}}/index.es.js
 
     - type: plugin
@@ -56,7 +56,7 @@
 # Urls for node `com.jetsmarter.charter`
 # Sitemap generator
 - pattern: "/ssr/{node:com/jetsmarter.charter}/sitemap.xml"
-  pipeline: &sitemapjs
+  pipeline:
     - type: process
       cmd: >
         node
@@ -66,7 +66,7 @@
         ./sitemap.mjs
         --output=stdout
         --user-agent='{{meta "ua"}}'
-        --origin='https://{{meta "host"}}'
+        --origin='https://charter.jetsmarter.com'
         --src=https://jetsmarter.com/data/{{url "node"}}/index.es.js
 
     - type: plugin
@@ -79,7 +79,7 @@
 
 # Client app rendering
 - pattern: "/ssr/{node:com/jetsmarter.charter}/{url:*}"
-  pipeline: &renderjs
+  pipeline:
     - type: process
       cmd: >
         node
@@ -90,7 +90,7 @@
         --url='/{{url "url"}}'
         --ip='{{meta "ip"}}'
         --user-agent='{{meta "ua"}}'
-        --origin='https://{{meta "host"}}'
+        --origin='https://charter.jetsmarter.com'
         --src=https://jetsmarter.com/data/{{url "node"}}/index.es.js
 
     - type: plugin
@@ -101,7 +101,18 @@
 # Urls for node `com.jetsmarter.biggame`
 # Sitemap generator
 - pattern: "/ssr/{node:com/jetsmarter.biggame}/sitemap.xml"
-  pipeline: *sitemapjs
+  pipeline:
+    - type: process
+      cmd: >
+        node
+        --experimental-modules
+        --no-warnings
+        --experimental-vm-modules
+        ./sitemap.mjs
+        --output=stdout
+        --user-agent='{{meta "ua"}}'
+        --origin='https://biggame.jetsmarter.com'
+        --src=https://jetsmarter.com/data/{{url "node"}}/index.es.js
 
 # Clear cache
 - pattern: "/{node:com/jetsmarter.biggame}/cleanthisbitch"
@@ -109,13 +120,36 @@
 
 # Client app rendering
 - pattern: "/ssr/{node:com/jetsmarter.biggame}/{url:*}"
-  pipeline : *renderjs
+  pipeline:
+    - type: process
+      cmd: >
+        node
+        --experimental-modules
+        --no-warnings
+        --experimental-vm-modules
+        ./render.mjs
+        --url='/{{url "url"}}'
+        --ip='{{meta "ip"}}'
+        --user-agent='{{meta "ua"}}'
+        --origin='https://biggame.jetsmarter.com'
+        --src=https://jetsmarter.com/data/{{url "node"}}/index.es.js
 
 
 # Urls for node `com.jetsmarter.crowdfund`
 # Sitemap generator
 - pattern: "/ssr/{node:com/jetsmarter.crowdfund}/sitemap.xml"
-  pipeline: *sitemapjs
+  pipeline:
+    - type: process
+      cmd: >
+        node
+        --experimental-modules
+        --no-warnings
+        --experimental-vm-modules
+        ./sitemap.mjs
+        --output=stdout
+        --user-agent='{{meta "ua"}}'
+        --origin='https://crowdfund.jetsmarter.com'
+        --src=https://jetsmarter.com/data/{{url "node"}}/index.es.js
 
 # Clear cache
 - pattern: "/{node:com/jetsmarter.crowdfund}/cleanthisbitch"
@@ -123,7 +157,19 @@
 
 # Client app rendering
 - pattern: "/ssr/{node:com/jetsmarter.crowdfund}/{url:*}"
-  pipeline : *renderjs
+  pipeline:
+    - type: process
+      cmd: >
+        node
+        --experimental-modules
+        --no-warnings
+        --experimental-vm-modules
+        ./render.mjs
+        --url='/{{url "url"}}'
+        --ip='{{meta "ip"}}'
+        --user-agent='{{meta "ua"}}'
+        --origin='https://crowdfund.jetsmarter.com'
+        --src=https://jetsmarter.com/data/{{url "node"}}/index.es.js
 
 
 # Serve static data
