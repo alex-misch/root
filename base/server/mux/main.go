@@ -5,8 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"strings"
 
@@ -51,6 +53,14 @@ func fillCtx(ctx context.Context, match *router.Route, rwc interface{}, r *http.
 			r.Header.Get("X-Forwarded-For"), r.Header.Get("X-Real-IP"),
 		))
 		kvs.SetWithContext(ctx, "meta", "ua", r.UserAgent())
+
+		dump, _ := httputil.DumpRequest(r, false)
+		fmt.Printf("INCOMING REQUEST: %q\n", dump)
+
+		fmt.Println("r.Host:", r.Host)
+		fmt.Println("r.Header.Get(\"Host\"):", r.Header.Get("Host"))
+		fmt.Println("r.RequestURI:", r.RequestURI)
+
 		kvs.SetWithContext(ctx, "meta", "host", r.Host)
 	} else {
 		// Plain TCP mode.
