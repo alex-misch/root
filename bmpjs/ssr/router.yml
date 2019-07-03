@@ -56,7 +56,22 @@
 # Urls for node `com.jetsmarter.charter`
 # Sitemap generator
 - pattern: "/ssr/{node:com/jetsmarter.charter}/sitemap.xml"
-  pipeline: *sitemap
+  pipeline: &sitemapjs
+    - type: process
+      cmd: >
+        node
+        --experimental-modules
+        --no-warnings
+        --experimental-vm-modules
+        ./sitemap.mjs
+        --output=stdout
+        --user-agent='{{meta "ua"}}'
+        --origin='https://{{meta "host"}}'
+        --src=https://jetsmarter.com/data/{{url "node"}}/index.es.js
+
+    - type: plugin
+      path: ./ssr-Linux-x86_64.so
+      name: JsonEntrypoint
 
 # Clear cache
 - pattern: "/{node:com/jetsmarter.charter}/cleanthisbitch"
@@ -64,13 +79,29 @@
 
 # Client app rendering
 - pattern: "/ssr/{node:com/jetsmarter.charter}/{url:*}"
-  pipeline : *render
+  pipeline: &renderjs
+    - type: process
+      cmd: >
+        node
+        --experimental-modules
+        --no-warnings
+        --experimental-vm-modules
+        ./render.mjs
+        --url='/{{url "url"}}'
+        --ip='{{meta "ip"}}'
+        --user-agent='{{meta "ua"}}'
+        --origin='https://{{meta "host"}}'
+        --src=https://jetsmarter.com/data/{{url "node"}}/index.es.js
+
+    - type: plugin
+      path: ./ssr-Linux-x86_64.so
+      name: JsonEntrypoint
 
 
 # Urls for node `com.jetsmarter.biggame`
 # Sitemap generator
 - pattern: "/ssr/{node:com/jetsmarter.biggame}/sitemap.xml"
-  pipeline: *sitemap
+  pipeline: *sitemapjs
 
 # Clear cache
 - pattern: "/{node:com/jetsmarter.biggame}/cleanthisbitch"
@@ -78,13 +109,13 @@
 
 # Client app rendering
 - pattern: "/ssr/{node:com/jetsmarter.biggame}/{url:*}"
-  pipeline : *render
+  pipeline : *renderjs
 
 
 # Urls for node `com.jetsmarter.crowdfund`
 # Sitemap generator
 - pattern: "/ssr/{node:com/jetsmarter.crowdfund}/sitemap.xml"
-  pipeline: *sitemap
+  pipeline: *sitemapjs
 
 # Clear cache
 - pattern: "/{node:com/jetsmarter.crowdfund}/cleanthisbitch"
@@ -92,7 +123,7 @@
 
 # Client app rendering
 - pattern: "/ssr/{node:com/jetsmarter.crowdfund}/{url:*}"
-  pipeline : *render
+  pipeline : *renderjs
 
 
 # Serve static data
