@@ -79,7 +79,7 @@ func TestMain(t *testing.T) {
 	})
 
 	t.Run("execute", func(t *testing.T) {
-		subscribers = nil
+		Clear()
 
 		execute(nil, context.TODO(), stepSuccess)
 		execute(nil, context.TODO(), stepError)

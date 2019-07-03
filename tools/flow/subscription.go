@@ -5,8 +5,13 @@ import (
 )
 
 var (
+	// TODO: deprecated in favor of the `Session`
 	subscribers *subscription
 )
+
+func init() {
+	Clear()
+}
 
 // subscription is system for subscribing to step execution finish
 type subscription struct {
@@ -54,28 +59,27 @@ func (s *subscription) broadcast(step Step) {
 
 // WaitFor locks until the step is completed
 func WaitFor(step Step) {
-	if subscribers == nil {
-		subscribers = &subscription{
-			pending: make(map[Step]*sync.Cond, 0),
-		}
-	}
-
 	subscribers.waitFor(step)
 }
 
 // Broadcast unlocks all step's subscribers
 func Broadcast(step Step) {
-	if subscribers == nil {
-		subscribers = &subscription{
-			pending: make(map[Step]*sync.Cond, 0),
-		}
-	}
-
 	subscribers.broadcast(step)
 }
 
 // Clear clears all subscriber relations
-func Clear(step Step) {
-	// TODO: maybe broadcast current pending?
-	subscribers = nil
+// TODO: maybe broadcast all current pending items?
+func Clear() {
+	if subscribers == nil {
+		// Re-create all the struct.
+		subscribers = &subscription{
+			pending: make(map[Step]*sync.Cond, 0),
+		}
+	} else {
+		// Just re-create map.
+		// TODO: very tmp solution.
+		subscribers.mutex.Lock()
+		subscribers.pending = make(map[Step]*sync.Cond, 0)
+		subscribers.mutex.Unlock()
+	}
 }

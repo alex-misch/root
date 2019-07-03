@@ -3,7 +3,7 @@
 FROM boomfunc/base:latest as base
 
 # compile plugin
-FROM circleci/golang:1.10 as plugin
+FROM golang:1.12 as plugin
 
 USER root
 

@@ -16,7 +16,7 @@ x-defaults:
       max-size: 2m
 
   service: &service
-    image: golang
+    image: golang:1.12
     volumes: *volumes
     working_dir: *working_dir
     logging: *logging
