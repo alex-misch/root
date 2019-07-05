@@ -18,6 +18,14 @@ const (
 	REPR                  // String representation
 )
 
+type status int
+
+const (
+	unknown status = iota // Unknown status, need to resolve.
+	success
+	fail
+)
+
 var (
 	ErrUnknownLogFormat = errors.New("base/server: Unknown log format.")
 )
@@ -25,10 +33,11 @@ var (
 // Iteration describes incoming request statistics.
 // Timing url, errors, etc
 type Iteration struct {
-	UUID        uuid.UUID
-	Error       error `json:",omitempty"`
+	UUID        uuid.UUID               `json:",omitempty"`
+	Error       error                   `json:",omitempty"`
+	Chronometer chronometer.Chronometer `json:",omitempty"`
 	url         string
-	Chronometer chronometer.Chronometer
+	status      status
 }
 
 // NewIteration wraps incoming rwc with measuring functionality.
@@ -54,12 +63,18 @@ func (i *Iteration) log(logger io.Writer, format LogFormat) error {
 
 // AccessLog logs everything except error message.
 func (i *Iteration) AccessLog(logger io.Writer, format LogFormat) error {
-	// iter := &Iteration{
-	// 	UUID:        i.UUID,
-	// 	url:         i.url,
-	// 	Chronometer: i.Chronometer,
-	// }
-	return i.log(logger, format)
+	status := success
+	if i.Error != nil {
+		status = fail
+	}
+
+	iter := &Iteration{
+		UUID:        i.UUID,
+		url:         i.url,
+		status:      status,
+		Chronometer: i.Chronometer,
+	}
+	return iter.log(logger, format)
 }
 
 // ErrorLog logs only error message and associated UUID.
@@ -72,10 +87,24 @@ func (i *Iteration) ErrorLog(logger io.Writer, format LogFormat) error {
 }
 
 func (i Iteration) Status() string {
-	if i.Error == nil {
-		return "SUCCESS"
+	// Resolve status, based on error existence.
+	if i.status == unknown {
+		if i.Error == nil {
+			i.status = success
+		} else {
+			i.status = fail
+		}
 	}
-	return "ERROR"
+
+	// Get string representation of the status.
+	switch i.status {
+	case success:
+		return "SUCCESS"
+	case fail:
+		return "ERROR"
+	default:
+		return "UNKNOWN"
+	}
 }
 
 func (i Iteration) Url() string {
@@ -104,8 +133,8 @@ func (i Iteration) MarshalJSON() ([]byte, error) {
 	type alias Iteration // to prevent infinity loop
 
 	return json.Marshal(&struct {
-		Url    string
-		Status string
+		Url    string `json:",omitempty"`
+		Status string `json:",omitempty"`
 		Error  string `json:",omitempty"`
 		alias
 	}{
