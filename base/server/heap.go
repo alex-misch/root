@@ -78,9 +78,9 @@ func (ss *StepsHeap) Pop() interface{} {
 					}),
 
 					flow.Func(func(ctx context.Context) error {
-						iteration.Log(stdout)
+						iteration.AccessLog(stdout, JSON)
 						if iteration.Error != nil {
-							iteration.Log(stderr)
+							iteration.ErrorLog(stderr, JSON)
 						}
 						return nil
 					}),

@@ -2,11 +2,24 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 
 	"github.com/boomfunc/root/tools/chronometer"
 	"github.com/google/uuid"
+)
+
+// LogFormat describes how we want log object.
+type LogFormat int
+
+const (
+	JSON LogFormat = iota // JSON representation
+	REPR                  // String representation
+)
+
+var (
+	ErrUnknownLogFormat = errors.New("base/server: Unknown log format.")
 )
 
 // Iteration describes incoming request statistics.
@@ -26,19 +39,36 @@ func NewIteration() *Iteration {
 	}
 }
 
-// Log logs iteration's information data. Just access log.
-func (i *Iteration) Log(logger io.Writer) error {
-	if true {
+// log logs iteration's information data using specified format.
+func (i *Iteration) log(logger io.Writer, format LogFormat) error {
+	switch format {
+	case JSON:
 		return json.NewEncoder(logger).Encode(i)
-	}
-
-	_, err := fmt.Fprintln(logger, i)
-
-	if true {
+	case REPR:
+		_, err := fmt.Fprintln(logger, i)
 		return err
+	default:
+		return ErrUnknownLogFormat
 	}
+}
 
-	return json.NewEncoder(logger).Encode(i)
+// AccessLog logs everything except error message.
+func (i *Iteration) AccessLog(logger io.Writer, format LogFormat) error {
+	// iter := &Iteration{
+	// 	UUID:        i.UUID,
+	// 	url:         i.url,
+	// 	Chronometer: i.Chronometer,
+	// }
+	return i.log(logger, format)
+}
+
+// ErrorLog logs only error message and associated UUID.
+func (i *Iteration) ErrorLog(logger io.Writer, format LogFormat) error {
+	// iter := &Iteration{
+	// 	UUID:  i.UUID,
+	// 	Error: i.Error,
+	// }
+	return i.log(logger, format)
 }
 
 func (i Iteration) Status() string {
