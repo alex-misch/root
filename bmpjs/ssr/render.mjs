@@ -39,5 +39,6 @@ render(global.request, args.src)
 
 
 process.on('unhandledRejection', function(reason, p) {
-  console.error(reason);
+	console.error(reason);
+	process.exit(1)
 });

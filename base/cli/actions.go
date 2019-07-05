@@ -83,6 +83,7 @@ func runGolangCommandAction(c *cli.Context) {
 	// Phase 3. Run golang server
 	http.Serve(l, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		step := router.Mux(m).MatchLax(r.URL)
-		mux.StepHandler(step).ServeHTTP(w, r)
+		h, _ := mux.StepHandler(step)
+		h.ServeHTTP(w, r)
 	}))
 }

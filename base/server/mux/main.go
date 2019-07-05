@@ -5,10 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"strings"
 
@@ -53,14 +51,6 @@ func fillCtx(ctx context.Context, match *router.Route, rwc interface{}, r *http.
 			r.Header.Get("X-Forwarded-For"), r.Header.Get("X-Real-IP"),
 		))
 		kvs.SetWithContext(ctx, "meta", "ua", r.UserAgent())
-
-		dump, _ := httputil.DumpRequest(r, false)
-		fmt.Printf("INCOMING REQUEST: %q\n", dump)
-
-		fmt.Println("r.Host:", r.Host)
-		fmt.Println("r.Header.Get(\"Host\"):", r.Header.Get("Host"))
-		fmt.Println("r.RequestURI:", r.RequestURI)
-
 		kvs.SetWithContext(ctx, "meta", "host", r.Host)
 	} else {
 		// Plain TCP mode.
@@ -154,8 +144,8 @@ func (mux Router) HTTP(ctx context.Context, stdin io.Reader, stdout, stderr io.W
 
 	// Phase 2. Run http.Handler
 	// 1. Create response writer
-	// 2. Tranform request to use out cancellation context.
-	// 3. Run via StepHandler
+	// 2. Tranform request to use our cancellation context.
+	// 3. Run via StepHandler. Note that error from http.Handler not visible here, we will use the channel to return this.
 	step := router.Mux(mux).MatchLax(r.URL)
 	if step != nil {
 		// Middlephase. Fill context only if something matched.
@@ -164,8 +154,16 @@ func (mux Router) HTTP(ctx context.Context, stdin io.Reader, stdout, stderr io.W
 	w := NewHTTPResponseWriter()
 	r = r.WithContext(ctx)
 
-	StepHandler(step).ServeHTTP(w, r)
-
 	// Phase 3. Generate plain response
-	return w.Response(r).Write(stdout)
+	// Create and run handler with error catching throw channel.
+	handler, ch := StepHandler(step)
+	handler.ServeHTTP(w, r)
+	if err := w.Response(r).Write(stdout); err != nil {
+		// Error from writing answer is more important.
+		return err
+	} else {
+		// The answer was written successfully, but maybe it is not 200 OK?
+		// Get raw error for iteration log.
+		return <-ch
+	}
 }

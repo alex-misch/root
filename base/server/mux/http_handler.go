@@ -10,12 +10,16 @@ import (
 )
 
 type stepHandler struct {
-	step flow.SStep
+	step  flow.SStep
+	errCh chan error
 }
 
 // ServeHTTP implements http.Handler interfaces.
 // Also, can be used as handler to net/http
 func (sh *stepHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// Close channel in any way.
+	defer close(sh.errCh)
+
 	// Set the default headers
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
@@ -43,6 +47,10 @@ func (sh *stepHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Generate body using route Step
 	if err := sh.step.Run(ctx, r.Body, w, nil); err != nil {
+		// Phase 1. Translate error to channel.
+		sh.errCh <- err
+
+		// Phase 2. Translate error to http answer.
 		// What is the error? We can imagine several situations.
 		// By default - we translate error and text.
 		var status int = http.StatusInternalServerError
@@ -61,6 +69,13 @@ func (sh *stepHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // StepHandler returns a request handler that wraps flow.Step execution
 //
 // This is http basic logic for base server
-func StepHandler(step flow.SStep) http.Handler {
-	return &stepHandler{step}
+func StepHandler(step flow.SStep) (http.Handler, chan error) {
+	errCh := make(chan error, 1)
+
+	h := &stepHandler{
+		step:  step,
+		errCh: errCh,
+	}
+
+	return h, errCh
 }
