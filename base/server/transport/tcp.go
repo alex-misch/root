@@ -3,15 +3,6 @@ package transport
 import (
 	"container/heap"
 	"net"
-	"time"
-)
-
-// TODO: implement net.Listener interface
-
-var (
-	// TODO parametrize
-	readTimeout  = time.Second * 2
-	writeTimeout = time.Second * 5
 )
 
 type tcp struct {
@@ -20,25 +11,11 @@ type tcp struct {
 	errCh    chan error
 }
 
-func (tr *tcp) Len() int {
-	return tr.poller.Len()
-}
-
-func (tr *tcp) Less(i, j int) bool {
-	return tr.poller.Less(i, j)
-}
-
-func (tr *tcp) Swap(i, j int) {
-	tr.poller.Swap(i, j)
-}
-
-func (tr *tcp) Push(x interface{}) {
-	heap.Push(tr.poller, x)
-}
-
-func (tr *tcp) Pop() interface{} {
-	return heap.Pop(tr.poller)
-}
+func (tr *tcp) Len() int           { return tr.poller.Len() }      // Just a proxy method.
+func (tr *tcp) Less(i, j int) bool { return tr.poller.Less(i, j) } // Just a proxy method.
+func (tr *tcp) Swap(i, j int)      { tr.poller.Swap(i, j) }        // Just a proxy method.
+func (tr *tcp) Push(x interface{}) { heap.Push(tr.poller, x) }     // Just a proxy method.
+func (tr *tcp) Pop() interface{}   { return heap.Pop(tr.poller) }  // Just a proxy method.
 
 func (tr *tcp) Connect(errCh chan error) {
 	tr.errCh = errCh

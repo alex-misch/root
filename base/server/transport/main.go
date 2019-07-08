@@ -2,6 +2,13 @@ package transport
 
 import (
 	"container/heap"
+	"time"
+)
+
+var (
+	// TODO parametrize
+	readTimeout  = time.Second * 2
+	writeTimeout = time.Second * 5
 )
 
 // Interface describes main idea of transport layer.

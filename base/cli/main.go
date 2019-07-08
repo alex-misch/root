@@ -68,18 +68,13 @@ func Run(NODE, VERSION, TIMESTAMP string) {
 			},
 			Subcommands: []cli.Command{
 				{
-					Name:   "rpc",
-					Usage:  runTCPCommandUsage,
-					Action: runCommandAction,
-				},
-				{
 					Name:   "tcp",
 					Usage:  runTCPCommandUsage,
 					Action: runCommandAction,
 				},
 				{
-					Name:   "http",
-					Usage:  runHTTPCommandUsage,
+					Name:   "udp",
+					Usage:  runUDPCommandUsage,
 					Action: runCommandAction,
 				},
 				{

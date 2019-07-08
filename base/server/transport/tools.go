@@ -20,12 +20,13 @@ func TCP(ip net.IP, port int) (Interface, error) {
 
 	heap, err := poller.Heap()
 	if err != nil {
+		listener.Close() // garbage
 		return nil, err
 	}
 
-	tcp := &tcp{
+	tr := &tcp{
 		listener: listener,
 		poller:   heap,
 	}
-	return tcp, nil
+	return tr, nil
 }

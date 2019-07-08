@@ -33,11 +33,16 @@ func (ss *StepsHeap) Pop() interface{} {
 	for {
 		if conn, ok := heap.Pop(ss.inner).(io.ReadWriteCloser); ok {
 
-			// Wrap raw connection.
-			conn = &Conn{rwc: conn}
+			// Workaround for calculating chronometer `poll` node.
+			// iteration.Chronometer.Enter("poll")
+			// iteration.Chronometer.Exit("poll")
+			// End of the workaround.
 
-			iteration := NewIteration()
+			// Initial variables prepare.
+			conn = &Conn{rwc: conn}     // Wrap raw connection.
+			iteration := NewIteration() // Create metadata about this request.
 
+			// Return the step for the dispatcher.
 			return flow.Transaction(
 
 				// Up action - run application layer.
@@ -48,12 +53,10 @@ func (ss *StepsHeap) Pop() interface{} {
 					// Override error from application.
 					defer func() {
 						if r := recover(); r != nil {
-							switch typed := r.(type) {
-							case error:
-								iteration.Error = typed
-							case string:
-								iteration.Error = fmt.Errorf("base/server: %s", typed)
-							}
+							// Something of type interface{} was raised.
+							// Generate common message.
+							// NOTE: `error` type has default format %s
+							iteration.Error = fmt.Errorf("base/server: Unexpected error: %v", r)
 						}
 					}()
 
@@ -63,7 +66,7 @@ func (ss *StepsHeap) Pop() interface{} {
 					ctx = context.WithValue(ctx, "base.request.url", url)
 					// End of the workaround.
 
-					// Run entrypoint with measuring.
+					// Run entrypoint with time measuring.
 					iteration.Chronometer.Enter("app")
 					defer iteration.Chronometer.Exit("app")
 
@@ -74,9 +77,7 @@ func (ss *StepsHeap) Pop() interface{} {
 
 				// Rollback action - log results and close connection.
 				flow.Concurrent(nil,
-					flow.Func(func(ctx context.Context) error {
-						return conn.Close()
-					}),
+					flow.Func(func(ctx context.Context) error { return conn.Close() }),
 
 					flow.Func(func(ctx context.Context) error {
 						iteration.AccessLog(stdout, JSON)

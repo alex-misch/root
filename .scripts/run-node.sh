@@ -11,7 +11,7 @@ BASE=`basename $(realpath "${NODE}")`
 curl -sL https://deb.nodesource.com/setup_10.x | bash -
 apt-get update
 apt-get install -y nodejs
-npm install --production --prefix=${NODE}
+npm ci --production --prefix=${NODE}
 
 ### PHASE 2. Building and compiling
 # build base for runnning as binary
