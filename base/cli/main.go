@@ -51,7 +51,7 @@ func Run(NODE, VERSION, TIMESTAMP string) {
 					Name:   "workers",
 					Usage:  portFlagUsage,
 					EnvVar: "BMP_BASE_WORKER_NUM",
-					Value:  runtime.NumCPU(),
+					Value:  2 * runtime.NumCPU() + 1,
 				},
 				cli.StringFlag{
 					Name:   "config",
