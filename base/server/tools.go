@@ -3,7 +3,6 @@ package server
 import (
 	"errors"
 	"net"
-	"runtime"
 
 	"github.com/boomfunc/root/base/server/mux"
 	"github.com/boomfunc/root/base/server/transport"
@@ -54,7 +53,7 @@ func New(transportName string, applicationName string, workers int, ip net.IP, p
 	// Phase 4. Create server
 	srv := &Server{
 		uuid:        uuid.New(),
-		workers:     runtime.NumCPU(),
+		workers:     workers,
 		transport:   tr,
 		application: application,
 	}
