@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/boomfunc/root/base/tools/poller"
 	"github.com/boomfunc/root/tools/flow"
 	"github.com/boomfunc/root/tools/log"
 )
@@ -31,30 +32,42 @@ func (ss *StepsHeap) Push(x interface{}) { heap.Push(ss.inner, x) }     // Just 
 
 func (ss *StepsHeap) Pop() interface{} {
 	for {
-		if conn, ok := heap.Pop(ss.inner).(io.ReadWriteCloser); ok {
 
-			// Workaround for calculating chronometer `poll` node.
-			// iteration.Chronometer.Enter("poll")
-			// iteration.Chronometer.Exit("poll")
+		// Fetch polled item.
+		// NOTE: This type assertion is a part of the WORKAROUND for poll timing below.
+		if item, ok := heap.Pop(ss.inner).(*poller.HeapItem); ok {
+
+			conn, ok := item.Value.(io.ReadWriteCloser)
+			if !ok {
+				continue
+			}
 			// End of the workaround.
 
 			// Initial variables prepare.
 			conn = &Conn{rwc: conn}     // Wrap raw connection.
 			iteration := NewIteration() // Create metadata about this request.
 
+			// Workaround for calculating chronometer `poll` node.
+			iteration.Chronometer.EnterWithTime("poll", item.Time) // The time when an object was added to the poller.
+			iteration.Chronometer.Exit("poll")
+			// End of the workaround.
+
+			// From this place and before the start of the `Step`, the `Step` can get into waiting for the worker.
+			// Let's mesure this.
+			iteration.Chronometer.Enter("dispatcher")
+
 			// Return the step for the dispatcher.
 			return flow.Transaction(
 
 				// Up action - run application layer.
 				flow.Func(func(ctx context.Context) error {
+					iteration.Chronometer.Exit("dispatcher")
 
 					// Good place to catch unexpected errors (panics).
-					// If there exists - means it is low-level error.
-					// Override error from application.
+					// If there exists - means it is low-level error => Override error from application.
 					defer func() {
 						if r := recover(); r != nil {
-							// Something of type interface{} was raised.
-							// Generate common message.
+							// Something of type interface{} was raised. Generate common message.
 							// NOTE: `error` type has default format %s
 							iteration.Error = fmt.Errorf("base/server: Unexpected error: %v", r)
 						}
@@ -75,7 +88,7 @@ func (ss *StepsHeap) Pop() interface{} {
 
 				}),
 
-				// Rollback action - log results and close connection.
+				// Down action - log results and close connection.
 				flow.Concurrent(nil,
 					flow.Func(func(ctx context.Context) error { return conn.Close() }),
 

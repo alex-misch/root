@@ -4,12 +4,14 @@ import (
 	"container/heap"
 	"fmt"
 	"sync"
+	"time"
 )
 
 // HeapItem describes simple pollable object
 type HeapItem struct {
 	Fd    uintptr
 	Value interface{}
+	Time  time.Time
 	ready bool
 }
 
@@ -83,7 +85,7 @@ func (h *pollerHeap) Push(x interface{}) {
 	if err != nil {
 		return
 	}
-	item := &HeapItem{Fd: fd, Value: x}
+	item := &HeapItem{Fd: fd, Value: x, Time: time.Now()}
 
 	// Phase 2. Received object is pollable - push it to the poller and heapю
 	h.mutex.Lock()
@@ -196,7 +198,7 @@ func (h *pollerHeap) pop() interface{} {
 	for i, item := range h.pending {
 		if item.ready {
 			h.pending = append(h.pending[:i], h.pending[i+1:]...)
-			return item.Value
+			return item
 		}
 	}
 

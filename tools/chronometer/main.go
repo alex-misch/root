@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 )
 
 type Chronometer map[string]*Node
@@ -12,15 +13,31 @@ func New() Chronometer {
 	return make(map[string]*Node, 0)
 }
 
-// Enter starts measuring node
+// Enter starts measuring node.
+// As the `enter` time current value will be used.
 func (ch Chronometer) Enter(name string) {
 	ch[name] = NewNode()
 }
 
-// Exit stops measuring node
+// Exit stops measuring node.
+// As the `exit` time current value will be used.
 func (ch Chronometer) Exit(name string) {
 	if node, ok := ch[name]; ok {
 		node.Exit()
+	}
+}
+
+// EnterWithTime starts measuring node.
+// As the `enter` time provided value will be used.
+func (ch Chronometer) EnterWithTime(name string, t time.Time) {
+	ch[name] = &Node{enter: t}
+}
+
+// ExitWithTime stops measuring node.
+// As the `exit` time provided value will be used.
+func (ch Chronometer) ExitWithTime(name string, t time.Time) {
+	if node, ok := ch[name]; ok {
+		node.exit = t
 	}
 }
 

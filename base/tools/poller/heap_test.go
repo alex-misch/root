@@ -226,15 +226,21 @@ func TestHeapPrivate(t *testing.T) {
 	})
 
 	t.Run("pop", func(t *testing.T) {
+		// Create mock events.
+		ready1 := &HeapItem{Fd: 1, Value: "1", ready: true}
+		ready2 := &HeapItem{Fd: 2, Value: "2", ready: true}
+		nready1 := &HeapItem{Fd: 1, Value: "1"}
+		nready2 := &HeapItem{Fd: 2, Value: "2"}
+
 		tableTests := []struct {
 			before []*HeapItem // pending before .pop()
 			x      interface{} // value returned by pop()
 			after  []*HeapItem // pending after .pop()
 		}{
 			{[]*HeapItem{}, nil, []*HeapItem{}},
-			{[]*HeapItem{&HeapItem{Fd: 1, Value: "1"}}, nil, []*HeapItem{&HeapItem{Fd: 1, Value: "1"}}},
-			{[]*HeapItem{&HeapItem{Fd: 1, Value: "1"}, &HeapItem{Fd: 2, Value: "2", ready: true}}, "2", []*HeapItem{&HeapItem{Fd: 1, Value: "1"}}},
-			{[]*HeapItem{&HeapItem{Fd: 1, Value: "1", ready: true}, &HeapItem{Fd: 2, Value: "2", ready: true}}, "1", []*HeapItem{&HeapItem{Fd: 2, Value: "2", ready: true}}},
+			{[]*HeapItem{nready1}, nil, []*HeapItem{nready1}},
+			{[]*HeapItem{nready1, ready2}, ready2, []*HeapItem{nready1}},
+			{[]*HeapItem{nready2, ready1, ready2}, ready1, []*HeapItem{nready2, ready2}},
 		}
 
 		for i, tt := range tableTests {
