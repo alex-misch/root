@@ -68,9 +68,9 @@ class BmpRemoteApp {
 				continue
 
 			// register component as already
-			// { constructor, tagname } of custom element
-			const Element = this.vm.getContext().customElements.get( route.tagName )
-			const alreadyGenerated = this.registredComponents.includes(Element.tagName)
+			// { constructor, is } of custom element
+			const Element = this.vm.getContext().customElements.get( route.template.type.is )
+			const alreadyGenerated = this.registredComponents.includes(Element.is)
 
 			const hasUrlConf = Element && typeof Element.constructor.getUrlConf == 'function'
 
@@ -78,6 +78,7 @@ class BmpRemoteApp {
 				// skip dynamic patterns, it overwritten in element urlconf
 				routes.push(route.pattern)
 			} else if ( !hasUrlConf ){
+				// TODO: tell about empty urlconf
 			}
 
 			if ( hasUrlConf ) { // component declarated urlConf generator
@@ -89,6 +90,7 @@ class BmpRemoteApp {
 				}
 			}
 		}
+		console.error(routes);process.exit(1)
 
 		return new SitemapGenerator( routes, this.clientRequest.origin )
 	}

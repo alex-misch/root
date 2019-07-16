@@ -19,7 +19,7 @@
         ./sitemap.mjs
         --output=stdout
         --user-agent='{{meta "ua"}}'
-        --origin='https://flyxo.com/'
+        --origin='https://flyxo.com'
         --src=https://flyxo.com/data/{{url "node"}}/index.es.js
 
     - type: plugin
