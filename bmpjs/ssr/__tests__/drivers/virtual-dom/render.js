@@ -47,7 +47,7 @@ describe("VirtualDOMDriver deepRender", () => {
 			new HTMLElement()
 		])
 		expect( arrOfElements ).toBeInstanceOf( Array )
-		expect( await driver.deepRender({}) ).toBeInstanceOf( Object )
+		expect( await driver.deepRender({ type: 'div' }) ).toBeInstanceOf( Object )
 
 		resolve()
 	})
@@ -83,6 +83,48 @@ describe("VirtualDOMDriver deepRender", () => {
 		expect( rendered ).toBeInstanceOf( HTMLElement )
 		expect( rendered.getAttribute('type') ).toBe( 'application/ld+json' )
 		expect( rendered.innerHTML ).toBe( 'console.log("f")' )
+
+		resolve()
+	})
+
+	test("is getter and strings support", async resolve => {
+		class TestComponent { 
+			static get is() { return "test-component" } 
+		} 
+		expect( driver.getTag( TestComponent.is ) ).toBe('test-component')
+		expect( driver.getTag( "test-component" ) ).toBe('test-component')
+
+		resolve()
+	})
+
+	test("reference func support", async resolve => {
+		
+		let refElement = null
+		const vd = { 
+			type: 'foobar',
+			props: {
+				ref: el => refElement = el
+			}
+		}
+		await driver.deepRender(vd)
+		expect(refElement instanceof HTMLElement).toBeTruthy()
+		expect(refElement.tagName).toBe('foobar')
+
+
+		resolve()
+	})
+	test("reference link support", async resolve => {
+		
+		let refElement = null
+		const vd = { 
+			type: 'foobar',
+			props: {
+				ref: refElement //TODO: SUPPORT
+			}
+		}
+		await driver.deepRender(vd)
+		// expect(refElement instanceof HTMLElement).toBeTruthy()
+		// expect(refElement.tagName).toBe('foobar')
 
 		resolve()
 	})
