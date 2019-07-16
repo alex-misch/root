@@ -90,7 +90,6 @@ class BmpRemoteApp {
 				}
 			}
 		}
-		console.error(routes);process.exit(1)
 
 		return new SitemapGenerator( routes, this.clientRequest.origin )
 	}
