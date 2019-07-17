@@ -2,9 +2,7 @@ package mux
 
 import (
 	"context"
-	"mime"
 	"net/http"
-	"path/filepath"
 	"time"
 
 	"github.com/boomfunc/root/tools/flow"
@@ -23,8 +21,7 @@ func (sh *stepHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer close(sh.errCh)
 
 	// Set the default headers
-
-	w.Header().Set("Content-Type", mime.TypeByExtension(filepath.Ext(r.URL.Path)))
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 
 	// CORS ISSUE while not structured application layer//

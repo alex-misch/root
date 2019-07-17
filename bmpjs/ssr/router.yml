@@ -189,8 +189,8 @@
 
 
 # Serve static data
-- pattern: "/data/{url:*}"
-  pipeline:
+# - pattern: "/data/{url:*}"
+#   pipeline:
 
-    - type: process
-      cmd: cat ./cache/{{url "url"}}
+#     - type: process
+#       cmd: cat ./cache/{{url "url"}}
