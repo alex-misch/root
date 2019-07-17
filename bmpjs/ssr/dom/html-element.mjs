@@ -1,5 +1,5 @@
 import { Element } from './element.mjs'
-import et from 'elementtree'
+import ET from 'elementtree'
 import { customElements } from './custom-elements.mjs';
 
 class HTMLElement extends Element {
@@ -17,7 +17,15 @@ class HTMLElement extends Element {
 	blur() {}
 	click() {}
 
-	closest() { return new HTMLElement('div') }
+	closest(selector) {
+		if (!this.parent)
+			return new HTMLElement('div')
+		if (this.parent.tagName == selector)
+			return this.parent
+
+
+		return this.parent.closest(selector)
+	}
 
 	querySelector() { return new HTMLElement('div') }
 	querySelectorAll() {
@@ -45,26 +53,38 @@ class HTMLElement extends Element {
 		this._mutation([{ addedNodes: [node] }])
 	}
 
-	_createElement({ tag, attrib, children }) {
+	_createElement({ tag, attrib, _children }) {
 
 		const CustomElement = customElements.get(tag)
 		let el = null
 		if (CustomElement) {
 			el = new CustomElement.constructor(tag)
 		} else {
-			el = new HTMLElement(tag)
+			el = new HTMLElement(tag, attrib)
 		}
 		el.tagName = tag
 		el.attributes = attrib
-		if (children && children.length)
-			el.childNodes = children.map( child => this._createElement(child) )
+		if (_children && _children.length)
+			el.childNodes = _children.map( this._createElement.bind(this) )
 		return el
+	}
+
+	fromStringToTree(string) {
+		try {
+			const tree = ET.parse(string.trim())
+			const root = tree.getroot()
+			const element = this._createElement(root)
+			return element
+		} catch(e) {
+			return string
+		}
 	}
 
 	set innerHTML(content) {
 		// const obj = et.parse(content)
 		// const content = this._createElement( obj.getroot() )
-		const _content = Array.isArray(content) ? content : [ content ]
+		let _content = Array.isArray(content) ? content : [ content ]
+		_content = _content.map( element => this.fromStringToTree(element) )
 		this.childNodes = this.children = _content
 		this._mutation([{ addedNodes: _content }])
 	}

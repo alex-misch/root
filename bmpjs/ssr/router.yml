@@ -45,7 +45,7 @@
         --url='/{{url "url"}}'
         --ip='{{meta "ip"}}'
         --user-agent='{{meta "ua"}}'
-        --origin='https://flyxo.com/'
+        --origin='http://bmp.lo:8080/'
         --src=https://flyxo.com/data/{{url "node"}}/index.es.js
 
     - type: plugin
@@ -189,8 +189,8 @@
 
 
 # Serve static data
-# - pattern: "/data/{url:*}"
-#   pipeline:
+- pattern: "/data/{url:*}"
+  pipeline:
 
-#     - type: process
-#       cmd: cat ./cache/{{url "url"}}
+    - type: process
+      cmd: cat ./cache/{{url "url"}}

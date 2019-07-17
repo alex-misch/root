@@ -116,12 +116,12 @@ class BmpRemoteApp {
 			const appInstance = this.htmlDriver.constructor.createElement( Application.tagName )
 			// render all child elements recursively
 			/** @var { HTMLElement } appElement */
-			const appElement = await this.htmlDriver.deepRender( appInstance )
+			const appElement = await this.htmlDriver.deepRender( appInstance, document.body )
 			// By default it can supports HTML5 Api, so get outerHTML
 			result.html = appElement.outerHTML
-			// generate styles of document
-			if (css) result.css = css
 			result.head = document.head.innerHTML
+			// get styles of document
+			if (css) result.css = css
 			// rewrite status code by application
 			result.statusCode = appElement.statusCode( this.clientRequest.uri )
 		} catch(e) {

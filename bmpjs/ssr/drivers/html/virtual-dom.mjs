@@ -32,8 +32,8 @@ class VirtualDOMDriver {
 	 * @param {Array} instances list of instances
 	 * @param cssjs css of this instances
 	 */
-	async arrayToHTML(instances) {
-		const converters = instances.map( async inst => await this.deepRender(inst) )
+	async arrayToHTML(instances, parent) {
+		const converters = instances.map( async inst => await this.deepRender(inst, parent) )
 		return await Promise.all(converters)
 	}
 
@@ -48,22 +48,25 @@ class VirtualDOMDriver {
 	 * @param {Object} instance {type, props, children} virtual-dom objject
 	 * @param cssjs css of instance, will be attached on render fn
 	 */
-	async virtualDOMtoHTML(instance) {
+	async virtualDOMtoHTML(instance, parent) {
 
-		let { type: vdtype, props, children = [] } = instance
-
-		let element = HTMLDocument.createElement( this.getTag(vdtype) )
+		const { type: vdtype, props, children = [] } = instance
+		const element = HTMLDocument.createElement( this.getTag(vdtype), {}, parent )
 		if ( props )  {
       // convert props to key:value storage, write to attributes (simulate browser API)
 			element.attributes = Object.keys(props).map( key => ({ name: key, value: props[key] }) )
-			let ref = element.getAttribute('ref')
+			const ref = element.getAttribute('ref')
 			if (typeof ref === 'function') {
 				ref(element) // reference function
       } else if (props.hasOwnProperty('ref')) {
-        instance.props.ref = element // simple binding
+				instance.props.ref = element // simple binding
       }
 		}
-		await this.render(element, children)
+
+		element.innerHTML = await Promise.all(
+			children.map( child => this.deepRender(child) )
+		)
+		await this.render(element)
 		return element
 	}
 
@@ -72,7 +75,7 @@ class VirtualDOMDriver {
 	 * @param {*} instance any javascript variable that will be converted to string
 	 * @param @optional cssjs css of this instance (optional)
 	 */
-	async deepRender( content ) {
+	async deepRender( content, parent ) {
 		if ( ['string','number','boolean'].includes(typeof content) ) {
 			return content.toString()
 		}
@@ -83,14 +86,13 @@ class VirtualDOMDriver {
 			return content
 		}
 
-
 		if ( !content ) // like a null, undefined and other unexpected values
 			return ''
 
 		if ( Array.isArray(content) )
-			return await this.arrayToHTML(content)
+			return await this.arrayToHTML(content, parent)
 
-		return await this.virtualDOMtoHTML(content)
+		return await this.virtualDOMtoHTML(content, parent)
 	}
 
 
@@ -99,10 +101,8 @@ class VirtualDOMDriver {
 	 * @param { BMPVDWebComponent } component instance of WebComponent
 	 * @return { void }
 	 */
-	async render(component, childrens = []) {
-		let arrChilds = childrens
-		if ( component.hasAttribute('safeHTML') )
-			arrChilds.push(component.getAttribute('safeHTML'))
+	async render(component) {
+		// save old childnodes of component
 
 		if ( typeof component.render == 'function' ) {
 			//  most likely a virtualDOM component
@@ -111,17 +111,21 @@ class VirtualDOMDriver {
 			if ( typeof component.onAttached == 'function' )
 				await component.onAttached()
 
-			arrChilds.push( await component.render() )
+			if ( typeof component.render == 'function' ) {
+				const htmlChild = await this.virtualDOMtoHTML(component.render(), component)
+				component.appendChild(htmlChild)
+			}
+
 		} else if ( typeof component.connectedCallback == 'function' ) {
 			// most likely a customElement
 			await component.connectedCallback()
 		}
 
-		// save old childnodes of component
-		if (component.childNodes && component.childNodes.length)
-			arrChilds.push( ...component.childNodes )
+		if ( component.hasAttribute('safeHTML') ) {
+			component.appendChild(component.getAttribute('safeHTML'))
+		}
 
-		component.innerHTML = await this.deepRender(arrChilds)
+
 	}
 
 

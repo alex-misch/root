@@ -55,14 +55,15 @@ class HTMLDocument extends HTMLElement {
 	 * @param attrs attributes of element
 	 * @return { HTMLElement|BMPVDWebComponent } component
 	 */
-	static createElement(tag) {
+	static createElement(tag, attrib, parent) {
 		const CustomElement = customElements.get(tag)
 		if (CustomElement) {
 			const instance = new CustomElement.constructor(tag)
 			instance.tagName = tag
+			instance.parent = parent
 			return instance
 		} else {
-			return new HTMLElement(tag)
+			return new HTMLElement(tag, attrib, parent)
 		}
 	}
 
