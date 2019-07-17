@@ -10,44 +10,44 @@ jobs:
           name: Server site rendering tests
           working_directory: ./bmpjs/ssr
           command: |
-            npm install
+            npm install --no-cache git
             npm test
 
-  # build-core:
-  #   docker:
-  #     - image: node:10.9-alpine
-  #   steps:
-  #     - checkout
-  #     - run:
-  #         name: Build core
-  #         working_directory: ./bmpjs/core
-  #         command: |
-  #           npm install
-  #           node --experimental-modules ./install.mjs
-  #           node --experimental-modules ./build.mjs
-  #           rm -rf node_modules
-  #     - persist_to_workspace:
-  #         root: ./bmpjs
-  #         paths:
-  #           - core/*
+  build-core:
+    docker:
+      - image: node:10.9-alpine
+    steps:
+      - checkout
+      - run:
+          name: Build core
+          working_directory: ./bmpjs/core
+          command: |
+            npm install
+            node --experimental-modules ./install.mjs
+            node --experimental-modules ./build.mjs
+            rm -rf node_modules
+      - persist_to_workspace:
+          root: ./bmpjs
+          paths:
+            - core/*
 
-  # build-router:
-  #   docker:
-  #     - image: node:10.9-alpine
-  #   steps:
-  #     - checkout
-  #     - run:
-  #         name: Build router
-  #         working_directory: ./bmpjs/router
-  #         command: |
-  #           npm install
-  #           node --experimental-modules ./install.mjs
-  #           node --experimental-modules ./build.mjs
-  #           rm -rf node_modules
-  #     - persist_to_workspace:
-  #         root: ./bmpjs
-  #         paths:
-  #           - router/*
+  build-router:
+    docker:
+      - image: node:10.9-alpine
+    steps:
+      - checkout
+      - run:
+          name: Build router
+          working_directory: ./bmpjs/router
+          command: |
+            npm install
+            node --experimental-modules ./install.mjs
+            node --experimental-modules ./build.mjs
+            rm -rf node_modules
+      - persist_to_workspace:
+          root: ./bmpjs
+          paths:
+            - router/*
 
   deploy:
     docker:
@@ -74,10 +74,10 @@ workflows:
   deploy:
     jobs:
       - ssr-test
-      - build-core
-      - build-router
-      - deploy:
-          requires:
-            - build-core
-            - build-router
+      # - build-core
+      # - build-router
+      # - deploy:
+      #     requires:
+      #       - build-core
+      #       - build-router
 

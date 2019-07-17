@@ -33,14 +33,15 @@
     "transform": {
       "^.+\\.m?jsx?$": "babel-jest"
     },
-		"setupFiles": [
-			"<rootDir>/jest.init.js"
-		]
+    "setupFiles": [
+      "<rootDir>/jest.init.js"
+    ]
   },
   "dependencies": {
     "elementtree": "^0.1.7",
     "express-useragent": "^1.0.12",
     "fs-extra": "^8.0.1",
+    "git": "^0.1.5",
     "node-fetch-polyfill": "^2.0.6"
   },
   "devDependencies": {
