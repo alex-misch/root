@@ -45,7 +45,7 @@
         --url='/{{url "url"}}'
         --ip='{{meta "ip"}}'
         --user-agent='{{meta "ua"}}'
-        --origin='http://bmp.lo:8080/'
+        --origin='https://flyxo.com/'
         --src=https://flyxo.com/data/{{url "node"}}/index.es.js
 
     - type: plugin
