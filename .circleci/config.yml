@@ -10,8 +10,6 @@ jobs:
           name: Server site rendering tests
           working_directory: ./bmpjs/ssr
           command: |
-            apk update
-            apk upgrade
             apk add --no-cache git
             npm install
             npm test
